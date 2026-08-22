@@ -91,7 +91,7 @@ export async function createTrip(userId: string, input: CreateTripInput): Promis
       },
     });
 
-    if (input.targetBudget && input.defaultCurrencyId) {
+    if (input.targetBudget !== undefined && input.defaultCurrencyId) {
       await tx.tripBudget.create({
         data: {
           tripId: trip.id,

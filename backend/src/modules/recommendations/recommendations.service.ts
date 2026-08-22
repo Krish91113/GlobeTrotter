@@ -269,10 +269,25 @@ export class RecommendationsService {
   ): Promise<FeedbackDto> {
     const recommendation = await prisma.aiRecommendation.findFirst({
       where: { id: recId, userId },
-      select: { id: true },
+      select: { id: true, tripId: true },
     });
     if (!recommendation) {
       throw new NotFoundError('Recommendation not found');
+    }
+
+    if (data.itineraryItemId) {
+      const itineraryItem = await prisma.itineraryItem.findFirst({
+        where: {
+          id: data.itineraryItemId,
+          ...(recommendation.tripId
+            ? { tripDay: { tripId: recommendation.tripId } }
+            : { id: '__no_matching_trip__' }),
+        },
+        select: { id: true },
+      });
+      if (!itineraryItem) {
+        throw new NotFoundError('Itinerary item not found for this recommendation trip');
+      }
     }
 
     const feedback = await prisma.recommendationFeedback.create({
