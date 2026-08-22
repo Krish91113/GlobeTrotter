@@ -18,7 +18,7 @@ export function CtaSection() {
 
             <div className="relative">
               <h2 className="mx-auto max-w-2xl text-4xl font-bold tracking-tight md:text-5xl">
-                Your next trip deserves a better plan.
+                Your next trip deserves a better plan. 
               </h2>
 
               <p className="mx-auto mt-5 max-w-xl text-white/85">

@@ -53,12 +53,16 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
     if (open) setRecent(readRecent());
   }, [open]);
 
-  const tripsQuery = useTrips();
+  // Only hit the API while the dialog is open and there is a query —
+  // avoids firing /trips, /locations/search and /catalog/items on page load.
+  const tripsQuery = useTrips(undefined, open);
   const locationsQuery = useLocations(
     debounced ? { query: debounced } : undefined,
+    open && Boolean(debounced),
   );
   const activitiesQuery = useActivities(
     debounced ? { query: debounced } : undefined,
+    open && Boolean(debounced),
   );
 
   const trips = useMemo(() => {

@@ -1,11 +1,13 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useRegionalCurrency } from "@/features/preferences/currency-provider";
 import { cn } from "@/lib/utils";
 
 interface BudgetProgressProps {
   spent: number;
   total: number;
+  /** Legacy per-item currency; the global preference takes precedence. */
   currency?: string;
   className?: string;
   showLabel?: boolean;
@@ -14,13 +16,13 @@ interface BudgetProgressProps {
 export function BudgetProgress({
   spent,
   total,
-  currency = "EUR",
   className,
   showLabel = true,
 }: BudgetProgressProps) {
+  const { currency: selected } = useRegionalCurrency();
   const pct = total > 0 ? Math.min(100, Math.round((spent / total) * 100)) : 0;
   const over = spent > total;
-  const safeCurrency = currency || "EUR";
+  const safeCurrency = selected || "EUR";
 
   if (showLabel) {
     const formatted = new Intl.NumberFormat("en-US", {

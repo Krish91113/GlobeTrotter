@@ -1,7 +1,9 @@
 import { cn } from "@/lib/utils";
+import { DEFAULT_CURRENCY } from "@/lib/currency";
+import { useRegionalCurrency } from "@/features/preferences/currency-provider";
 
-export function formatMoney(amount: number, currency = "EUR"): string {
-  const safeCurrency = currency || "EUR";
+export function formatMoney(amount: number, currency = DEFAULT_CURRENCY): string {
+  const safeCurrency = currency || DEFAULT_CURRENCY;
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
@@ -15,15 +17,26 @@ export function formatMoney(amount: number, currency = "EUR"): string {
 
 interface MoneyProps {
   amount: number;
+  /**
+   * Legacy per-item currency. Kept for call-site compatibility; the user's
+   * global preference takes precedence. Use `overrideCurrency` to force one.
+   */
   currency?: string;
+  /** Force an explicit currency regardless of the global preference. */
+  overrideCurrency?: string;
   className?: string;
 }
 
-export function Money({ amount, currency = "EUR", className }: MoneyProps) {
-  const safeCurrency = currency || "EUR";
+export function Money({
+  amount,
+  overrideCurrency,
+  className,
+}: MoneyProps) {
+  const { currency: selected } = useRegionalCurrency();
+  const code = overrideCurrency || selected;
   return (
     <span className={cn("tabular-nums", className)}>
-      {formatMoney(amount, safeCurrency)}
+      {formatMoney(amount, code)}
     </span>
   );
 }
