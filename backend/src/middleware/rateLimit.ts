@@ -28,7 +28,7 @@ export function createRateLimiter(maxAttempts: number, windowMs: number) {
       const resetInSeconds = Math.ceil((store[key].resetAt - now) / 1000);
       throw new RateLimitedError(
         `Too many attempts. Please try again in ${resetInSeconds} seconds.`,
-        req.id
+        String(req.id)
       );
     }
   };
