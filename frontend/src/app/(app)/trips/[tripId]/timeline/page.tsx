@@ -4,6 +4,7 @@ import { Calendar as CalendarIcon, Clock, List } from "lucide-react";
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { useTripDays } from "@/hooks/queries";
+import { useRegionalCurrency } from "@/features/preferences/currency-provider";
 import { cn } from "@/lib/utils";
 
 const views = [
@@ -15,6 +16,7 @@ const views = [
 export default function TimelinePage() {
   const { tripId } = useParams<{ tripId: string }>();
   const { data: days, isLoading } = useTripDays(tripId);
+  const { symbol } = useRegionalCurrency();
   const [view, setView] = useState<"timeline" | "list" | "calendar">(
     "timeline",
   );
@@ -96,7 +98,7 @@ export default function TimelinePage() {
                     </p>
                     <p className="font-semibold text-[#0F172A]">{item.name}</p>
                     <p className="text-sm text-[#64748B]">
-                      {item.durationMinutes}min • €{item.estimatedCost} •{" "}
+                      {item.durationMinutes}min • {symbol}{item.estimatedCost} •{" "}
                       {item.category}
                     </p>
                   </li>
@@ -134,7 +136,7 @@ export default function TimelinePage() {
                         {item.name}
                       </p>
                       <p className="text-xs text-[#64748B]">
-                        {item.durationMinutes}min • €{item.estimatedCost}
+                        {item.durationMinutes}min • {symbol}{item.estimatedCost}
                       </p>
                     </div>
                   </div>

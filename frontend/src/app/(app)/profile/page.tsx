@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { useCurrentUser, useLogout } from "@/features/auth/hooks/use-auth";
 import { useProfile, useUpdateProfile } from "@/hooks/queries";
 
+const STATIC_AVATAR = "/data/profile/avatar.png";
+
 const travelPaces = [
   {
     value: "slow",
@@ -65,10 +67,10 @@ export default function ProfilePage() {
 
   useEffect(() => {
     if (!profile) return;
-    setDisplayName(profile.name);
-    setCurrency(profile.currency);
+    setDisplayName(profile.name || authUser?.displayName || "Traveler");
+    setCurrency(profile.currency || "EUR");
     setPreferences(profile.preferences);
-  }, [profile]);
+  }, [profile, authUser?.displayName]);
 
   const handleSave = () => {
     updateProfile.mutate(
@@ -76,10 +78,14 @@ export default function ProfilePage() {
         name: displayName,
         currency,
         preferences,
-      },
+      } as any,
       {
         onSuccess: () => {
-          toast.success("Preferences updated successfully");
+          toast.success("Profile and preferences updated successfully");
+          window.location.reload();
+        },
+        onError: () => {
+          toast.error("Failed to update profile and preferences");
         },
       },
     );
@@ -113,47 +119,62 @@ export default function ProfilePage() {
             <User className="size-5 text-primary" />
             Account Information
           </h2>
-          <div className="mt-6 grid gap-6 sm:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-[#0F172A] mb-1.5">
-                Display name
-              </label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="h-12 w-full rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 text-sm outline-none focus:border-primary focus:bg-white"
-              />
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#0F172A] mb-1.5">
-                Email address
-              </label>
-              <input
-                type="email"
-                disabled
-                value={authUser?.email || "user@example.com"}
-                className="h-12 w-full rounded-xl border border-[#E2E8F0] bg-[#F1F5F9] px-4 text-sm text-[#64748B] cursor-not-allowed"
-              />
-              <p className="mt-1 text-xs text-[#64748B]">
-                Email address is managed by authentication provider.
+          <div className="mt-6 flex flex-col sm:flex-row items-center gap-6">
+            <div className="shrink-0">
+              <div className="size-24 rounded-full overflow-hidden border-2 border-primary bg-slate-100 flex items-center justify-center shadow-inner">
+                <img
+                  src={STATIC_AVATAR}
+                  alt="Profile avatar"
+                  className="size-full object-cover"
+                />
+              </div>
+              <p className="mt-2 text-center text-[11px] font-medium text-[#64748B]">
+                Default avatar
               </p>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-[#0F172A] mb-1.5">
-                Preferred currency
-              </label>
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="h-12 w-full rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 text-sm outline-none focus:border-primary focus:bg-white"
-              >
-                <option value="EUR">EUR (€) Euro</option>
-                <option value="USD">USD ($) US Dollar</option>
-                <option value="GBP">GBP (£) British Pound</option>
-                <option value="INR">INR (₹) Indian Rupee</option>
-                <option value="JPY">JPY (¥) Japanese Yen</option>
-              </select>
+
+            <div className="flex-1 w-full grid gap-6 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-[#0F172A] mb-1.5">
+                  Display name
+                </label>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="h-12 w-full rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 text-sm outline-none focus:border-primary focus:bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#0F172A] mb-1.5">
+                  Email address
+                </label>
+                <input
+                  type="email"
+                  disabled
+                  value={authUser?.email || "user@example.com"}
+                  className="h-12 w-full rounded-xl border border-[#E2E8F0] bg-[#F1F5F9] px-4 text-sm text-[#64748B] cursor-not-allowed"
+                />
+                <p className="mt-1 text-xs text-[#64748B]">
+                  Email address is managed by authentication provider.
+                </p>
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#0F172A] mb-1.5">
+                  Preferred currency
+                </label>
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="h-12 w-full rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 text-sm outline-none focus:border-primary focus:bg-white"
+                >
+                  <option value="EUR">EUR (€) Euro</option>
+                  <option value="USD">USD ($) US Dollar</option>
+                  <option value="GBP">GBP (£) British Pound</option>
+                  <option value="INR">INR (₹) Indian Rupee</option>
+                  <option value="JPY">JPY (¥) Japanese Yen</option>
+                </select>
+              </div>
             </div>
           </div>
         </section>

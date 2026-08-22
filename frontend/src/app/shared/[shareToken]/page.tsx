@@ -4,11 +4,13 @@ import { Clock, Copy, Globe2, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useCopyTrip, usePublicTrip } from "@/hooks/queries";
+import { useRegionalCurrency } from "@/features/preferences/currency-provider";
 
 export default function SharedTripPage() {
   const { shareToken } = useParams<{ shareToken: string }>();
   const { data: trip, isLoading, isError } = usePublicTrip(shareToken);
   const copyTrip = useCopyTrip();
+  const { symbol } = useRegionalCurrency();
 
   if (isLoading)
     return (
@@ -100,14 +102,14 @@ export default function SharedTripPage() {
             <div>
               <p className="text-sm text-[#64748B]">Budget</p>
               <p className="text-lg font-bold text-[#0F172A]">
-                €{trip.budgetSummary.totalBudget.toLocaleString()}
+                {symbol}{trip.budgetSummary.totalBudget.toLocaleString()}
               </p>
             </div>
             <div className="h-10 w-px bg-[#E2E8F0]" />
             <div>
               <p className="text-sm text-[#64748B]">Estimated spend</p>
               <p className="text-lg font-bold text-[#0F172A]">
-                €{trip.budgetSummary.estimatedSpend.toLocaleString()}
+                {symbol}{trip.budgetSummary.estimatedSpend.toLocaleString()}
               </p>
             </div>
           </div>
@@ -138,7 +140,7 @@ export default function SharedTripPage() {
                     <p className="font-semibold text-[#0F172A]">{item.name}</p>
                     <p className="text-sm text-[#64748B]">
                       <Clock className="inline size-3.5 mr-1" />
-                      {item.durationMinutes}min • €{item.estimatedCost}
+                      {item.durationMinutes}min • {symbol}{item.estimatedCost}
                     </p>
                   </li>
                 ))}

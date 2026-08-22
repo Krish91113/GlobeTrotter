@@ -10,24 +10,31 @@ import { useCurrentUser, useDashboard } from "@/hooks/queries";
 
 export default function DashboardPage() {
   const { data: user } = useCurrentUser();
-  const { data, isLoading, isError, refetch } = useDashboard();
+  const {
+    data,
+    isLoading: isDashboardLoading,
+    isError,
+    error,
+    refetch,
+  } = useDashboard();
 
   if (isError) {
+    console.error("Dashboard error:", error);
     return (
       <div className="container-page py-16">
         <ErrorState
-          message="We couldn't load your dashboard."
+          message={error instanceof Error ? error.message : "We couldn't load your dashboard."}
           onRetry={() => refetch()}
         />
       </div>
     );
   }
 
-  if (isLoading || !data) {
+  if (isDashboardLoading || !data) {
     return <DashboardSkeleton />;
   }
 
-  const { upcomingTrip, recentTrips, recommendedDestinations, stats } = data;
+  const { upcomingTrip, recentTrips, stats } = data;
 
   return (
     <div className="container-page space-y-10 py-8 pb-20">
@@ -39,10 +46,7 @@ export default function DashboardPage() {
 
       <section aria-labelledby="continue-planning-heading">
         <div className="mb-5 flex items-end justify-between gap-4">
-          <h2
-            id="continue-planning-heading"
-            className="text-xl font-bold text-foreground sm:text-2xl"
-          >
+          <h2 id="continue-planning-heading" className="text-xl font-bold text-foreground sm:text-2xl">
             Continue planning
           </h2>
         </div>
@@ -53,10 +57,7 @@ export default function DashboardPage() {
         <section aria-labelledby="recommended-activities-heading">
           <div className="mb-5 flex items-end justify-between gap-4">
             <div>
-              <h2
-                id="recommended-activities-heading"
-                className="text-xl font-bold text-foreground sm:text-2xl"
-              >
+              <h2 id="recommended-activities-heading" className="text-xl font-bold text-foreground sm:text-2xl">
                 Ideas for {upcomingTrip.name}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -70,14 +71,13 @@ export default function DashboardPage() {
 
       <section aria-labelledby="recommended-destinations-heading">
         <div className="mb-5 flex items-end justify-between gap-4">
-          <h2
-            id="recommended-destinations-heading"
-            className="text-xl font-bold text-foreground sm:text-2xl"
-          >
+          <h2 id="recommended-destinations-heading" className="text-xl font-bold text-foreground sm:text-2xl">
             Recommended destinations
           </h2>
         </div>
-        <RecommendedDestinations destinations={recommendedDestinations} />
+        <RecommendedDestinations
+          destinations={data.recommendedDestinations}
+        />
       </section>
     </div>
   );

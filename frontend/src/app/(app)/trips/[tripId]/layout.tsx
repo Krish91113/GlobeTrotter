@@ -20,7 +20,12 @@ export default function TripLayout({
 }) {
   const { tripId } = useParams<{ tripId: string }>();
   const pathname = usePathname();
-  const { data: trip, isLoading } = useTrip(tripId);
+  const {
+    data: trip,
+    isLoading,
+    isError,
+    refetch,
+  } = useTrip(tripId);
   const shareLink = useCreateShareLink(tripId);
 
   if (isLoading)
@@ -29,10 +34,30 @@ export default function TripLayout({
         <div className="h-80 animate-pulse rounded-2xl bg-[#E2E8F0]" />
       </div>
     );
-  if (!trip)
+  if (isError || !trip)
     return (
-      <div className="container-page py-12 text-center text-[#64748B]">
-        Trip not found
+      <div className="container-page py-24 text-center">
+        <MapPin className="mx-auto size-10 text-[#CBD5E1]" />
+        <h2 className="mt-4 text-xl font-bold text-[#0F172A]">
+          Trip not found
+        </h2>
+        <p className="mt-2 text-sm text-[#64748B]">
+          This trip may have been deleted, or it belongs to another account.
+        </p>
+        <div className="mt-6 flex items-center justify-center gap-3">
+          <button
+            onClick={() => refetch()}
+            className="rounded-full border border-[#E2E8F0] px-4 py-2 text-sm font-semibold text-[#0F172A] transition-colors hover:bg-[#F1F5F9]"
+          >
+            Try again
+          </button>
+          <Link
+            href="/trips"
+            className="rounded-full bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-indigo-700"
+          >
+            All trips
+          </Link>
+        </div>
       </div>
     );
 
