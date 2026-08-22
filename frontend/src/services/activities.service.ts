@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import type { Activity, ActivityFilters } from "@/types";
+import { cityImageUrl } from "@/lib/image-resolver";
 
 export const activitiesService = {
   search: async (filters?: ActivityFilters): Promise<Activity[]> => {
@@ -26,7 +27,7 @@ export const activitiesService = {
         durationMinutes: item.durationMinutes || 90,
         rating: item.rating ? parseFloat(item.rating) : 4.8,
         reviewCount: item.reviewCount || 1250,
-        image: item.thumbnailUri || item.image || "/images/rome.jpg",
+        image: cityImageUrl(item.location?.name || item.city, item.thumbnailUri || item.image),
         description: item.description || `Experience ${item.name} with local guides.`,
       }));
   },

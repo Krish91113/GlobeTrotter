@@ -72,17 +72,34 @@ async function toDto(tripId: string): Promise<TripDto> {
         },
         orderBy: { dayNumber: 'asc' },
       },
+      stops: { include: { location: { select: { name: true, normalizedName: true } } }, orderBy: { sequenceNo: 'asc' } },
       budget: { select: { targetAmount: true } },
     },
   });
 
   if (!trip) throw new NotFoundError('Trip not found');
 
-  const cities = [...new Set(
-    trip.days
+  let cities = [...new Set([
+    ...trip.stops.map((stop) => stop.location.name),
+    ...trip.days
       .map((d) => d.tripStop?.location?.name)
-      .filter(Boolean) as string[]
-  )];
+      .filter(Boolean) as string[],
+  ])];
+
+  // Trips created before first-destination integration may have no stop.
+  // Infer their intended city from names such as "Mumbai Vacation" so their
+  // dashboard recommendations remain useful without inventing static data.
+  if (cities.length === 0) {
+    const normalizedTripName = trip.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+    const locations = await prisma.location.findMany({
+      where: { status: { code: 'active' } },
+      select: { name: true, normalizedName: true },
+    });
+    const inferred = locations
+      .filter((location) => normalizedTripName.includes(location.normalizedName.replace(/[^a-z0-9]/g, '')))
+      .sort((a, b) => b.normalizedName.length - a.normalizedName.length)[0];
+    if (inferred) cities = [inferred.name];
+  }
 
   const activitiesCount = trip.days.reduce((sum, d) => sum + d.itineraryItems.length, 0);
   const estimatedSpend = trip.days.reduce((sum, d) =>

@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import type { PublicTrip, Trip } from "@/types";
+import { cityImageUrl } from "@/lib/image-resolver";
 
 export const sharingService = {
   createShareLink: async (tripId: string): Promise<{ token: string }> => {
@@ -17,11 +18,12 @@ export const sharingService = {
 
   getPublicTrip: async (token: string): Promise<PublicTrip> => {
     const data = await apiClient<any>(`/public/trips/${token}`);
+    const primaryCity = data.stops?.[0]?.locationName;
     return {
       id: data.id || "trip-shared",
       name: data.name || "Shared Trip",
       description: data.description || "",
-      coverImage: data.coverImage || "/images/hero.jpg",
+      coverImage: cityImageUrl(primaryCity, data.coverImage),
       startDate: data.startDate ? new Date(data.startDate).toISOString().slice(0, 10) : "",
       endDate: data.endDate ? new Date(data.endDate).toISOString().slice(0, 10) : "",
       cities: data.cities || (data.stops || []).map((s: any) => s.locationName),
@@ -47,7 +49,7 @@ export const sharingService = {
           currency: i.currency || "EUR",
           durationMinutes: i.durationMinutes || 60,
           rating: i.rating || 4.8,
-          image: i.image || "/images/rome.jpg",
+          image: cityImageUrl(primaryCity, i.image),
           order: i.sequenceNo || 1,
           location: "",
         })),

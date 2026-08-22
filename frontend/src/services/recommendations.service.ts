@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import type { Recommendation } from "@/types";
+import { cityImageUrl } from "@/lib/image-resolver";
 
 export const recommendationsService = {
   generate: async (tripId: string): Promise<Recommendation[]> => {
@@ -22,7 +23,7 @@ export const recommendationsService = {
         currency: r.currency || "EUR",
         durationMinutes: r.durationMinutes || 180,
         rating: r.rating || 4.9,
-        image: r.thumbnailUri || r.catalogItem?.thumbnailUri || r.image || "/images/rome.jpg",
+        image: cityImageUrl(r.city || r.location?.name, r.thumbnailUri || r.catalogItem?.thumbnailUri || r.image),
         reason: r.reason || "Matches your interest in historic architecture and culture.",
         fitsBudget: r.fitsBudget ?? true,
       }));

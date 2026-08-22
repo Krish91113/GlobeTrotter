@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import type { TripDay, TripStop, ItineraryItem, AddStopInput, AddActivityInput } from "@/types";
+import { cityImageUrl } from "@/lib/image-resolver";
 
 export const itineraryService = {
   getTripDays: async (tripId: string): Promise<TripDay[]> => {
@@ -23,7 +24,7 @@ export const itineraryService = {
           currency: i.currency || "EUR",
           durationMinutes: i.durationMinutes || 60,
           rating: i.rating || 4.8,
-          image: i.catalogItem?.thumbnailUri || i.image || "/images/rome.jpg",
+          image: cityImageUrl(d.stop?.locationName, i.catalogItem?.thumbnailUri || i.image),
           order: i.sequenceNo || 1,
           location: d.stop?.locationName || "",
         })),

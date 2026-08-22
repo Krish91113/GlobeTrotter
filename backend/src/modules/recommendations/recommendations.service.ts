@@ -49,10 +49,18 @@ export class RecommendationsService {
   ): Promise<{ recommendations: RecommendationDto[]; insights: InsightsDto }> {
     await this.assertTripOwnership(data.tripId, userId);
 
+    const trip = await prisma.trip.findUnique({ where: { id: data.tripId }, select: { name: true } });
     const firstStop = data.cityId ? null : await prisma.tripStop.findFirst({
       where: { tripId: data.tripId }, orderBy: { sequenceNo: 'asc' }, select: { locationId: true },
     });
-    const cityId = data.cityId ?? firstStop?.locationId;
+    let cityId = data.cityId ?? firstStop?.locationId;
+    if (!cityId && trip) {
+      const normalizedTripName = trip.name.toLowerCase().replace(/[^a-z0-9]/g, '');
+      const locations = await prisma.location.findMany({ select: { id: true, normalizedName: true } });
+      cityId = locations
+        .filter((location) => normalizedTripName.includes(location.normalizedName.replace(/[^a-z0-9]/g, '')))
+        .sort((a, b) => b.normalizedName.length - a.normalizedName.length)[0]?.id;
+    }
     if (!cityId) {
       return { recommendations: [], insights: { budgetStatus: 'no_budget', remainingBudget: null, currency: null } };
     }

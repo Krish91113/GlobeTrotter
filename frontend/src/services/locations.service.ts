@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import type { Location, LocationFilters } from "@/types";
+import { cityImageUrl } from "@/lib/image-resolver";
 
 export const locationsService = {
   search: async (filters?: LocationFilters): Promise<Location[]> => {
@@ -17,7 +18,7 @@ export const locationsService = {
         country: loc.country?.displayName || loc.country || "",
         region: loc.region || "Europe",
         description: loc.description || `Explore ${loc.name} and top sights.`,
-        image: loc.image || loc.thumbnailUri || "/images/rome.jpg",
+        image: cityImageUrl(loc.name, loc.image || loc.thumbnailUri),
         rating: loc.rating ? parseFloat(loc.rating) : 4.8,
         averageDailyCost: loc.averageDailyCost ? parseFloat(loc.averageDailyCost) : 120,
         currency: loc.currency?.isoCode || "EUR",
@@ -33,7 +34,7 @@ export const locationsService = {
       country: loc.country?.displayName || loc.country || "",
       region: loc.region || "Europe",
       description: loc.description || `Explore ${loc.name} and top sights.`,
-      image: loc.image || loc.thumbnailUri || "/images/rome.jpg",
+      image: cityImageUrl(loc.name, loc.image || loc.thumbnailUri),
       rating: loc.rating ? parseFloat(loc.rating) : 4.8,
       averageDailyCost: loc.averageDailyCost ? parseFloat(loc.averageDailyCost) : 120,
       currency: loc.currency?.isoCode || "EUR",

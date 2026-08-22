@@ -154,6 +154,8 @@ export function useAddActivity(dayId: string, tripId: string) {
     mutationFn: (input: AddActivityInput) => itineraryService.addActivity(tripId, dayId, input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.trips.days(tripId) });
+      qc.invalidateQueries({ queryKey: queryKeys.trips.detail(tripId) });
+      qc.invalidateQueries({ queryKey: queryKeys.dashboard.summary });
       toast.success("Activity added");
     },
     onError: (err: Error) => toast.error(err.message),
@@ -181,10 +183,11 @@ export function useLocations(filters?: LocationFilters) {
 }
 
 /* ── Activities ── */
-export function useActivities(filters?: ActivityFilters) {
+export function useActivities(filters?: ActivityFilters, enabled = true) {
   return useQuery({
     queryKey: queryKeys.activities.search(filters),
     queryFn: () => activitiesService.search(filters),
+    enabled,
   });
 }
 
