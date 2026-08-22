@@ -45,6 +45,7 @@ export const requireAuth = async (
 
     req.user = {
       id: session.user.id,
+      userId: session.user.id,
       email: session.user.email,
       displayName: session.user.displayName,
     };
@@ -91,6 +92,7 @@ export const optionalAuth = async (
     if (session && session.expiresAt >= new Date() && session.user.isActive) {
       req.user = {
         id: session.user.id,
+        userId: session.user.id,
         email: session.user.email,
         displayName: session.user.displayName,
       };
