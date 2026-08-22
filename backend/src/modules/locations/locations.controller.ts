@@ -1,5 +1,14 @@
+// ============================================================================
+// locations.controller.ts  — Extended with nearby endpoint
+// ============================================================================
+
 import type { NextFunction, Request, Response } from "express";
-import { getLocationById, searchLocations } from "./locations.service";
+import { ok } from "../../lib/apiResponse";
+import {
+  getLocationById,
+  getNearbyLocations,
+  searchLocations,
+} from "./locations.service";
 
 /**
  * GET /locations/search
@@ -10,8 +19,8 @@ export async function searchLocationsController(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const result = await searchLocations(req.query as any);
-    res.status(200).json(result);
+    const result = await searchLocations(res.locals.validatedQuery);
+    ok(res, result);
   } catch (error) {
     next(error);
   }
@@ -27,7 +36,28 @@ export async function getLocationByIdController(
 ): Promise<void> {
   try {
     const location = await getLocationById(req.params.id as string);
-    res.status(200).json({ location });
+    ok(res, { location });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * GET /locations/:id/nearby
+ */
+export async function getNearbyLocationsController(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): Promise<void> {
+  try {
+    const { radiusKm, limit } = res.locals.validatedQuery;
+    const nearby = await getNearbyLocations(
+      req.params.id as string,
+      radiusKm,
+      limit,
+    );
+    ok(res, { locations: nearby });
   } catch (error) {
     next(error);
   }
