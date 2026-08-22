@@ -4,7 +4,9 @@ import {
   removeStop,
   reorderStops,
   updateStop,
+  listStops,
 } from './stops.service';
+import { ok } from '../../lib/apiResponse';
 import type { AddStopInput, ReorderStopsInput, UpdateStopInput } from './stops.schema';
 
 /**
@@ -21,7 +23,7 @@ export async function addStopController(
       req.user!.id,
       req.body as AddStopInput
     );
-    res.status(201).json({ stop });
+    ok(res, stop, 201);
   } catch (error) {
     next(error);
   }
@@ -42,7 +44,7 @@ export async function updateStopController(
       req.user!.id,
       req.body as UpdateStopInput
     );
-    res.status(200).json({ stop });
+    ok(res, stop);
   } catch (error) {
     next(error);
   }
@@ -58,7 +60,7 @@ export async function removeStopController(
 ): Promise<void> {
   try {
     await removeStop(req.params.tripId as string, req.params.stopId as string, req.user!.id);
-    res.status(200).json({ message: 'Stop removed successfully' });
+    ok(res, {});
   } catch (error) {
     next(error);
   }
@@ -78,8 +80,13 @@ export async function reorderStopsController(
       req.user!.id,
       req.body as ReorderStopsInput
     );
-    res.status(200).json({ stops });
+    ok(res, stops);
   } catch (error) {
     next(error);
   }
+}
+export async function listStopsController(req: Request, res: Response, next: NextFunction): Promise<void> {
+  try {
+    ok(res, await listStops(req.params.tripId as string, req.user!.id));
+  } catch (error) { next(error); }
 }

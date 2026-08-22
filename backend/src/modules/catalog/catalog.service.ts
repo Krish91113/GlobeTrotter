@@ -17,7 +17,7 @@ import prisma from '../../lib/prisma';
 export async function searchCatalogItems(
   query: CatalogSearchQuery
 ): Promise<CatalogSearchResponse> {
-  const { locationId, categoryId, minCost, maxCost, ratingMin, durationMax, cursor, limit } = query;
+  const { q, locationId, categoryId, category, minCost, maxCost, ratingMin, durationMax, cursor, limit } = query;
 
   // Build where clause
   const where: any = {
@@ -25,6 +25,8 @@ export async function searchCatalogItems(
       code: 'active',
     },
   };
+
+  if (q) where.name = { contains: q.trim(), mode: 'insensitive' };
 
   // Filter by location
   if (locationId) {
@@ -38,6 +40,9 @@ export async function searchCatalogItems(
         categoryId,
       },
     };
+  }
+  if (category) {
+    where.categories = { some: { category: { displayName: { equals: category, mode: 'insensitive' } } } };
   }
 
   // Filter by rating
@@ -74,6 +79,7 @@ export async function searchCatalogItems(
   const results = await prisma.catalogItem.findMany({
     where,
     include: {
+      location: { select: { name: true } },
       place: {
         select: {
           ratingValue: true,
@@ -142,6 +148,7 @@ export async function getCatalogItemById(id: string): Promise<CatalogItemDetailD
   const item = await prisma.catalogItem.findUnique({
     where: { id },
     include: {
+      location: { select: { name: true } },
       place: {
         select: {
           ratingValue: true,

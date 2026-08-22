@@ -1,15 +1,17 @@
 import { Router } from 'express';
 import { z } from 'zod';
 import { requireAuth } from '../../middleware/requireAuth';
-import { validate, validateParams } from '../../middleware/validate';import { AddStopSchema, ReorderStopsSchema, UpdateStopSchema } from './stops.schema';
+import { validate, validateParams } from '../../middleware/validate';
+import { AddStopSchema, ReorderStopsSchema, UpdateStopSchema } from './stops.schema';
 import {
   addStopController,
   removeStopController,
+  listStopsController,
   reorderStopsController,
   updateStopController,
 } from './stops.controller';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 router.use(requireAuth);
 
@@ -19,6 +21,8 @@ const stopParams = z.object({
 });
 
 const tripParams = z.object({ tripId: z.string().uuid('tripId must be a valid UUID') });
+
+router.get('/', validateParams(tripParams), listStopsController);
 
 /**
  * POST /api/v1/trips/:tripId/stops

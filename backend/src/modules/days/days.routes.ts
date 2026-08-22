@@ -4,7 +4,7 @@ import { requireAuth } from '../../middleware/requireAuth';
 import { validateParams } from '../../middleware/validate';
 import { getTripDaysController } from './days.controller';
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 router.use(requireAuth);
 

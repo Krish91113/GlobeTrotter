@@ -166,12 +166,18 @@ export class BudgetService {
     await this.assertTripOwnership(tripId, userId);
 
     const [category, currency] = await Promise.all([
-      prisma.expenseCategory.findUnique({
+      data.expenseCategoryId ? prisma.expenseCategory.findUnique({
         where: { id: data.expenseCategoryId },
         select: { id: true },
+      }) : prisma.expenseCategory.findFirst({
+        where: { OR: [{ code: { contains: data.category, mode: 'insensitive' } }, { displayName: { contains: data.category, mode: 'insensitive' } }] },
+        select: { id: true },
       }),
-      prisma.currency.findUnique({
+      data.currencyId ? prisma.currency.findUnique({
         where: { id: data.currencyId },
+        select: { id: true },
+      }) : prisma.currency.findFirst({
+        where: data.currency ? { isoCode: data.currency } : { trips: { some: { id: tripId } } },
         select: { id: true },
       }),
     ]);
@@ -185,9 +191,9 @@ export class BudgetService {
     const created = await prisma.expense.create({
       data: {
         tripId,
-        expenseCategoryId: data.expenseCategoryId,
+        expenseCategoryId: category.id,
         amount: new Prisma.Decimal(data.amount),
-        currencyId: data.currencyId,
+        currencyId: currency.id,
         expenseDate: new Date(`${data.expenseDate}T00:00:00.000Z`),
         description: data.description,
         isEstimate: data.isEstimate,
@@ -257,6 +263,19 @@ export class BudgetService {
     });
 
     return toExpenseDto(updated);
+  }
+
+  async listExpenses(tripId: string, userId: string): Promise<ExpenseDto[]> {
+    await this.assertTripOwnership(tripId, userId);
+    const expenses = await prisma.expense.findMany({
+      where: { tripId },
+      include: {
+        expenseCategory: { select: { displayName: true } },
+        currency: { select: { isoCode: true } },
+      },
+      orderBy: { expenseDate: 'desc' },
+    });
+    return expenses.map(toExpenseDto);
   }
 
   async deleteExpense(tripId: string, expenseId: string, userId: string): Promise<void> {

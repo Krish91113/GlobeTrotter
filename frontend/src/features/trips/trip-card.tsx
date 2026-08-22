@@ -71,8 +71,9 @@ export function TripCard({ trip, variant = "grid" }: TripCardProps) {
           <span className={cn("block", isList ? "h-40 sm:h-full" : "aspect-[16/10]")}>
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
-              src={trip.coverImage}
+              src={trip.coverImage || "/images/hero.jpg"}
               alt={trip.name}
+              onError={(event) => { event.currentTarget.src = "/images/hero.jpg"; }}
               loading="lazy"
               className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
             />

@@ -1,93 +1,64 @@
 import type { Request, Response, NextFunction } from 'express';
-import {
-  createTrip,
-  deleteTrip,
-  getTrip,
-  listTrips,
-  updateTrip,
-} from './trips.service';
-import type { CreateTripInput, ListTripsQuery, UpdateTripInput } from './trips.schema';
+import { tripsService } from './trips.service';
+import { CreateTripSchema, UpdateTripSchema, TripFiltersSchema } from './trips.schema';
+import { ok } from '../../lib/apiResponse';
+import { ValidationError } from '../../errors/AppError';
 
-/**
- * POST /api/v1/trips
- */
-export async function createTripController(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  try {
-    const trip = await createTrip(req.user!.id, req.body as CreateTripInput);
-    res.status(201).json({ trip });
-  } catch (error) {
-    next(error);
+export class TripsController {
+  async listTrips(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const parsed = TripFiltersSchema.safeParse(req.query);
+      const status = parsed.success ? parsed.data.status : undefined;
+      const trips = await tripsService.listTrips(req.user!.userId, status);
+      ok(res, trips);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async getTrip(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const trip = await tripsService.getTrip(String(req.params.tripId), req.user!.userId);
+      ok(res, trip);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async createTrip(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const parsed = CreateTripSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new ValidationError('Create trip validation failed');
+      }
+      const trip = await tripsService.createTrip(parsed.data, req.user!.userId);
+      ok(res, trip, 201);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async updateTrip(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      const parsed = UpdateTripSchema.safeParse(req.body);
+      if (!parsed.success) {
+        throw new ValidationError('Update trip validation failed');
+      }
+      const trip = await tripsService.updateTrip(String(req.params.tripId), parsed.data, req.user!.userId);
+      ok(res, trip);
+    } catch (err) {
+      next(err);
+    }
+  }
+
+  async deleteTrip(req: Request, res: Response, next: NextFunction): Promise<void> {
+    try {
+      await tripsService.deleteTrip(String(req.params.tripId), req.user!.userId);
+      ok(res, {}, 204);
+    } catch (err) {
+      next(err);
+    }
   }
 }
 
-/**
- * GET /api/v1/trips
- */
-export async function listTripsController(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  try {
-    const result = await listTrips(req.user!.id, req.query as unknown as ListTripsQuery);
-    res.status(200).json(result);
-  } catch (error) {
-    next(error);
-  }
-}
-
-/**
- * GET /api/v1/trips/:tripId
- */
-export async function getTripController(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  try {
-    const trip = await getTrip(req.params.tripId as string, req.user!.id);
-    res.status(200).json({ trip });
-  } catch (error) {
-    next(error);
-  }
-}
-
-/**
- * PATCH /api/v1/trips/:tripId
- */
-export async function updateTripController(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  try {
-    const trip = await updateTrip(
-      req.params.tripId as string,
-      req.user!.id,
-      req.body as UpdateTripInput
-    );
-    res.status(200).json({ trip });
-  } catch (error) {
-    next(error);
-  }
-}
-
-/**
- * DELETE /api/v1/trips/:tripId
- */
-export async function deleteTripController(
-  req: Request,
-  res: Response,
-  next: NextFunction
-): Promise<void> {
-  try {
-    const result = await deleteTrip(req.params.tripId as string, req.user!.id);
-    res.status(200).json({ message: 'Trip cancelled successfully', ...result });
-  } catch (error) {
-    next(error);
-  }
-}
+export const tripsController = new TripsController();

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { User, Settings, Save, LogOut, CheckCircle2, Shield } from "lucide-react";
 import { useCurrentUser, useLogout } from "@/features/auth/hooks/use-auth";
 import { useProfile, useUpdateProfile } from "@/hooks/queries";
@@ -36,6 +36,13 @@ export default function ProfilePage() {
 
   const [displayName, setDisplayName] = useState(authUser?.displayName || "Traveler");
   const [currency, setCurrency] = useState("EUR");
+
+  useEffect(() => {
+    if (!profile) return;
+    setDisplayName(profile.name);
+    setCurrency(profile.currency);
+    setPreferences(profile.preferences);
+  }, [profile]);
 
   const handleSave = () => {
     updateProfile.mutate(

@@ -81,6 +81,19 @@ export async function apiClient<T>(
     );
   }
 
+  // Access tokens are intentionally short-lived. Refresh once using the
+  // HTTP-only refresh cookie, then replay the original request transparently.
+  if (response.status === 401 && !path.startsWith("/auth/")) {
+    const refreshResponse = await fetch(`${baseUrl}/auth/refresh`, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      credentials: "include",
+    });
+    if (refreshResponse.ok) {
+      response = await fetch(url, config);
+    }
+  }
+
   // Handle 204 No Content
   if (response.status === 204) {
     return {} as T;

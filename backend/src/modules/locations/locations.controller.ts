@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import { searchLocations, getLocationById } from './locations.service';
+import { ok } from '../../lib/apiResponse';
 
 /**
  * GET /locations/search
@@ -10,8 +11,8 @@ export async function searchLocationsController(
   next: NextFunction
 ): Promise<void> {
   try {
-    const result = await searchLocations(req.query as any);
-    res.status(200).json(result);
+    const result = await searchLocations(res.locals.validatedQuery);
+    ok(res, result);
   } catch (error) {
     next(error);
   }
@@ -27,7 +28,7 @@ export async function getLocationByIdController(
 ): Promise<void> {
   try {
     const location = await getLocationById(req.params.id as string);
-    res.status(200).json({ location });
+    ok(res, location);
   } catch (error) {
     next(error);
   }

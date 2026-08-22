@@ -4,8 +4,8 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
-    "start": "next start",
+    "build": "cross-env NEXT_DIST_DIR=.next-build next build",
+    "start": "cross-env NEXT_DIST_DIR=.next-build next start",
     "lint": "next lint"
   },
   "dependencies": {
@@ -62,6 +62,7 @@
     "@types/node": "^22.16.5",
     "@types/react": "^19.2.0",
     "@types/react-dom": "^19.2.0",
+    "cross-env": "^7.0.3",
     "eslint": "^9.32.0",
     "eslint-config-next": "^15.3.3",
     "tailwindcss": "^4.2.1",

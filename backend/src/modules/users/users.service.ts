@@ -86,6 +86,8 @@ export async function getPreferences(userId: string): Promise<PreferencesDto> {
       theme: 'light',
       notificationsEnabled: true,
       emailNotifications: true,
+      cultureWeight: 80, foodWeight: 80, adventureWeight: 50,
+      natureWeight: 50, relaxationWeight: 50, travelPace: 'moderate', budgetLevel: 'moderate',
     },
     update: {},
     select: {
@@ -94,6 +96,8 @@ export async function getPreferences(userId: string): Promise<PreferencesDto> {
       theme: true,
       notificationsEnabled: true,
       emailNotifications: true,
+      cultureWeight: true, foodWeight: true, adventureWeight: true,
+      natureWeight: true, relaxationWeight: true, travelPace: true, budgetLevel: true,
     },
   });
 
@@ -137,6 +141,13 @@ export async function upsertPreferences(
       theme: data.theme ?? 'light',
       notificationsEnabled: data.notificationsEnabled ?? true,
       emailNotifications: data.emailNotifications ?? true,
+      cultureWeight: data.cultureWeight ?? 80,
+      foodWeight: data.foodWeight ?? 80,
+      adventureWeight: data.adventureWeight ?? 50,
+      natureWeight: data.natureWeight ?? 50,
+      relaxationWeight: data.relaxationWeight ?? 50,
+      travelPace: data.travelPace ?? 'moderate',
+      budgetLevel: data.budgetLevel ?? 'moderate',
     },
     update: {
       ...(data.preferredCurrency !== undefined && { preferredCurrency: data.preferredCurrency }),
@@ -144,6 +155,13 @@ export async function upsertPreferences(
       ...(data.theme !== undefined && { theme: data.theme }),
       ...(data.notificationsEnabled !== undefined && { notificationsEnabled: data.notificationsEnabled }),
       ...(data.emailNotifications !== undefined && { emailNotifications: data.emailNotifications }),
+      ...(data.cultureWeight !== undefined && { cultureWeight: data.cultureWeight }),
+      ...(data.foodWeight !== undefined && { foodWeight: data.foodWeight }),
+      ...(data.adventureWeight !== undefined && { adventureWeight: data.adventureWeight }),
+      ...(data.natureWeight !== undefined && { natureWeight: data.natureWeight }),
+      ...(data.relaxationWeight !== undefined && { relaxationWeight: data.relaxationWeight }),
+      ...(data.travelPace !== undefined && { travelPace: data.travelPace }),
+      ...(data.budgetLevel !== undefined && { budgetLevel: data.budgetLevel }),
     },
     select: {
       preferredCurrency: true,
@@ -151,6 +169,8 @@ export async function upsertPreferences(
       theme: true,
       notificationsEnabled: true,
       emailNotifications: true,
+      cultureWeight: true, foodWeight: true, adventureWeight: true,
+      natureWeight: true, relaxationWeight: true, travelPace: true, budgetLevel: true,
     },
   });
 

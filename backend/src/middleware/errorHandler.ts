@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { AppError as ServiceAppError } from '../lib/errors';
-import { AppError as DomainAppError } from '../errors/AppError';
+import { AppError as LegacyAppError } from '../lib/errors';
+import { AppError } from '../errors/AppError';
 import { logger } from '../lib/logger';
 
 /**
@@ -18,13 +18,19 @@ export const errorHandler = (
     return;
   }
 
-  const requestId = String(req.id ?? '');
-
-  // Handle known AppError instances thrown by services/middleware
-  if (err instanceof ServiceAppError) {
+  // Handle known AppError instances
+  if (err instanceof AppError || err instanceof LegacyAppError) {
+    const statusCode =
+      'statusCode' in err ? err.statusCode : err.httpStatus;
+    const fieldErrors =
+      'fieldErrors' in err ? err.fieldErrors : undefined;
+    const details =
+      'details' in err && err.details && typeof err.details === 'object'
+        ? err.details
+        : undefined;
     logger.warn(
       {
-        requestId,
+        requestId: req.id,
         code: err.code,
         path: req.path,
         method: req.method,
@@ -32,41 +38,15 @@ export const errorHandler = (
       err.message
     );
 
-    res.status(err.httpStatus).json({
+    res.status(statusCode).json({
       success: false,
       error: {
         code: err.code,
         message: err.message,
-        ...(err.details && typeof err.details === 'object' && 'fieldErrors' in err.details
-          ? { fieldErrors: (err.details as { fieldErrors: Record<string, string[]> }).fieldErrors }
-          : {}),
+        ...(fieldErrors && { fieldErrors }),
+        ...(details && { details }),
       },
-      requestId,
-    });
-    return;
-  }
-
-  if (err instanceof DomainAppError) {
-    logger.warn(
-      {
-        requestId,
-        code: err.code,
-        path: req.path,
-        method: req.method,
-      },
-      err.message
-    );
-
-    res.status(err.statusCode).json({
-      success: false,
-      error: {
-        code: err.code,
-        message: err.message,
-        ...(err.fieldErrors && Object.keys(err.fieldErrors).length > 0
-          ? { fieldErrors: err.fieldErrors }
-          : {}),
-      },
-      requestId: err.requestId ?? requestId,
+      requestId: String(req.id),
     });
     return;
   }
@@ -74,7 +54,7 @@ export const errorHandler = (
   // Handle unknown errors
   logger.error(
     {
-      requestId,
+      requestId: req.id,
       path: req.path,
       method: req.method,
       error: {
@@ -92,6 +72,6 @@ export const errorHandler = (
       code: 'INTERNAL_ERROR',
       message: 'An unexpected error occurred.',
     },
-    requestId,
+    requestId: String(req.id),
   });
 };

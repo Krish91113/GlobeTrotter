@@ -1,20 +1,18 @@
-import 'dotenv/config';
 import { z } from 'zod';
+import 'dotenv/config';
 
 const envSchema = z.object({
-  DATABASE_URL: z.string().url('DATABASE_URL must be a valid connection string'),
-  PORT: z.coerce.number().int().positive().default(3001),
+  DATABASE_URL: z.string().url(),
+  COOKIE_SECRET: z.string().min(32, 'COOKIE_SECRET must be at least 32 characters').optional().default('default-cookie-secret-string-at-least-32-chars-long'),
+  PORT: z.coerce.number().int().positive().default(5000),
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
   JWT_EXPIRES_IN: z.string().default('15m'),
-  SESSION_MAX_AGE: z.string().regex(/^\d+[smhdwy]$/, 'SESSION_MAX_AGE must look like "15m", "7d"...').default('7d'),
-  COOKIE_SECRET: z
-    .string()
-    .min(32, 'COOKIE_SECRET must be at least 32 characters')
-    .default('globetrotter_dev_cookie_secret_change_me_32ch'),
-  BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
-  CORS_ORIGIN: z.string().url().default('http://localhost:3000'),
-  APP_BASE_URL: z.string().url().default('http://localhost:5000'),
+  SESSION_MAX_AGE: z.string().default('7d'),
+  SESSION_SECRET: z.string().min(16, 'SESSION_SECRET must be at least 16 characters').optional().default('default-session-secret-at-least-32-chars'),
+  CORS_ORIGIN: z.string().default('http://localhost:3000'),
+  APP_BASE_URL: z.string().url().default('http://localhost:3000'),
+  BCRYPT_ROUNDS: z.string().default('12').pipe(z.coerce.number()),
 });
 
 type Env = z.infer<typeof envSchema>;

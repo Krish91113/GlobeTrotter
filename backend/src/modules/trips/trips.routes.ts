@@ -1,54 +1,22 @@
 import { Router } from 'express';
-import { z } from 'zod';
+import { tripsController } from './trips.controller';
 import { requireAuth } from '../../middleware/requireAuth';
-import { validate, validateQuery, validateParams } from '../../middleware/validate';
-import {
-  CreateTripSchema,
-  ListTripsQuerySchema,
-  UpdateTripSchema,
-} from './trips.schema';
-import {
-  createTripController,
-  deleteTripController,
-  getTripController,
-  listTripsController,
-  updateTripController,
-} from './trips.controller';
+import stopsRoutes from '../stops/stops.routes';
+import daysRoutes from '../days/days.routes';
 
 const router = Router();
 
 router.use(requireAuth);
 
-const tripIdParams = z.object({ tripId: z.string().uuid('tripId must be a valid UUID') });
+// Nested child routes
+router.use('/:tripId/stops', stopsRoutes);
+router.use('/:tripId/days', daysRoutes);
 
-/**
- * POST /api/v1/trips
- * Create a new trip (creates Trip + optional budget + one TripDay per date)
- */
-router.post('/', validate(CreateTripSchema), createTripController);
-
-/**
- * GET /api/v1/trips
- * List the authenticated user's trips with filtering, sorting, cursor pagination
- */
-router.get('/', validateQuery(ListTripsQuerySchema), listTripsController);
-
-/**
- * GET /api/v1/trips/:tripId
- * Full trip detail including stops and days
- */
-router.get('/:tripId', validateParams(tripIdParams), getTripController);
-
-/**
- * PATCH /api/v1/trips/:tripId
- * Update trip fields; regenerates days when the date range changes
- */
-router.patch('/:tripId', validateParams(tripIdParams), validate(UpdateTripSchema), updateTripController);
-
-/**
- * DELETE /api/v1/trips/:tripId
- * Soft-delete: marks the trip as cancelled
- */
-router.delete('/:tripId', validateParams(tripIdParams), deleteTripController);
+// Trip CRUD routes
+router.get('/', (req, res, next) => tripsController.listTrips(req, res, next));
+router.post('/', (req, res, next) => tripsController.createTrip(req, res, next));
+router.get('/:tripId', (req, res, next) => tripsController.getTrip(req, res, next));
+router.patch('/:tripId', (req, res, next) => tripsController.updateTrip(req, res, next));
+router.delete('/:tripId', (req, res, next) => tripsController.deleteTrip(req, res, next));
 
 export default router;

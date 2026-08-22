@@ -41,7 +41,10 @@ export const validateQuery = (schema: ZodSchema) => {
       return;
     }
 
-    req.query = result.data as typeof req.query;
+    // Express 5 exposes `req.query` through a read-only getter. Assigning the
+    // parsed value back to it throws a TypeError and turns valid requests into
+    // 500 responses. Keep the validated/coerced value in res.locals instead.
+    res.locals.validatedQuery = result.data;
     next();
   };
 };

@@ -14,14 +14,16 @@ export const updateBudgetSchema = z.object({
 export type UpdateBudgetRequest = z.infer<typeof updateBudgetSchema>;
 
 export const addExpenseSchema = z.object({
-  expenseCategoryId: z.string().uuid('Invalid expense category id'),
+  expenseCategoryId: z.string().uuid('Invalid expense category id').optional(),
+  category: z.string().min(1).max(100).optional(),
   amount: decimalString,
-  currencyId: z.string().uuid('Invalid currency id'),
+  currencyId: z.string().uuid('Invalid currency id').optional(),
+  currency: z.string().length(3).toUpperCase().optional(),
   expenseDate: isoDateString,
   description: z.string().max(200, 'Description must be at most 200 characters').optional(),
   isEstimate: z.boolean().default(true),
   itineraryItemId: z.string().uuid('Invalid itinerary item id').optional(),
-});
+}).refine(data => data.expenseCategoryId || data.category, { message: 'Expense category is required', path: ['category'] });
 
 export type AddExpenseRequest = z.infer<typeof addExpenseSchema>;
 

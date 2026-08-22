@@ -78,8 +78,9 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
         {/* Cover */}
         <div className="mt-8 overflow-hidden rounded-2xl">
           <img
-            src={trip.coverImage}
+            src={trip.coverImage || "/images/hero.jpg"}
             alt={`${trip.name} cover`}
+            onError={(event) => { event.currentTarget.src = "/images/hero.jpg"; }}
             className="h-56 w-full object-cover sm:h-80"
           />
         </div>

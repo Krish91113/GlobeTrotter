@@ -8,7 +8,7 @@ const isoDateString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Must be a date st
 
 export const generateSchema = z.object({
   tripId: z.string().uuid('Invalid trip id'),
-  cityId: z.string().uuid('Invalid city id'),
+  cityId: z.string().uuid('Invalid city id').optional(),
   date: isoDateString.optional(),
   limit: z.coerce.number().int().min(1).max(20).default(10),
 });

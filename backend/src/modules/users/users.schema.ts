@@ -51,6 +51,13 @@ export const UpsertPreferencesSchema = z.object({
   emailNotifications: z
     .boolean()
     .optional(),
+  cultureWeight: z.number().int().min(0).max(100).optional(),
+  foodWeight: z.number().int().min(0).max(100).optional(),
+  adventureWeight: z.number().int().min(0).max(100).optional(),
+  natureWeight: z.number().int().min(0).max(100).optional(),
+  relaxationWeight: z.number().int().min(0).max(100).optional(),
+  travelPace: z.enum(['slow', 'moderate', 'fast']).optional(),
+  budgetLevel: z.enum(['budget', 'moderate', 'luxury']).optional(),
 });
 
 export type UpdateProfileInput = z.infer<typeof UpdateProfileSchema>;

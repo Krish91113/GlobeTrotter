@@ -4,22 +4,18 @@ import {
   signAccessToken,
   generateRefreshToken,
   hashRefreshToken,
-  verifyAccessToken,
 } from '../../lib/jwt';
 import {
-  ValidationError,
   AuthInvalidError,
   ConflictError,
   NotFoundError,
 } from '../../errors/AppError';
-import { RegisterRequest, LoginRequest, AuthResponse } from './auth.schema';
-import { getEnv } from '../../config/env';
-
-const env = getEnv();
+import type { RegisterRequest, LoginRequest, AuthResponse } from './auth.schema';
+import { env } from '../../config/env';
 
 function parseDurationToMs(duration: string): number {
   const match = duration.match(/^(\d+)([smhdwy])$/);
-  if (!match) throw new Error(`Invalid duration format: ${duration}`);
+  if (!match) return 7 * 24 * 60 * 60 * 1000;
 
   const [, value, unit] = match;
   const num = parseInt(value, 10);
@@ -44,23 +40,18 @@ export interface AuthTokens {
 
 export class AuthService {
   async register(data: RegisterRequest, ipAddress?: string, userAgent?: string): Promise<AuthTokens> {
-    // Check if user already exists
     const existingUser = await authRepository.findUserByEmail(data.email);
     if (existingUser) {
-      throw new ConflictError('Email already registered', undefined);
+      throw new ConflictError('Email already registered');
     }
 
-    // Hash password
     const passwordHash = await hashPassword(data.password);
-
-    // Create user
     const user = await authRepository.createUser(
       data.email,
       passwordHash,
       data.displayName
     );
 
-    // Generate tokens
     const accessToken = signAccessToken({
       userId: user.id,
       email: user.email,
@@ -69,7 +60,6 @@ export class AuthService {
     const refreshToken = generateRefreshToken();
     const refreshTokenHash = hashRefreshToken(refreshToken);
 
-    // Create session
     const sessionMaxAgeMs = parseDurationToMs(env.SESSION_MAX_AGE);
     const expiresAt = new Date(Date.now() + sessionMaxAgeMs);
 
@@ -94,22 +84,18 @@ export class AuthService {
   }
 
   async login(data: LoginRequest, ipAddress?: string, userAgent?: string): Promise<AuthTokens> {
-    // Find user
     const user = await authRepository.findUserByEmail(data.email);
     if (!user || !user.passwordHash) {
-      throw new AuthInvalidError('Invalid email or password', undefined);
+      throw new AuthInvalidError('Invalid email or password');
     }
 
-    // Verify password
     const isValid = await verifyPassword(data.password, user.passwordHash);
     if (!isValid) {
-      throw new AuthInvalidError('Invalid email or password', undefined);
+      throw new AuthInvalidError('Invalid email or password');
     }
 
-    // Update last login
     await authRepository.updateUserLastLogin(user.id);
 
-    // Generate tokens
     const accessToken = signAccessToken({
       userId: user.id,
       email: user.email,
@@ -118,7 +104,6 @@ export class AuthService {
     const refreshToken = generateRefreshToken();
     const refreshTokenHash = hashRefreshToken(refreshToken);
 
-    // Create session
     const sessionMaxAgeMs = parseDurationToMs(env.SESSION_MAX_AGE);
     const expiresAt = new Date(Date.now() + sessionMaxAgeMs);
 
@@ -147,32 +132,27 @@ export class AuthService {
     try {
       await authRepository.deleteSession(refreshTokenHash);
     } catch {
-      // Session already deleted or doesn't exist, ignore
+      // Ignore if session already deleted
     }
   }
 
   async refresh(refreshToken: string, ipAddress?: string, userAgent?: string): Promise<AuthTokens> {
     const refreshTokenHash = hashRefreshToken(refreshToken);
-
-    // Find session
     const session = await authRepository.findSessionByTokenHash(refreshTokenHash);
     if (!session || session.expiresAt < new Date()) {
-      throw new AuthInvalidError('Invalid or expired refresh token', undefined);
+      throw new AuthInvalidError('Invalid or expired refresh token');
     }
 
-    // Find user
     const user = await authRepository.findUserById(session.userId);
     if (!user) {
-      throw new NotFoundError('User not found', undefined);
+      throw new NotFoundError('User not found');
     }
 
-    // Generate new access token
     const accessToken = signAccessToken({
       userId: user.id,
       email: user.email,
     });
 
-    // Rotate refresh token (delete old, create new)
     await authRepository.deleteSession(refreshTokenHash);
 
     const newRefreshToken = generateRefreshToken();
@@ -204,7 +184,7 @@ export class AuthService {
   async me(userId: string): Promise<AuthResponse> {
     const user = await authRepository.findUserById(userId);
     if (!user) {
-      throw new NotFoundError('User not found', undefined);
+      throw new NotFoundError('User not found');
     }
 
     return {

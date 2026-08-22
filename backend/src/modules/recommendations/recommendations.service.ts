@@ -49,8 +49,15 @@ export class RecommendationsService {
   ): Promise<{ recommendations: RecommendationDto[]; insights: InsightsDto }> {
     await this.assertTripOwnership(data.tripId, userId);
 
+    const firstStop = data.cityId ? null : await prisma.tripStop.findFirst({
+      where: { tripId: data.tripId }, orderBy: { sequenceNo: 'asc' }, select: { locationId: true },
+    });
+    const cityId = data.cityId ?? firstStop?.locationId;
+    if (!cityId) {
+      return { recommendations: [], insights: { budgetStatus: 'no_budget', remainingBudget: null, currency: null } };
+    }
     const city = await prisma.location.findUnique({
-      where: { id: data.cityId },
+      where: { id: cityId },
       select: { name: true },
     });
     if (!city) {
@@ -109,7 +116,7 @@ export class RecommendationsService {
 
     let candidates = await prisma.catalogItem.findMany({
       where: {
-        locationId: data.cityId,
+        locationId: cityId,
         status: { code: 'active' },
         id: { notIn: addedCatalogItemIds },
       },
@@ -173,7 +180,7 @@ export class RecommendationsService {
           requestText: `Generate up to ${data.limit} activity recommendations for ${city.name}.`,
           structuredIntent: {
             type: 'activity_recommendations',
-            cityId: data.cityId,
+            cityId,
             date: data.date ?? null,
             limit: data.limit,
           },

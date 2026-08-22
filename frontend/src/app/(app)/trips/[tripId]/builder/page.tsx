@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { Clock, GripVertical, MapPin, Plus, Star, Trash2, AlertTriangle, X } from "lucide-react";
-import { useTripDays, useTripStops, useRecommendations, useDeleteActivity, useActivities } from "@/hooks/queries";
+import { useTripDays, useTripStops, useRecommendations, useDeleteActivity, useActivities, useAddActivity } from "@/hooks/queries";
 import { cn } from "@/lib/utils";
 import type { TripDay, ItineraryItem, Activity } from "@/types";
 
@@ -17,6 +17,19 @@ export default function ItineraryBuilderPage() {
   const [mobileTab, setMobileTab] = useState<"stops" | "itinerary" | "discover">("itinerary");
 
   const activeDay = days?.find((d) => d.id === activeDayId) ?? days?.[0];
+  const addActivity = useAddActivity(activeDay?.id ?? "", tripId);
+
+  const addCatalogActivity = (activityId: string, durationMinutes = 120, estimatedCost?: number) => {
+    if (!activeDay) return;
+    const start = new Date(`${activeDay.date}T09:00:00.000Z`);
+    const end = new Date(start.getTime() + durationMinutes * 60_000);
+    addActivity.mutate({
+      activityId,
+      startTime: start.toISOString(),
+      endTime: end.toISOString(),
+      estimatedCost,
+    });
+  };
 
   if (daysLoading) {
     return (
@@ -121,7 +134,7 @@ export default function ItineraryBuilderPage() {
                         </span>
                       )}
                       <p className="text-xs text-[#64748B] italic">&ldquo;{rec.reason}&rdquo;</p>
-                      <button className="mt-1 flex items-center gap-1 text-sm font-semibold text-primary hover:underline">
+                      <button onClick={() => addCatalogActivity(rec.activityId, rec.durationMinutes, rec.estimatedCost)} disabled={addActivity.isPending} className="mt-1 flex items-center gap-1 text-sm font-semibold text-primary hover:underline disabled:opacity-50">
                         <Plus className="size-3.5" /> Add
                       </button>
                     </div>
@@ -143,7 +156,7 @@ export default function ItineraryBuilderPage() {
                       <p className="truncate text-sm font-semibold text-[#0F172A]">{act.name}</p>
                       <p className="text-xs text-[#64748B]">{act.city} • €{act.estimatedCost} • {act.durationMinutes}min</p>
                     </div>
-                    <button className="shrink-0 rounded-full p-1.5 text-[#64748B] hover:bg-[#F1F5F9] hover:text-primary">
+                    <button onClick={() => addCatalogActivity(act.id, act.durationMinutes, act.estimatedCost)} disabled={addActivity.isPending} className="shrink-0 rounded-full p-1.5 text-[#64748B] hover:bg-[#F1F5F9] hover:text-primary disabled:opacity-50" aria-label={`Add ${act.name} to ${activeDay?.city ?? "trip"}`}>
                       <Plus className="size-4" />
                     </button>
                   </li>

@@ -10,3 +10,5 @@ export const requestId = (req: Request, res: Response, next: NextFunction): void
   res.setHeader('X-Request-Id', req.id as string);
   next();
 };
+
+export const requestIdMiddleware = requestId;

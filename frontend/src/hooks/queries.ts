@@ -151,7 +151,7 @@ export function useDeleteStop(tripId: string) {
 export function useAddActivity(dayId: string, tripId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: AddActivityInput) => itineraryService.addActivity(dayId, input),
+    mutationFn: (input: AddActivityInput) => itineraryService.addActivity(tripId, dayId, input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.trips.days(tripId) });
       toast.success("Activity added");
@@ -163,7 +163,7 @@ export function useAddActivity(dayId: string, tripId: string) {
 export function useDeleteActivity(dayId: string, tripId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (itemId: string) => itineraryService.deleteActivity(dayId, itemId),
+    mutationFn: (itemId: string) => itineraryService.deleteActivity(tripId, dayId, itemId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.trips.days(tripId) });
       toast.success("Activity removed");
@@ -230,7 +230,7 @@ export function useAddExpense(tripId: string) {
 export function useDeleteExpense(tripId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (expenseId: string) => budgetService.deleteExpense(expenseId),
+    mutationFn: (expenseId: string) => budgetService.deleteExpense(tripId, expenseId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.trips.budget(tripId) });
       qc.invalidateQueries({ queryKey: queryKeys.trips.expenses(tripId) });

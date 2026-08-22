@@ -4,7 +4,7 @@ import { Clock, MapPin, Plus, Star } from "lucide-react";
 import { Money, RatingBadge } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/skeleton";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useActivities } from "@/hooks/queries";
 import type { Location } from "@/types";

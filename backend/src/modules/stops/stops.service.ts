@@ -35,6 +35,16 @@ async function getStopOrThrow(tripId: string, stopId: string) {
   return stop;
 }
 
+export async function listStops(tripId: string, userId: string): Promise<StopDto[]> {
+  await getOwnedTripOrThrow(tripId, userId);
+  const stops = await prisma.tripStop.findMany({
+    where: { tripId },
+    include: { location: { select: { name: true, country: { select: { iso2Code: true, displayName: true } } } } },
+    orderBy: { sequenceNo: 'asc' },
+  });
+  return stops.map(toStopDto);
+}
+
 function assertDatesWithinTrip(
   tripStart: Date,
   tripEnd: Date,
