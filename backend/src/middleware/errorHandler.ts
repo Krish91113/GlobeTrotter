@@ -1,5 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { AppError } from "../lib/errors";
+import { AppError as LegacyAppError } from "../errors/AppError";
 import { logger } from "../lib/logger";
 
 /**
@@ -18,7 +19,12 @@ export const errorHandler = (
   }
 
   // Handle known AppError instances
-  if (err instanceof AppError) {
+  if (err instanceof AppError || err instanceof LegacyAppError) {
+    const httpStatus =
+      err instanceof AppError ? err.httpStatus : err.statusCode;
+    const details =
+      err instanceof AppError ? err.details : err.fieldErrors;
+
     logger.warn(
       {
         requestId: req.id,
@@ -29,15 +35,15 @@ export const errorHandler = (
       err.message,
     );
 
-    const details =
-      err.details && typeof err.details === "object" ? err.details : undefined;
+    const errorDetails =
+      details && typeof details === "object" ? details : undefined;
 
-    res.status(err.httpStatus).json({
+    res.status(httpStatus).json({
       error: {
         code: err.code,
         message: err.message,
         requestId: String(req.id),
-        ...(details && { details }),
+        ...(errorDetails && { details: errorDetails }),
       },
     });
     return;

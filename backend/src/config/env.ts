@@ -5,7 +5,7 @@ const envSchema = z.object({
   COOKIE_SECRET: z
     .string()
     .min(32, "COOKIE_SECRET must be at least 32 characters"),
-  PORT: z.coerce.number().int().positive().default(3001),
+  PORT: z.coerce.number().int().positive().default(5000),
   NODE_ENV: z
     .enum(["development", "production", "test"])
     .default("development"),
@@ -16,8 +16,8 @@ const envSchema = z.object({
     .string()
     .min(32, "SESSION_SECRET must be at least 32 characters"),
   CORS_ORIGIN: z.string().default("http://localhost:3000"),
-  APP_BASE_URL: z.string().url().default("http://localhost:3001"),
-  RECOMMENDATION_ENGINE_URL: z.string().url().default("http://localhost:8000"),
+  APP_BASE_URL: z.string().url().default("http://localhost:5000"),
+  RECOMMENDATION_ENGINE_URL: z.string().url().default("http://localhost:8080"),
   BCRYPT_ROUNDS: z.string().default("12").pipe(z.coerce.number()),
 });
 
