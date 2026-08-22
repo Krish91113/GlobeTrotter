@@ -1,7 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
-
-// Get a free hosted Postgres database in seconds: `npx create-db`
+// GlobeTrotter Prisma Schema
+// Learn more about it: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client"
@@ -10,4 +8,1061 @@ generator client {
 
 datasource db {
   provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+// 1. AUTHENTICATION SCHEMA
+// ============================================================================
+
+model User {
+  id                  String                  @id @default(uuid())
+  email               String                  @unique @db.Citext
+  passwordHash        String?
+  displayName         String
+  profileImageUri     String?
+  preferredLocale     String                  @default("en-US")
+  isActive            Boolean                 @default(true)
+  isVerified          Boolean                 @default(false)
+  lastLoginAt         DateTime?
+  createdAt           DateTime                @default(now())
+  updatedAt           DateTime                @updatedAt
+  deletedAt           DateTime?
+
+  // Relations
+  authProviders       AuthProvider[]
+  sessions            Session[]
+  passwordResetTokens PasswordResetToken[]
+  emailVerificationTokens EmailVerificationToken[]
+  preferences         UserPreferences?
+  trips               Trip[]
+  tripMembers         TripMember[]
+  shareLinks          TripShareLink[]
+  aiRequests          AiRequest[]
+  aiPlanDrafts        AiPlanDraft[]
+  aiRecommendations   AiRecommendation[]
+  aiRatings           RecommendationFeedback[]
+  userEvents          UserEvent[]
+
+  @@map("users")
+}
+
+model Session {
+  id          String    @id @default(uuid())
+  userId      String
+  tokenHash   String    @unique
+  ipAddress   String?
+  userAgent   String?
+  expiresAt   DateTime
+  createdAt   DateTime  @default(now())
+
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([tokenHash])
+  @@map("sessions")
+}
+
+model AuthProvider {
+  id                String    @id @default(uuid())
+  userId            String
+  providerType      String
+  providerSubject   String
+  providerEmail     String?
+  createdAt         DateTime  @default(now())
+
+  user              User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([providerType, providerSubject])
+  @@index([userId])
+  @@map("auth_providers")
+}
+
+model PasswordResetToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  expiresAt DateTime
+  usedAt    DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("password_reset_tokens")
+}
+
+model EmailVerificationToken {
+  id        String    @id @default(uuid())
+  userId    String
+  tokenHash String    @unique
+  newEmail  String?
+  expiresAt DateTime
+  verifiedAt DateTime?
+  createdAt DateTime  @default(now())
+
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("email_verification_tokens")
+}
+
+model UserPreferences {
+  userId              String    @id
+  preferredCurrency   String?   @db.Char(3)
+  preferredTimezone   String?
+  theme               String    @default("light")
+  notificationsEnabled Boolean  @default(true)
+  emailNotifications  Boolean   @default(true)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  user                User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("user_preferences")
+}
+
+// ============================================================================
+// 2. REFERENCE SCHEMA - Lookup Tables
+// ============================================================================
+
+model Country {
+  id            String    @id @default(uuid())
+  iso2Code      String    @unique @db.Char(2)
+  iso3Code      String    @unique @db.Char(3)
+  numericCode   String?
+  officialName  String
+  displayName   String
+  isActive      Boolean   @default(true)
+  createdAt     DateTime  @default(now())
+
+  locations     Location[]
+
+  @@map("countries")
+}
+
+model LocationType {
+  id              String    @id @default(uuid())
+  code            String    @unique
+  displayName     String
+  parentTypeId    String?
+  hierarchyLevel  Int?
+  createdAt       DateTime  @default(now())
+
+  parentType      LocationType?     @relation("ParentType", fields: [parentTypeId], references: [id])
+  childTypes      LocationType[]    @relation("ParentType")
+  locations       Location[]
+
+  @@map("location_types")
+}
+
+model Currency {
+  id          String    @id @default(uuid())
+  isoCode     String    @unique @db.Char(3)
+  numericCode String?
+  name        String
+  symbol      String?
+  minorUnit   Int       @default(2)
+  createdAt   DateTime  @default(now())
+
+  tripBudgets     TripBudget[]
+  expenses        Expense[]
+  exchangeRates   ExchangeRate[]
+  itemPrices      PriceObservation[]
+  itineraryItems  ItineraryItem[]
+  routeObservations RouteObservation[]
+
+  @@map("currencies")
+}
+
+model ItemType {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  displayName String
+  createdAt   DateTime  @default(now())
+
+  catalogItems CatalogItem[]
+
+  @@map("item_types")
+}
+
+model TransportMode {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  displayName String
+  category    String?
+  createdAt   DateTime  @default(now())
+
+  routeObservations RouteObservation[]
+
+  @@map("transport_modes")
+}
+
+model ExpenseCategory {
+  id              String    @id @default(uuid())
+  parentCategoryId String?
+  code            String    @unique
+  displayName     String
+  icon            String?
+  createdAt       DateTime  @default(now())
+
+  parentCategory  ExpenseCategory?  @relation("ParentCategory", fields: [parentCategoryId], references: [id])
+  childCategories ExpenseCategory[] @relation("ParentCategory")
+  expenses        Expense[]
+  budgetAllocations BudgetAllocation[]
+
+  @@map("expense_categories")
+}
+
+model PriceLevel {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  displayName   String
+  numericValue  Int?
+  createdAt     DateTime  @default(now())
+
+  places Place[]
+
+  @@map("price_levels")
+}
+
+model TripVisibility {
+  id           String    @id @default(uuid())
+  code         String    @unique
+  displayName  String
+  isShareable  Boolean   @default(false)
+
+  trips         Trip[]
+  shareLinks    TripShareLink[]
+
+  @@map("trip_visibility")
+}
+
+model TripStatus {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  displayName String
+
+  trips Trip[]
+
+  @@map("trip_statuses")
+}
+
+model RecordStatus {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  displayName String
+  isTerminal  Boolean   @default(false)
+
+  locations       Location[]
+  catalogItems    CatalogItem[]
+  places          Place[]
+  mediaAssets     MediaAsset[]
+  itineraryItems  ItineraryItem[]
+  aiModels        AiModel[]
+  aiPlanDrafts    AiPlanDraft[]
+  ingestionRuns   IngestionRun[]
+  externalIds     ExternalEntityIdentity[]
+  observations    SourceObservation[]
+
+  @@map("record_statuses")
+}
+
+// ============================================================================
+// 3. CATALOG SCHEMA - Geographic & Activity Data
+// ============================================================================
+
+model Location {
+  id                String    @id @default(uuid())
+  locationTypeId    String
+  parentLocationId  String?
+  countryId         String?
+  name              String
+  normalizedName    String
+  latitude          Float?
+  longitude         Float?
+  timezoneName      String?
+  population        BigInt?
+  description       String?
+  statusId          String?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  locationType      LocationType  @relation(fields: [locationTypeId], references: [id])
+  parentLocation    Location?     @relation("ParentLocation", fields: [parentLocationId], references: [id])
+  childLocations    Location[]    @relation("ParentLocation")
+  country           Country?      @relation(fields: [countryId], references: [id])
+  aliases           LocationAlias[]
+  catalogItems      CatalogItem[]
+  tripStops         TripStop[]
+  routeFrom         RouteObservation[] @relation("FromLocation")
+  routeTo           RouteObservation[] @relation("ToLocation")
+  status            RecordStatus? @relation(fields: [statusId], references: [id])
+
+  @@index([normalizedName])
+  @@index([parentLocationId])
+  @@map("locations")
+}
+
+model LocationAlias {
+  id              String    @id @default(uuid())
+  locationId      String
+  languageCode    String?
+  alias           String
+  normalizedAlias String
+  aliasType       String?
+  isPreferred     Boolean   @default(false)
+  createdAt       DateTime  @default(now())
+
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@index([locationId])
+  @@map("location_aliases")
+}
+
+model CatalogItem {
+  id                String    @id @default(uuid())
+  itemTypeId        String
+  locationId        String?
+  name              String
+  normalizedName    String
+  shortDescription  String?
+  description       String?
+  latitude          Float?
+  longitude         Float?
+  websiteUrl        String?
+  statusId          String?
+  lastVerifiedAt    DateTime?
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+
+  itemType          ItemType      @relation(fields: [itemTypeId], references: [id])
+  location          Location?     @relation(fields: [locationId], references: [id])
+  status            RecordStatus? @relation(fields: [statusId], references: [id])
+  place             Place?
+  experience        Experience?
+  categories        CatalogItemCategory[]
+  tags              CatalogItemTag[]
+  media             MediaAsset[]
+  prices            PriceObservation[]
+  itineraryItems    ItineraryItem[]
+  routeFrom         RouteObservation[] @relation("FromItem")
+  routeTo           RouteObservation[] @relation("ToItem")
+  recommendations   AiRecommendation[]
+  expenses          Expense[]
+  embeddings        EntityEmbedding[]
+
+  @@index([locationId])
+  @@index([normalizedName])
+  @@map("catalog_items")
+}
+
+model Place {
+  catalogItemId     String    @id
+  address           String?
+  phone             String?
+  email             String?
+  ratingValue       Float?
+  ratingCount       BigInt?
+  priceLevelId      String?
+  createdAt         DateTime  @default(now())
+
+  catalogItem       CatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  priceLevel        PriceLevel? @relation(fields: [priceLevelId], references: [id])
+  openingHours      OpeningHour[]
+  openingExceptions OpeningHourException[]
+  experiences       Experience[] @relation("PlaceExperiences")
+
+  @@map("places")
+}
+
+model Experience {
+  catalogItemId       String    @id
+  durationMinutes     Int?
+  minDurationMinutes  Int?
+  maxDurationMinutes  Int?
+  bookingRequired     Boolean   @default(false)
+  requiresConfirmation Boolean  @default(false)
+  minParticipants     Int?
+  maxParticipants     Int?
+  createdAt           DateTime  @default(now())
+
+  catalogItem   CatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  places        Place[]     @relation("PlaceExperiences")
+
+  @@map("experiences")
+}
+
+model Category {
+  id              String    @id @default(uuid())
+  parentCategoryId String?
+  code            String    @unique
+  displayName     String
+  icon            String?
+  createdAt       DateTime  @default(now())
+
+  parentCategory  Category? @relation("ParentCategory", fields: [parentCategoryId], references: [id])
+  childCategories Category[] @relation("ParentCategory")
+  items           CatalogItemCategory[]
+
+  @@map("categories")
+}
+
+model CatalogItemCategory {
+  catalogItemId   String
+  categoryId      String
+  confidenceScore Float?
+
+  catalogItem     CatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  category        Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  @@id([catalogItemId, categoryId])
+  @@map("catalog_item_categories")
+}
+
+model Tag {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  displayName String
+  createdAt   DateTime  @default(now())
+
+  catalogItems CatalogItemTag[]
+
+  @@map("tags")
+}
+
+model CatalogItemTag {
+  catalogItemId   String
+  tagId           String
+  confidenceScore Float?
+
+  catalogItem CatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  tag         Tag         @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([catalogItemId, tagId])
+  @@map("catalog_item_tags")
+}
+
+model MediaAsset {
+  id                String    @id @default(uuid())
+  catalogItemId     String?
+  providerId        String?
+  providerAssetId   String?
+  objectUri         String?
+  thumbnailUri      String?
+  licenseReference  String?
+  attributionText   String?
+  width             Int?
+  height            Int?
+  altText           String?
+  statusId          String?
+  createdAt         DateTime  @default(now())
+
+  catalogItem       CatalogItem?  @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  status            RecordStatus? @relation(fields: [statusId], references: [id])
+  tripCovers        Trip[]
+
+  @@index([catalogItemId])
+  @@map("media_assets")
+}
+
+model OpeningHour {
+  id          String    @id @default(uuid())
+  placeId     String
+  weekday     Int
+  opensAt     String?   // TIME as string (HH:MM:SS)
+  closesAt    String?   // TIME as string (HH:MM:SS)
+  isClosed    Boolean   @default(false)
+  validFrom   DateTime?
+  validTo     DateTime?
+  createdAt   DateTime  @default(now())
+
+  place       Place     @relation(fields: [placeId], references: [catalogItemId], onDelete: Cascade)
+
+  @@index([placeId])
+  @@map("opening_hours")
+}
+
+model OpeningHourException {
+  id          String    @id @default(uuid())
+  placeId     String
+  serviceDate DateTime  @db.Date
+  opensAt     String?   // TIME as string (HH:MM:SS)
+  closesAt    String?   // TIME as string (HH:MM:SS)
+  isClosed    Boolean   @default(false)
+  reason      String?
+  createdAt   DateTime  @default(now())
+
+  place       Place     @relation(fields: [placeId], references: [catalogItemId], onDelete: Cascade)
+
+  @@index([placeId])
+  @@map("opening_hour_exceptions")
+}
+
+model PriceObservation {
+  id              String    @id @default(uuid())
+  catalogItemId   String
+  priceType       String?
+  amount          Decimal   @db.Decimal(14, 2)
+  currencyId      String?
+  unit            String?
+  validFrom       DateTime?
+  validTo         DateTime?
+  observedAt      DateTime
+  confidenceScore Float?
+  createdAt       DateTime  @default(now())
+
+  catalogItem     CatalogItem @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  currency        Currency?   @relation(fields: [currencyId], references: [id])
+
+  @@index([catalogItemId])
+  @@map("price_observations")
+}
+
+model RouteObservation {
+  id                  String    @id @default(uuid())
+  fromLocationId      String?
+  toLocationId        String?
+  fromCatalogItemId   String?
+  toCatalogItemId     String?
+  transportModeId     String?
+  distanceMeters      BigInt?
+  durationSeconds     BigInt?
+  estimatedCost       Decimal?  @db.Decimal(14, 2)
+  currencyId          String?
+  observedAt          DateTime
+  validFrom           DateTime?
+  validTo             DateTime?
+  createdAt           DateTime  @default(now())
+
+  fromLocation        Location?       @relation("FromLocation", fields: [fromLocationId], references: [id])
+  toLocation          Location?       @relation("ToLocation", fields: [toLocationId], references: [id])
+  fromCatalogItem     CatalogItem?    @relation("FromItem", fields: [fromCatalogItemId], references: [id])
+  toCatalogItem       CatalogItem?    @relation("ToItem", fields: [toCatalogItemId], references: [id])
+  transportMode       TransportMode?  @relation(fields: [transportModeId], references: [id])
+  currency            Currency?       @relation(fields: [currencyId], references: [id])
+
+  @@index([fromLocationId])
+  @@index([toLocationId])
+  @@map("route_observations")
+}
+
+// ============================================================================
+// 4. PLANNING SCHEMA - Trip Planning
+// ============================================================================
+
+model Trip {
+  id                  String    @id @default(uuid())
+  ownerUserId         String
+  name                String
+  description         String?
+  coverMediaId        String?
+  startDate           DateTime  @db.Date
+  endDate             DateTime  @db.Date
+  visibilityId        String
+  statusId            String
+  defaultCurrencyId   String?
+  revisionNo          BigInt    @default(1)
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  owner               User              @relation(fields: [ownerUserId], references: [id], onDelete: Cascade)
+  coverMedia          MediaAsset?       @relation(fields: [coverMediaId], references: [id])
+  visibility          TripVisibility    @relation(fields: [visibilityId], references: [id])
+  status              TripStatus        @relation(fields: [statusId], references: [id])
+  defaultCurrency     Currency?         @relation(fields: [defaultCurrencyId], references: [id])
+  stops               TripStop[]
+  days                TripDay[]
+  members             TripMember[]
+  budget              TripBudget?
+  expenses            Expense[]
+  shareLinks          TripShareLink[]
+  aiRequests          AiRequest[]
+  aiPlanDrafts        AiPlanDraft[]
+  aiRecommendations   AiRecommendation[]
+  userEvents          UserEvent[]
+
+  @@index([ownerUserId])
+  @@map("trips")
+}
+
+model TripStop {
+  id              String    @id @default(uuid())
+  tripId          String
+  locationId      String
+  sequenceNo      Int
+  arrivalDate     DateTime? @db.Date
+  departureDate   DateTime? @db.Date
+  notes           String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  trip            Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  location        Location  @relation(fields: [locationId], references: [id])
+  days            TripDay[]
+
+  @@unique([tripId, sequenceNo])
+  @@index([tripId])
+  @@map("trip_stops")
+}
+
+model TripDay {
+  id              String    @id @default(uuid())
+  tripId          String
+  tripStopId      String?
+  dayNumber       Int
+  serviceDate     DateTime  @db.Date
+  timezoneName    String
+  notes           String?
+  createdAt       DateTime  @default(now())
+
+  trip            Trip        @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  tripStop        TripStop?   @relation(fields: [tripStopId], references: [id], onDelete: SetNull)
+  itineraryItems  ItineraryItem[]
+
+  @@unique([tripId, dayNumber])
+  @@unique([tripId, serviceDate])
+  @@index([tripId])
+  @@map("trip_days")
+}
+
+model ItineraryItem {
+  id              String    @id @default(uuid())
+  tripDayId       String
+  catalogItemId   String
+  sequenceNo      Int
+  plannedStartAt  DateTime?
+  plannedEndAt    DateTime?
+  durationMinutes Int?
+  notes           String?
+  estimatedCost   Decimal?  @db.Decimal(14, 2)
+  currencyId      String?
+  statusId        String?
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  tripDay         TripDay     @relation(fields: [tripDayId], references: [id], onDelete: Cascade)
+  catalogItem     CatalogItem @relation(fields: [catalogItemId], references: [id])
+  currency        Currency?   @relation(fields: [currencyId], references: [id])
+  status          RecordStatus? @relation(fields: [statusId], references: [id])
+  expenses        Expense[]
+  feedback        RecommendationFeedback[]
+
+  @@unique([tripDayId, sequenceNo])
+  @@index([tripDayId])
+  @@map("itinerary_items")
+}
+
+// ============================================================================
+// 5. FINANCE SCHEMA - Budget & Expenses
+// ============================================================================
+
+model TripBudget {
+  id              String    @id @default(uuid())
+  tripId          String    @unique
+  currencyId      String
+  targetAmount    Decimal   @db.Decimal(14, 2)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  trip            Trip                @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  currency        Currency            @relation(fields: [currencyId], references: [id])
+  allocations     BudgetAllocation[]
+
+  @@map("trip_budgets")
+}
+
+model BudgetAllocation {
+  id                  String    @id @default(uuid())
+  tripBudgetId        String
+  expenseCategoryId   String
+  targetAmount        Decimal   @db.Decimal(14, 2)
+  priority            Int?
+  createdAt           DateTime  @default(now())
+
+  tripBudget          TripBudget          @relation(fields: [tripBudgetId], references: [id], onDelete: Cascade)
+  expenseCategory     ExpenseCategory     @relation(fields: [expenseCategoryId], references: [id])
+
+  @@index([tripBudgetId])
+  @@map("budget_allocations")
+}
+
+model Expense {
+  id                  String    @id @default(uuid())
+  tripId              String
+  expenseCategoryId   String
+  catalogItemId       String?
+  itineraryItemId     String?
+  amount              Decimal   @db.Decimal(14, 2)
+  currencyId          String
+  expenseDate         DateTime  @db.Date
+  description         String?
+  isEstimate          Boolean   @default(true)
+  sourceType          String?
+  createdAt           DateTime  @default(now())
+  updatedAt           DateTime  @updatedAt
+
+  trip                Trip                @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  expenseCategory     ExpenseCategory     @relation(fields: [expenseCategoryId], references: [id])
+  catalogItem         CatalogItem?        @relation(fields: [catalogItemId], references: [id])
+  itineraryItem       ItineraryItem?      @relation(fields: [itineraryItemId], references: [id])
+  currency            Currency            @relation(fields: [currencyId], references: [id])
+
+  @@index([tripId])
+  @@index([expenseDate])
+  @@map("expenses")
+}
+
+model ExchangeRate {
+  id                  String    @id @default(uuid())
+  baseCurrencyId      String
+  quoteCurrencyId     String
+  rate                Decimal   @db.Decimal(18, 8)
+  observedAt          DateTime
+  createdAt           DateTime  @default(now())
+
+  baseCurrency        Currency  @relation(fields: [baseCurrencyId], references: [id])
+  quoteCurrency       Currency  @relation(fields: [quoteCurrencyId], references: [id])
+
+  @@unique([baseCurrencyId, quoteCurrencyId, observedAt])
+  @@index([baseCurrencyId])
+  @@map("exchange_rates")
+}
+
+// ============================================================================
+// 6. COLLABORATION SCHEMA - Sharing & Members
+// ============================================================================
+
+model MemberRole {
+  id          String    @id @default(uuid())
+  code        String    @unique
+  displayName String
+  canEdit     Boolean   @default(false)
+  canDelete   Boolean   @default(false)
+  createdAt   DateTime  @default(now())
+
+  tripMembers TripMember[]
+
+  @@map("member_roles")
+}
+
+model TripMember {
+  tripId      String
+  userId      String
+  roleId      String
+  joinedAt    DateTime  @default(now())
+
+  trip        Trip      @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  role        MemberRole @relation(fields: [roleId], references: [id])
+
+  @@id([tripId, userId])
+  @@index([userId])
+  @@map("trip_members")
+}
+
+model TripShareLink {
+  id                  String    @id @default(uuid())
+  tripId              String
+  createdByUserId     String
+  shareTokenHash      String    @unique
+  visibilityId        String
+  expiresAt           DateTime?
+  clickCount          BigInt    @default(0)
+  createdAt           DateTime  @default(now())
+  revokedAt           DateTime?
+
+  trip                Trip            @relation(fields: [tripId], references: [id], onDelete: Cascade)
+  createdByUser       User            @relation(fields: [createdByUserId], references: [id])
+  visibility          TripVisibility  @relation(fields: [visibilityId], references: [id])
+
+  @@index([tripId])
+  @@index([shareTokenHash])
+  @@map("trip_share_links")
+}
+
+// ============================================================================
+// 7. AI SCHEMA - Recommendations & Intelligence
+// ============================================================================
+
+model AiModel {
+  id            String    @id @default(uuid())
+  provider      String
+  modelName     String
+  modelVersion  String?
+  capability    String
+  statusId      String
+  createdAt     DateTime  @default(now())
+  retiredAt     DateTime?
+
+  status        RecordStatus  @relation(fields: [statusId], references: [id])
+  requests      AiRequest[]
+  recommendations AiRecommendation[]
+
+  @@map("ai_models")
+}
+
+model AiRequest {
+  id                  String    @id @default(uuid())
+  userId              String
+  tripId              String?
+  modelId             String?
+  requestText         String
+  structuredIntent    Json?
+  createdAt           DateTime  @default(now())
+
+  user                User            @relation(fields: [userId], references: [id])
+  trip                Trip?           @relation(fields: [tripId], references: [id])
+  model               AiModel?        @relation(fields: [modelId], references: [id])
+  planDrafts          AiPlanDraft[]
+  recommendations     AiRecommendation[]
+
+  @@index([userId])
+  @@index([tripId])
+  @@map("ai_requests")
+}
+
+model AiPlanDraft {
+  id                  String    @id @default(uuid())
+  requestId           String
+  userId              String
+  tripId              String?
+  statusId            String
+  inputConstraints    Json
+  proposedChanges     Json
+  createdAt           DateTime  @default(now())
+  expiresAt           DateTime?
+  approvedAt          DateTime?
+
+  request             AiRequest     @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  user                User          @relation(fields: [userId], references: [id])
+  trip                Trip?         @relation(fields: [tripId], references: [id])
+  status              RecordStatus  @relation(fields: [statusId], references: [id])
+
+  @@index([userId])
+  @@map("ai_plan_drafts")
+}
+
+model AiRecommendation {
+  id                  String    @id @default(uuid())
+  requestId           String
+  userId              String
+  tripId              String?
+  catalogItemId       String
+  rank                Int
+  score               Decimal   @db.Decimal(12, 8)
+  reason              String?
+  modelId             String?
+  rankingPolicyId     String?
+  createdAt           DateTime  @default(now())
+
+  request             AiRequest     @relation(fields: [requestId], references: [id], onDelete: Cascade)
+  user                User          @relation(fields: [userId], references: [id])
+  trip                Trip?         @relation(fields: [tripId], references: [id])
+  catalogItem         CatalogItem   @relation(fields: [catalogItemId], references: [id])
+  model               AiModel?      @relation(fields: [modelId], references: [id])
+  feedback            RecommendationFeedback[]
+
+  @@unique([requestId, catalogItemId])
+  @@index([requestId])
+  @@index([userId])
+  @@map("ai_recommendations")
+}
+
+model RecommendationFeedback {
+  id                  String    @id @default(uuid())
+  recommendationId    String
+  userId              String
+  itineraryItemId     String?
+  actionType          String
+  feedbackValue       Decimal?  @db.Decimal(12, 6)
+  createdAt           DateTime  @default(now())
+
+  recommendation      AiRecommendation  @relation(fields: [recommendationId], references: [id], onDelete: Cascade)
+  user                User              @relation(fields: [userId], references: [id])
+  itineraryItem       ItineraryItem?    @relation(fields: [itineraryItemId], references: [id])
+
+  @@index([recommendationId])
+  @@map("recommendation_feedback")
+}
+
+model EmbeddingModel {
+  id            String    @id @default(uuid())
+  provider      String
+  modelName     String
+  modelVersion  String?
+  dimensions    Int
+  createdAt     DateTime  @default(now())
+
+  embeddings    EntityEmbedding[]
+
+  @@map("embedding_models")
+}
+
+model EntityEmbedding {
+  id                  String    @id @default(uuid())
+  catalogItemId       String
+  embeddingModelId    String
+  contentHash         String
+  embedding           String    // Store as JSON string for vector data
+  createdAt           DateTime  @default(now())
+
+  catalogItem         CatalogItem     @relation(fields: [catalogItemId], references: [id], onDelete: Cascade)
+  embeddingModel      EmbeddingModel  @relation(fields: [embeddingModelId], references: [id])
+
+  @@unique([catalogItemId, embeddingModelId, contentHash])
+  @@index([catalogItemId])
+  @@map("entity_embeddings")
+}
+
+model RankingPolicy {
+  id            String    @id @default(uuid())
+  name          String
+  version       Int
+  statusId      String
+  createdAt     DateTime  @default(now())
+
+  status        RecordStatus  @relation(fields: [statusId], references: [id])
+  weights       RankingPolicyWeight[]
+
+  @@unique([name, version])
+  @@map("ranking_policies")
+}
+
+model RankingFeature {
+  id            String    @id @default(uuid())
+  code          String    @unique
+  displayName   String
+  featureType   String
+  createdAt     DateTime  @default(now())
+
+  weights       RankingPolicyWeight[]
+
+  @@map("ranking_features")
+}
+
+model RankingPolicyWeight {
+  rankingPolicyId String
+  rankingFeatureId String
+  weight          Decimal   @db.Decimal(12, 8)
+  minValue        Decimal?  @db.Decimal(12, 8)
+  maxValue        Decimal?  @db.Decimal(12, 8)
+
+  rankingPolicy   RankingPolicy   @relation(fields: [rankingPolicyId], references: [id], onDelete: Cascade)
+  rankingFeature  RankingFeature  @relation(fields: [rankingFeatureId], references: [id], onDelete: Cascade)
+
+  @@id([rankingPolicyId, rankingFeatureId])
+  @@map("ranking_policy_weights")
+}
+
+// ============================================================================
+// 8. INGESTION SCHEMA - Data Import & Provenance
+// ============================================================================
+
+model DataSource {
+  id                String    @id @default(uuid())
+  code              String    @unique
+  displayName       String
+  sourceType        String
+  licenseUrl        String?
+  termsUrl          String?
+  attributionText   String?
+  refreshPolicy     Json?
+  isActive          Boolean   @default(true)
+  createdAt         DateTime  @default(now())
+
+  ingestionRuns     IngestionRun[]
+  externalIds       ExternalEntityIdentity[]
+
+  @@map("data_sources")
+}
+
+model IngestionRun {
+  id                String    @id @default(uuid())
+  dataSourceId      String
+  startedAt         DateTime  @default(now())
+  finishedAt        DateTime?
+  statusId          String
+  recordsSeen       BigInt    @default(0)
+  recordsInserted   BigInt    @default(0)
+  recordsUpdated    BigInt    @default(0)
+  recordsRejected   BigInt    @default(0)
+  errorCount        BigInt    @default(0)
+  watermark         String?
+  runMetadata       Json?
+  createdAt         DateTime  @default(now())
+
+  dataSource        DataSource      @relation(fields: [dataSourceId], references: [id])
+  status            RecordStatus    @relation(fields: [statusId], references: [id])
+  observations      SourceObservation[]
+
+  @@index([dataSourceId])
+  @@map("ingestion_runs")
+}
+
+model ExternalEntityIdentity {
+  id                  String    @id @default(uuid())
+  dataSourceId        String
+  entityType          String
+  internalEntityId    String
+  externalKey         String
+  canonicalUrl        String?
+  firstSeenAt         DateTime
+  lastSeenAt          DateTime
+  statusId            String
+  createdAt           DateTime  @default(now())
+
+  dataSource          DataSource        @relation(fields: [dataSourceId], references: [id])
+  status              RecordStatus      @relation(fields: [statusId], references: [id])
+  observations        SourceObservation[]
+
+  @@unique([dataSourceId, entityType, externalKey])
+  @@index([dataSourceId])
+  @@map("external_entity_identities")
+}
+
+model SourceObservation {
+  id                        String    @id @default(uuid())
+  externalEntityIdentityId  String
+  ingestionRunId            String
+  observedAt                DateTime
+  validFrom                 DateTime?
+  validTo                   DateTime?
+  payloadHash               String
+  payload                   Json?
+  normalizationStatusId     String
+  errorMessage              String?
+  createdAt                 DateTime  @default(now())
+
+  externalEntityIdentity    ExternalEntityIdentity  @relation(fields: [externalEntityIdentityId], references: [id])
+  ingestionRun              IngestionRun            @relation(fields: [ingestionRunId], references: [id])
+  normalizationStatus       RecordStatus            @relation(fields: [normalizationStatusId], references: [id])
+
+  @@index([ingestionRunId])
+  @@map("source_observations")
+}
+
+// ============================================================================
+// 9. ANALYTICS SCHEMA - Event Tracking
+// ============================================================================
+
+model UserEvent {
+  id              String    @id @default(uuid())
+  userId          String?
+  sessionId       String?
+  eventType       String
+  entityType      String?
+  entityId        String?
+  tripId          String?
+  occurredAt      DateTime
+  metadata        Json?
+  createdAt       DateTime  @default(now())
+
+  user            User?     @relation(fields: [userId], references: [id])
+  trip            Trip?     @relation(fields: [tripId], references: [id])
+
+  @@index([userId, occurredAt])
+  @@index([tripId, occurredAt])
+  @@index([eventType, occurredAt])
+  @@map("user_events")
 }
