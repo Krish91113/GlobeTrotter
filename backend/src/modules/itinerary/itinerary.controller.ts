@@ -1,4 +1,4 @@
-import type { Request, Response, NextFunction } from 'express';
+﻿import type { Request, Response, NextFunction } from 'express';
 import { z } from 'zod';
 import { itineraryService } from './itinerary.service';
 import {
@@ -44,7 +44,7 @@ export class ItineraryController {
         uuidParam(req, 'tripId'),
         uuidParam(req, 'dayId'),
         parsed.data,
-        req.user!.userId
+        (req.user!.userId as string)
       );
 
       ok(res, item, 201, warning ? { warning } : undefined);
@@ -68,7 +68,7 @@ export class ItineraryController {
         uuidParam(req, 'dayId'),
         uuidParam(req, 'itemId'),
         parsed.data,
-        req.user!.userId
+        (req.user!.userId as string)
       );
 
       ok(res, item, 200, warning ? { warning } : undefined);
@@ -83,7 +83,7 @@ export class ItineraryController {
         uuidParam(req, 'tripId'),
         uuidParam(req, 'dayId'),
         uuidParam(req, 'itemId'),
-        req.user!.userId
+        (req.user!.userId as string)
       );
 
       ok(res, {}, 204);
@@ -106,7 +106,7 @@ export class ItineraryController {
         uuidParam(req, 'tripId'),
         uuidParam(req, 'dayId'),
         parsed.data,
-        req.user!.userId
+        (req.user!.userId as string)
       );
 
       ok(res, {});
