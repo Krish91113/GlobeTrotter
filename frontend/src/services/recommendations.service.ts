@@ -1,4 +1,5 @@
 import { apiClient } from "@/lib/api-client";
+import { cityImageUrl } from "@/lib/image-resolver";
 import { mockGenerateRecommendations } from "@/mocks/db";
 import type {
   Recommendation,
@@ -12,18 +13,47 @@ export const recommendationsService = {
   ): Promise<Recommendation[]> => {
     const payload = typeof filters === "string" ? { tripId: filters } : filters;
     try {
-      const res = await apiClient<{ recommendations: Recommendation[] }>(
-        "/recommendations/generate",
-        {
-          method: "POST",
-          body: JSON.stringify(payload),
-        },
-      );
-      if (res?.recommendations && res.recommendations.length > 0) {
-        return res.recommendations;
+      const res = await apiClient<any>("/recommendations/generate", {
+        method: "POST",
+        body: JSON.stringify(payload),
+      });
+      const recs = Array.isArray(res) ? res : res?.recommendations || [];
+      if (recs && recs.length > 0) {
+        return recs.map((r: any, index: number) => ({
+          id: r.recommendationId || r.id,
+          tripId: typeof filters === "string" ? filters : filters.tripId,
+          rank: r.rank ?? index + 1,
+          activityId: r.catalogItemId || r.activityId || r.id,
+          activityName:
+            r.catalogItem?.name ||
+            r.activityName ||
+            r.name ||
+            "Featured Activity",
+          category:
+            r.categories?.[0] ||
+            r.catalogItem?.categories?.[0] ||
+            r.category ||
+            "Attractions",
+          city: r.location?.name || r.city || "Rome",
+          score: typeof r.score === "number" ? r.score : 0.95,
+          estimatedCost: r.estimatedCost
+            ? Number.parseFloat(r.estimatedCost)
+            : 35,
+          currency: r.currency || "EUR",
+          durationMinutes: r.durationMinutes || 120,
+          rating: r.rating ? Number.parseFloat(r.rating) : 4.8,
+          image: cityImageUrl(
+            r.city || r.location?.name,
+            r.thumbnailUri || r.catalogItem?.thumbnailUri || r.image,
+          ),
+          reason:
+            r.reason ||
+            "Matches your travel preferences and itinerary schedule.",
+          fitsBudget: r.fitsBudget ?? true,
+        }));
       }
     } catch {
-      // Fallback
+      // Fallback to client mock generator
     }
     return mockGenerateRecommendations(payload);
   },
@@ -73,7 +103,7 @@ export const recommendationsService = {
 
   submitFeedback: async (
     recId: string,
-    actionType: "like" | "dislike" | "save" | "dismiss",
+    actionType: "like" | "dislike" | "save" | "dismiss" | string,
   ): Promise<void> => {
     try {
       await apiClient(`/recommendations/${recId}/feedback`, {
@@ -81,7 +111,7 @@ export const recommendationsService = {
         body: JSON.stringify({ actionType }),
       });
     } catch {
-      // Silent
+      // Ignore feedback error
     }
   },
 };

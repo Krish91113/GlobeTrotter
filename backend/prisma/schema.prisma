@@ -113,6 +113,13 @@ model UserPreferences {
   theme                String   @default("light")
   notificationsEnabled Boolean  @default(true)
   emailNotifications   Boolean  @default(true)
+  cultureWeight        Int      @default(80)
+  foodWeight           Int      @default(80)
+  adventureWeight      Int      @default(50)
+  natureWeight         Int      @default(50)
+  relaxationWeight     Int      @default(50)
+  travelPace           String   @default("moderate")
+  budgetLevel          String   @default("moderate")
   createdAt            DateTime @default(now())
   updatedAt            DateTime @updatedAt
 
@@ -703,6 +710,8 @@ model Expense {
   description       String?
   isEstimate        Boolean  @default(true)
   sourceType        String?
+  splitCount        Int      @default(1)
+  splitParticipants String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 

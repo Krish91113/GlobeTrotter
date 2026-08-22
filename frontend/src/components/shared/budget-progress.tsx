@@ -20,11 +20,12 @@ export function BudgetProgress({
 }: BudgetProgressProps) {
   const pct = total > 0 ? Math.min(100, Math.round((spent / total) * 100)) : 0;
   const over = spent > total;
+  const safeCurrency = currency || "EUR";
 
   if (showLabel) {
     const formatted = new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency,
+      currency: safeCurrency,
       maximumFractionDigits: 0,
     });
     return (

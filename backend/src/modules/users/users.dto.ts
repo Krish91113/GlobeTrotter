@@ -20,6 +20,13 @@ export type PreferencesDto = {
   theme: string;
   notificationsEnabled: boolean;
   emailNotifications: boolean;
+  cultureWeight: number;
+  foodWeight: number;
+  adventureWeight: number;
+  natureWeight: number;
+  relaxationWeight: number;
+  travelPace: string;
+  budgetLevel: string;
 };
 
 /**
@@ -54,6 +61,13 @@ export function toPreferencesDto(prefs: {
   theme: string;
   notificationsEnabled: boolean;
   emailNotifications: boolean;
+  cultureWeight: number;
+  foodWeight: number;
+  adventureWeight: number;
+  natureWeight: number;
+  relaxationWeight: number;
+  travelPace: string;
+  budgetLevel: string;
 }): PreferencesDto {
   return {
     preferredCurrency: prefs.preferredCurrency,
@@ -61,5 +75,12 @@ export function toPreferencesDto(prefs: {
     theme: prefs.theme,
     notificationsEnabled: prefs.notificationsEnabled,
     emailNotifications: prefs.emailNotifications,
+    cultureWeight: prefs.cultureWeight,
+    foodWeight: prefs.foodWeight,
+    adventureWeight: prefs.adventureWeight,
+    natureWeight: prefs.natureWeight,
+    relaxationWeight: prefs.relaxationWeight,
+    travelPace: prefs.travelPace,
+    budgetLevel: prefs.budgetLevel,
   };
 }

@@ -26,7 +26,6 @@ export default function BudgetPage() {
   const { tripId } = useParams<{ tripId: string }>();
   const { data: budget, isLoading, isError, refetch } = useTripBudget(tripId);
   const { data: expenses } = useTripExpenses(tripId);
-  const _addExpense = useAddExpense(tripId);
   const deleteExpense = useDeleteExpense(tripId);
   const [showForm, setShowForm] = useState(false);
 
@@ -102,7 +101,7 @@ export default function BudgetPage() {
           {
             label: "Estimated spend",
             value: `€${budget.estimatedSpend.toLocaleString()}`,
-            color: "text-primary",
+            color: "text-[#2563EB]",
           },
           {
             label: "Actual spend",
@@ -115,28 +114,30 @@ export default function BudgetPage() {
             color: isOverBudget ? "text-[#DC2626]" : "text-[#16A34A]",
           },
           {
-            label: "Avg per day",
-            value: `€${budget.averagePerDay.toLocaleString()}`,
+            label: "Daily average",
+            value: `€${Math.round(budget.averagePerDay).toLocaleString()}`,
             color: "text-[#0F172A]",
           },
-        ].map((s) => (
+        ].map((card) => (
           <div
-            key={s.label}
-            className="rounded-2xl border border-[#E2E8F0]/60 p-5"
+            key={card.label}
+            className="rounded-2xl border border-[#E2E8F0]/60 bg-white p-5"
           >
-            <p className="text-sm text-[#64748B]">{s.label}</p>
-            <p className={`mt-1 text-2xl font-bold ${s.color}`}>{s.value}</p>
+            <p className="text-xs font-semibold uppercase tracking-wider text-[#64748B]">
+              {card.label}
+            </p>
+            <p className={`mt-2 text-2xl font-bold ${card.color}`}>
+              {card.value}
+            </p>
           </div>
         ))}
       </section>
 
-      {/* Charts */}
+      {/* Visual breakdown */}
       <section className="grid gap-8 lg:grid-cols-2">
-        {/* Donut */}
-        <div className="rounded-2xl border border-[#E2E8F0]/60 p-6">
-          <h3 className="text-lg font-bold text-[#0F172A]">
-            Spending by category
-          </h3>
+        {/* Category breakdown (Pie) */}
+        <div className="rounded-2xl border border-[#E2E8F0]/60 bg-white p-6">
+          <h3 className="text-lg font-bold text-[#0F172A]">By category</h3>
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
               <PieChart>
@@ -144,32 +145,37 @@ export default function BudgetPage() {
                   data={budget.categories}
                   dataKey="estimated"
                   nameKey="name"
-                  innerRadius={62}
-                  outerRadius={95}
-                  paddingAngle={2}
-                  stroke="none"
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={55}
+                  outerRadius={85}
+                  paddingAngle={3}
                 >
-                  {budget.categories.map((c) => (
-                    <Cell key={c.name} fill={c.color} />
+                  {budget.categories.map((entry) => (
+                    <Cell key={entry.name} fill={entry.color} />
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number) => [`€${value}`, ""]}
+                  formatter={(value: number) => [`€${value}`, "Estimated"]}
                   contentStyle={{
                     borderRadius: 12,
                     border: "1px solid #E2E8F0",
                     background: "#fff",
                   }}
                 />
-                <Legend />
+                <Legend
+                  verticalAlign="bottom"
+                  iconType="circle"
+                  iconSize={8}
+                />
               </PieChart>
             </ResponsiveContainer>
           </div>
         </div>
 
-        {/* Daily bar chart */}
-        <div className="rounded-2xl border border-[#E2E8F0]/60 p-6">
-          <h3 className="text-lg font-bold text-[#0F172A]">Daily spending</h3>
+        {/* Daily spend breakdown (Bar) */}
+        <div className="rounded-2xl border border-[#E2E8F0]/60 bg-white p-6">
+          <h3 className="text-lg font-bold text-[#0F172A]">Daily spend</h3>
           <div className="mt-4 h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={budget.dailySpend}>
@@ -246,34 +252,52 @@ export default function BudgetPage() {
                   <th className="px-4 py-3 text-right font-semibold text-[#64748B]">
                     Amount
                   </th>
+                  <th className="px-4 py-3 text-right font-semibold text-[#64748B]">
+                    Split
+                  </th>
                   <th className="px-4 py-3 w-10"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E2E8F0]">
-                {expenses.map((exp) => (
-                  <tr key={exp.id} className="hover:bg-[#F8FAFC]">
-                    <td className="px-4 py-3 text-[#0F172A]">{exp.date}</td>
-                    <td className="px-4 py-3">
-                      <span className="rounded-full bg-[#F1F5F9] px-2.5 py-0.5 text-xs font-semibold text-[#334155]">
-                        {exp.category}
-                      </span>
-                    </td>
-                    <td className="px-4 py-3 text-[#0F172A]">
-                      {exp.description}
-                    </td>
-                    <td className="px-4 py-3 text-right font-semibold text-[#0F172A]">
-                      €{exp.amount}
-                    </td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => deleteExpense.mutate(exp.id)}
-                        className="rounded-full p-1 text-[#94A3B8] hover:text-[#DC2626]"
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {expenses.map((exp) => {
+                  const perPersonAmount =
+                    exp.splitCount > 1
+                      ? (Number(exp.amount) / exp.splitCount).toFixed(2)
+                      : exp.amount;
+                  return (
+                    <tr key={exp.id} className="hover:bg-[#F8FAFC]">
+                      <td className="px-4 py-3 text-[#0F172A]">{exp.date}</td>
+                      <td className="px-4 py-3">
+                        <span className="rounded-full bg-[#F1F5F9] px-2.5 py-0.5 text-xs font-semibold text-[#334155]">
+                          {exp.category}
+                        </span>
+                      </td>
+                      <td className="px-4 py-3 text-[#0F172A]">
+                        {exp.description}
+                      </td>
+                      <td className="px-4 py-3 text-right font-semibold text-[#0F172A]">
+                        €{exp.amount}
+                      </td>
+                      <td className="px-4 py-3 text-right">
+                        {exp.splitCount > 1 ? (
+                          <span className="inline-block rounded-full bg-[#E0F2FE] px-2.5 py-0.5 text-xs font-semibold text-[#0369A1]">
+                            {exp.splitCount} × €{perPersonAmount}
+                          </span>
+                        ) : (
+                          <span className="text-[#94A3B8] text-xs">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => deleteExpense.mutate(exp.id)}
+                          className="rounded-full p-1 text-[#94A3B8] hover:text-[#DC2626]"
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -303,6 +327,7 @@ function ExpenseForm({
     description: "",
     amount: "",
     date: "",
+    splitCount: 1,
   });
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -314,15 +339,26 @@ function ExpenseForm({
         description: form.description,
         amount: Number(form.amount),
         date: form.date,
+        splitCount: form.splitCount,
       },
       {
         onSuccess: () => {
-          setForm({ category: "Food", description: "", amount: "", date: "" });
+          setForm({
+            category: "Food",
+            description: "",
+            amount: "",
+            date: "",
+            splitCount: 1,
+          });
           onClose();
         },
       },
     );
   };
+
+  const perPersonAmount = form.amount
+    ? (Number(form.amount) / form.splitCount).toFixed(2)
+    : "0.00";
 
   return (
     <form
@@ -368,16 +404,43 @@ function ExpenseForm({
           className="h-10 w-full rounded-lg border border-[#E2E8F0] px-3 text-sm"
         />
       </div>
-      <div>
-        <label className="mb-1 block text-sm font-medium">Amount (€)</label>
-        <input
-          type="number"
-          value={form.amount}
-          onChange={(e) => setForm({ ...form, amount: e.target.value })}
-          placeholder="0"
-          className="h-10 w-full rounded-lg border border-[#E2E8F0] px-3 text-sm"
-        />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="mb-1 block text-sm font-medium">Amount (€)</label>
+          <input
+            type="number"
+            value={form.amount}
+            onChange={(e) => setForm({ ...form, amount: e.target.value })}
+            placeholder="0"
+            className="h-10 w-full rounded-lg border border-[#E2E8F0] px-3 text-sm"
+          />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">
+            Split between # of people
+          </label>
+          <input
+            type="number"
+            min="1"
+            value={form.splitCount}
+            onChange={(e) =>
+              setForm({
+                ...form,
+                splitCount: Math.max(1, Number(e.target.value)),
+              })
+            }
+            className="h-10 w-full rounded-lg border border-[#E2E8F0] px-3 text-sm"
+          />
+        </div>
       </div>
+      {form.splitCount > 1 && form.amount && (
+        <div className="rounded-lg bg-[#E0F2FE] p-3">
+          <p className="text-sm text-[#0369A1]">
+            <span className="font-semibold">Per person:</span> €
+            {perPersonAmount} ({form.splitCount} × €{perPersonAmount})
+          </p>
+        </div>
+      )}
       <div className="flex gap-3">
         <button
           type="submit"

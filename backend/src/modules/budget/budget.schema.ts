@@ -26,6 +26,8 @@ export const addExpenseSchema = z.object({
     .optional(),
   isEstimate: z.boolean().default(true),
   itineraryItemId: z.string().uuid("Invalid itinerary item id").optional(),
+  splitCount: z.number().int().min(1).default(1),
+  splitParticipants: z.string().optional(),
 });
 
 export type AddExpenseRequest = z.infer<typeof addExpenseSchema>;
@@ -46,6 +48,8 @@ export const updateExpenseSchema = z.object({
     .uuid("Invalid itinerary item id")
     .nullable()
     .optional(),
+  splitCount: z.number().int().min(1).optional(),
+  splitParticipants: z.string().nullable().optional(),
 });
 
 export type UpdateExpenseRequest = z.infer<typeof updateExpenseSchema>;

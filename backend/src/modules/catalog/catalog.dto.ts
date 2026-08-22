@@ -5,6 +5,7 @@ export type CatalogItemDto = {
   id: string;
   name: string;
   locationId: string | null;
+  location: { name: string } | null;
   shortDescription: string | null;
   categories: string[];
   estimatedCost: string | null;
@@ -73,6 +74,7 @@ export function toCatalogItemDto(item: {
   id: string;
   name: string;
   locationId: string | null;
+  location: { name: string } | null;
   shortDescription: string | null;
   categories: {
     category: {
@@ -105,6 +107,7 @@ export function toCatalogItemDto(item: {
     id: item.id,
     name: item.name,
     locationId: item.locationId,
+    location: item.location,
     shortDescription: item.shortDescription,
     categories,
     estimatedCost: latestPrice ? latestPrice.amount.toString() : null,
@@ -122,6 +125,7 @@ export function toCatalogItemDetailDto(item: {
   id: string;
   name: string;
   locationId: string | null;
+  location: { name: string } | null;
   shortDescription: string | null;
   description: string | null;
   latitude: number | null;
@@ -186,6 +190,7 @@ export function toCatalogItemDetailDto(item: {
     id: item.id,
     name: item.name,
     locationId: item.locationId,
+    location: item.location,
     shortDescription: item.shortDescription,
     description: item.description,
     latitude: item.latitude,

@@ -39,7 +39,7 @@ export class ApiError extends Error {
   }
 }
 
-const DEFAULT_BASE_URL = "http://localhost:5000/api/v1";
+const DEFAULT_BASE_URL = "http://localhost:3001/api/v1";
 
 export function getApiBaseUrl(): string {
   if (typeof window !== "undefined") {
@@ -79,6 +79,19 @@ export async function apiClient<T>(
       0,
       "NETWORK_ERROR",
     );
+  }
+
+  // Access tokens are intentionally short-lived. Refresh once using the
+  // HTTP-only refresh cookie, then replay the original request transparently.
+  if (response.status === 401 && !path.startsWith("/auth/")) {
+    const refreshResponse = await fetch(`${baseUrl}/auth/refresh`, {
+      method: "POST",
+      headers: { Accept: "application/json", "Content-Type": "application/json" },
+      credentials: "include",
+    });
+    if (refreshResponse.ok) {
+      response = await fetch(url, config);
+    }
   }
 
   // Handle 204 No Content

@@ -1,17 +1,65 @@
-import {
-  mockCreateTrip,
-  mockDeleteTrip,
-  mockGetTrip,
-  mockGetTrips,
-  mockUpdateTrip,
-} from "@/mocks/db";
+import { apiClient } from "@/lib/api-client";
+import { cityImageUrl } from "@/lib/image-resolver";
 import type { CreateTripInput, Trip, UpdateTripInput } from "@/types";
 
+const normalizeTrip = (trip: Trip): Trip => ({
+  ...trip,
+  coverImage: cityImageUrl(trip.cities?.[0], trip.coverImage),
+  cities: trip.cities || [],
+});
+
 export const tripsService = {
-  getTrips: (status?: string): Promise<Trip[]> => mockGetTrips(status),
-  getTrip: (tripId: string): Promise<Trip> => mockGetTrip(tripId),
-  createTrip: (input: CreateTripInput): Promise<Trip> => mockCreateTrip(input),
-  updateTrip: (tripId: string, input: UpdateTripInput): Promise<Trip> =>
-    mockUpdateTrip(tripId, input),
-  deleteTrip: (tripId: string): Promise<void> => mockDeleteTrip(tripId),
+  getTrips: async (status?: string): Promise<Trip[]> => {
+    const query =
+      status && status !== "all" ? `?status=${encodeURIComponent(status)}` : "";
+    const trips = await apiClient<Trip[]>(`/trips${query}`);
+    return trips.map(normalizeTrip);
+  },
+
+  getTrip: async (tripId: string): Promise<Trip> => {
+    return normalizeTrip(await apiClient<Trip>(`/trips/${tripId}`));
+  },
+
+  createTrip: async (input: CreateTripInput): Promise<Trip> => {
+    const { firstDestination, coverImage: _coverImage, ...payload } = input;
+    const trip = await apiClient<Trip>("/trips", {
+      method: "POST",
+      body: JSON.stringify(payload),
+    });
+    if (firstDestination) {
+      const search = await apiClient<any>(
+        `/locations/search?q=${encodeURIComponent(firstDestination)}&limit=1`,
+      );
+      const location = search.locations?.[0];
+      if (location) {
+        await apiClient(`/trips/${trip.id}/stops`, {
+          method: "POST",
+          body: JSON.stringify({
+            locationId: location.id,
+            arrivalDate: input.startDate,
+            departureDate: input.endDate,
+          }),
+        });
+      }
+    }
+    return normalizeTrip(trip);
+  },
+
+  updateTrip: async (
+    tripId: string,
+    input: UpdateTripInput,
+  ): Promise<Trip> => {
+    return normalizeTrip(
+      await apiClient<Trip>(`/trips/${tripId}`, {
+        method: "PATCH",
+        body: JSON.stringify(input),
+      }),
+    );
+  },
+
+  deleteTrip: async (tripId: string): Promise<void> => {
+    return apiClient<void>(`/trips/${tripId}`, {
+      method: "DELETE",
+    });
+  },
 };

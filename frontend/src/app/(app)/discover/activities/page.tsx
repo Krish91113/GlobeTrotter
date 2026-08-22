@@ -1,5 +1,8 @@
+"use client";
+
 import { Clock, Plus, Search, Sparkles, Star, Ticket } from "lucide-react";
 import { useState } from "react";
+import { AddToTripDialog } from "@/features/discover/add-to-trip-dialog";
 import { AiRecommendationHub } from "@/features/discover/ai-recommendation-hub";
 import { useActivities } from "@/hooks/queries";
 import { cn } from "@/lib/utils";
@@ -10,6 +13,11 @@ export default function ActivityDiscoveryPage() {
   const [activeTab, setActiveTab] = useState<"ai" | "browse">("ai");
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState<string>("All");
+  const [dialogActivity, setDialogActivity] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+
   const {
     data: activities,
     isLoading,
@@ -129,6 +137,7 @@ export default function ActivityDiscoveryPage() {
             <div className="mt-12 text-center">
               <p className="text-[#64748B]">Failed to load activities.</p>
               <button
+                type="button"
                 onClick={() => refetch()}
                 className="mt-4 text-sm font-semibold text-primary"
               >
@@ -181,10 +190,13 @@ export default function ActivityDiscoveryPage() {
                         {act.description}
                       </p>
                       <div className="flex gap-2 pt-1">
-                        <button className="flex-1 rounded-full border border-[#E2E8F0] py-2 text-sm font-semibold text-[#0F172A] hover:bg-[#F1F5F9]">
-                          View
-                        </button>
-                        <button className="flex-1 rounded-full bg-primary py-2 text-sm font-semibold text-white hover:bg-[#1D4ED8]">
+                        <button
+                          type="button"
+                          onClick={() =>
+                            setDialogActivity({ id: act.id, name: act.name })
+                          }
+                          className="flex-1 rounded-full bg-primary py-2 text-sm font-semibold text-white hover:bg-[#1D4ED8] transition-colors"
+                        >
                           <Plus className="inline size-4 mr-1" /> Add to Trip
                         </button>
                       </div>
@@ -203,6 +215,18 @@ export default function ActivityDiscoveryPage() {
                 Try a different search or filter.
               </p>
             </div>
+          )}
+
+          {/* Add to Trip Dialog */}
+          {dialogActivity && (
+            <AddToTripDialog
+              open={!!dialogActivity}
+              onOpenChange={(open) => {
+                if (!open) setDialogActivity(null);
+              }}
+              activityId={dialogActivity.id}
+              itemLabel={dialogActivity.name}
+            />
           )}
         </div>
       )}

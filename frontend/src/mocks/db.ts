@@ -688,6 +688,7 @@ let expenses: Expense[] = [
     amount: 39,
     currency: "EUR",
     date: "2026-10-14",
+    splitCount: 1,
   },
   {
     id: "exp-2",
@@ -697,6 +698,7 @@ let expenses: Expense[] = [
     amount: 45,
     currency: "EUR",
     date: "2026-10-12",
+    splitCount: 1,
   },
   {
     id: "exp-3",
@@ -706,6 +708,7 @@ let expenses: Expense[] = [
     amount: 50,
     currency: "EUR",
     date: "2026-10-12",
+    splitCount: 1,
   },
 ];
 
@@ -1190,10 +1193,19 @@ export async function mockAddExpense(
     description: string;
     amount: number;
     date: string;
+    splitCount?: number;
+    splitParticipants?: string;
   },
 ): Promise<Expense> {
   await delay(400);
-  const exp: Expense = { id: uid(), tripId, currency: "EUR", ...input };
+  const exp: Expense = {
+    id: uid(),
+    tripId,
+    currency: "EUR",
+    splitCount: input.splitCount || 1,
+    splitParticipants: input.splitParticipants,
+    ...input,
+  };
   expenses.push(exp);
   return exp;
 }

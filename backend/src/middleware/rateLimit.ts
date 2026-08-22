@@ -5,9 +5,12 @@ interface RateLimitStore {
   [key: string]: { attempts: number; resetAt: number };
 }
 
-const store: RateLimitStore = {};
-
 export function createRateLimiter(maxAttempts: number, windowMs: number) {
+  // Keep counters separate per limiter. Without this, requests to one endpoint
+  // (for example, public links) consume the login/register allowance for the
+  // same client IP.
+  const store: RateLimitStore = {};
+
   return (req: Request, _res: Response, next: NextFunction): void => {
     const key = req.ip || "unknown";
     const now = Date.now();

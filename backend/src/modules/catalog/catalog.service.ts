@@ -117,6 +117,11 @@ export async function searchCatalogItems(
         },
         take: 1,
       },
+      location: {
+        select: {
+          name: true,
+        },
+      },
       experience: {
         select: {
           durationMinutes: true,
@@ -152,6 +157,11 @@ export async function getCatalogItemById(
   const item = await prisma.catalogItem.findUnique({
     where: { id },
     include: {
+      location: {
+        select: {
+          name: true,
+        },
+      },
       place: {
         select: {
           ratingValue: true,

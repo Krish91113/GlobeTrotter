@@ -35,6 +35,7 @@ const currencies = [
   { value: "USD", label: "USD — US Dollar $" },
   { value: "GBP", label: "GBP — British Pound £" },
   { value: "JPY", label: "JPY — Japanese Yen ¥" },
+  { value: "INR", label: "INR — Indian Rupee ₹" },
 ] as const;
 
 const coverPresets = [

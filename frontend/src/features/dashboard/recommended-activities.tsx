@@ -1,9 +1,13 @@
 "use client";
 
 import { Clock, MapPin, Plus } from "lucide-react";
-import Link from "next/link";
 import { CardSkeleton, Money, RatingBadge } from "@/components/shared";
-import { useActivities } from "@/hooks/queries";
+import {
+  useActivities,
+  useAddActivity,
+  useLocations,
+  useTripDays,
+} from "@/hooks/queries";
 import type { Trip } from "@/types";
 
 interface RecommendedActivitiesProps {
@@ -21,9 +25,30 @@ export function RecommendedActivities({
   upcomingTrip,
 }: RecommendedActivitiesProps) {
   const firstCity = upcomingTrip.cities[0] ?? "";
-  const { data: activities, isLoading } = useActivities({ query: firstCity });
+  const { data: locations, isLoading: locationsLoading } = useLocations({
+    query: firstCity,
+  });
+  const cityId =
+    locations?.find(
+      (location) => location.name.toLowerCase() === firstCity.toLowerCase(),
+    )?.id ?? locations?.[0]?.id;
+  const { data: activities, isLoading: activitiesLoading } = useActivities(
+    { cityId },
+    Boolean(cityId),
+  );
+  const { data: days, isLoading: daysLoading } = useTripDays(upcomingTrip.id);
+  const targetDay = days?.[0];
+  const addActivity = useAddActivity(targetDay?.id ?? "", upcomingTrip.id);
 
-  if (!firstCity || isLoading) {
+  if (!firstCity) {
+    return (
+      <p className="rounded-xl border border-border bg-card px-6 py-10 text-center text-sm text-muted-foreground">
+        Add a city stop to this trip to get tailored activity ideas.
+      </p>
+    );
+  }
+
+  if (locationsLoading || activitiesLoading || daysLoading) {
     return (
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         {Array.from({ length: 4 }).map((_, i) => (
@@ -34,6 +59,20 @@ export function RecommendedActivities({
   }
 
   const suggestions = (activities ?? []).slice(0, 4);
+
+  function addToTrip(activity: (typeof suggestions)[number]) {
+    if (!targetDay) return;
+    const start = new Date(`${targetDay.date}T09:00:00.000Z`);
+    const end = new Date(
+      start.getTime() + Math.max(activity.durationMinutes, 60) * 60_000,
+    );
+    addActivity.mutate({
+      activityId: activity.id,
+      startTime: start.toISOString(),
+      endTime: end.toISOString(),
+      estimatedCost: activity.estimatedCost,
+    });
+  }
 
   if (suggestions.length === 0) {
     return (
@@ -83,13 +122,15 @@ export function RecommendedActivities({
                   />
                 </p>
               </div>
-              <Link
-                href={`/trips/${upcomingTrip.id}/builder?addActivity=${encodeURIComponent(activity.id)}`}
+              <button
+                type="button"
+                onClick={() => addToTrip(activity)}
+                disabled={!targetDay || addActivity.isPending}
                 aria-label={`Add ${activity.name} to ${upcomingTrip.name}`}
-                className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors hover:bg-primary/90"
+                className="inline-flex size-8 shrink-0 items-center justify-center rounded-lg bg-primary text-primary-foreground transition-colors hover:bg-primary/90 disabled:cursor-not-allowed disabled:opacity-50"
               >
                 <Plus className="size-4" aria-hidden />
-              </Link>
+              </button>
             </div>
           </div>
         </article>

@@ -33,6 +33,23 @@ export default function ItineraryBuilderPage() {
   >("itinerary");
 
   const activeDay = days?.find((d) => d.id === activeDayId) ?? days?.[0];
+  const addActivity = useAddActivity(activeDay?.id ?? "", tripId);
+
+  const addCatalogActivity = (
+    activityId: string,
+    durationMinutes = 120,
+    estimatedCost?: number,
+  ) => {
+    if (!activeDay) return;
+    const start = new Date(`${activeDay.date}T09:00:00.000Z`);
+    const end = new Date(start.getTime() + durationMinutes * 60_000);
+    addActivity.mutate({
+      activityId,
+      startTime: start.toISOString(),
+      endTime: end.toISOString(),
+      estimatedCost,
+    });
+  };
 
   const [builderBudget, setBuilderBudget] = useState<number>(120);
   const [builderDuration, setBuilderDuration] = useState<number>(240);
@@ -50,7 +67,6 @@ export default function ItineraryBuilderPage() {
   });
 
   const { data: activitiesCatalog } = useActivities();
-  const addActivityMutation = useAddActivity(activeDay?.id ?? "", tripId);
 
   const handleAddRecToDay = (rec: {
     activityId: string;
@@ -60,12 +76,7 @@ export default function ItineraryBuilderPage() {
     category: string;
   }) => {
     if (!activeDay) return;
-    addActivityMutation.mutate({
-      activityId: rec.activityId,
-      estimatedCost: rec.estimatedCost,
-      startTime: "10:00",
-      endTime: "12:00",
-    });
+    addCatalogActivity(rec.activityId, rec.durationMinutes, rec.estimatedCost);
   };
 
   if (daysLoading) {
@@ -328,7 +339,7 @@ export default function ItineraryBuilderPage() {
                               category: rec.category,
                             })
                           }
-                          disabled={addActivityMutation.isPending}
+                          disabled={addActivity.isPending}
                           className="mt-1 flex w-full items-center justify-center gap-1 rounded-lg bg-primary/10 py-1.5 text-xs font-bold text-primary transition-colors hover:bg-primary hover:text-white disabled:opacity-50"
                         >
                           <Plus className="size-3.5" />
@@ -370,7 +381,19 @@ export default function ItineraryBuilderPage() {
                         {act.durationMinutes}min
                       </p>
                     </div>
-                    <button className="shrink-0 rounded-full p-1.5 text-[#64748B] hover:bg-[#F1F5F9] hover:text-primary">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        addCatalogActivity(
+                          act.id,
+                          act.durationMinutes,
+                          act.estimatedCost,
+                        )
+                      }
+                      disabled={addActivity.isPending}
+                      className="shrink-0 rounded-full p-1.5 text-[#64748B] hover:bg-[#F1F5F9] hover:text-primary disabled:opacity-50"
+                      aria-label={`Add ${act.name} to ${activeDay?.city ?? "trip"}`}
+                    >
                       <Plus className="size-4" />
                     </button>
                   </li>
@@ -460,6 +483,7 @@ function DayItinerary({ day, tripId }: { day: TripDay; tripId: string }) {
                   </div>
                 </div>
                 <button
+                  type="button"
                   onClick={() => deleteActivity.mutate(item.id)}
                   className="shrink-0 rounded-full p-1.5 text-[#94A3B8] hover:bg-[#FEF2F2] hover:text-[#DC2626]"
                   aria-label="Remove activity"
@@ -472,7 +496,10 @@ function DayItinerary({ day, tripId }: { day: TripDay; tripId: string }) {
         })}
       </ol>
 
-      <button className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-full border border-dashed border-[#E2E8F0] text-sm font-semibold text-[#64748B] transition-colors hover:border-primary hover:text-primary">
+      <button
+        type="button"
+        className="mt-5 flex h-11 w-full items-center justify-center gap-2 rounded-full border border-dashed border-[#E2E8F0] text-sm font-semibold text-[#64748B] transition-colors hover:border-primary hover:text-primary"
+      >
         <Plus className="size-4" /> Add activity
       </button>
     </div>

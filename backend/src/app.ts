@@ -18,17 +18,21 @@ import sharingRoutes from "./modules/sharing/sharing.routes";
 export function createApp(): Express {
   const app = express();
 
-  // Security middleware
-  app.use(helmet());
+  // CORS must come before helmet for preflight requests
   app.use(
     cors({
       origin: env.CORS_ORIGIN,
       credentials: true,
+      methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
+      allowedHeaders: ["Content-Type", "Authorization"],
     }),
   );
 
+  // Security middleware
+  app.use(helmet());
+
   // Body parsing
-  app.use(express.json());
+  app.use(express.json({ limit: "1mb" }));
   app.use(express.urlencoded({ extended: true }));
   app.use(cookieParser());
 

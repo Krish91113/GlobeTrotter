@@ -7,10 +7,19 @@ export interface TripDto {
   description: string | null;
   startDate: string;
   endDate: string;
-  visibilityId: string;
-  statusId: string;
-  defaultCurrencyId: string | null;
-  ownerUserId: string;
+  daysCount: number;
+  cities: string[];
+  currency: string;
+  coverImage: string | null;
+  totalBudget: number;
+  estimatedSpend: number;
+  remaining: number;
+  activitiesCount: number;
+  status: "upcoming" | "ongoing" | "completed";
   createdAt: string;
-  updatedAt: string;
+  visibilityId?: string;
+  statusId?: string;
+  defaultCurrencyId?: string | null;
+  ownerUserId?: string;
+  updatedAt?: string;
 }

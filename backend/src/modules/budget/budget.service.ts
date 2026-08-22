@@ -205,6 +205,8 @@ export class BudgetService {
         description: data.description,
         isEstimate: data.isEstimate,
         itineraryItemId: data.itineraryItemId,
+        splitCount: data.splitCount || 1,
+        splitParticipants: data.splitParticipants,
       },
       include: {
         expenseCategory: { select: { displayName: true } },
@@ -264,6 +266,8 @@ export class BudgetService {
             : undefined,
         description: data.description,
         isEstimate: data.isEstimate,
+        splitCount: data.splitCount !== undefined ? data.splitCount : undefined,
+        splitParticipants: data.splitParticipants !== undefined ? data.splitParticipants : undefined,
         itineraryItemId: data.itineraryItemId,
       },
       include: {

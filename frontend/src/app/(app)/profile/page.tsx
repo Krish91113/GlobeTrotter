@@ -1,7 +1,7 @@
 "use client";
 
 import { LogOut, Save, Settings, User } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { useCurrentUser, useLogout } from "@/features/auth/hooks/use-auth";
 import { useProfile, useUpdateProfile } from "@/hooks/queries";
@@ -44,7 +44,7 @@ const budgetStyles = [
 
 export default function ProfilePage() {
   const { data: authUser } = useCurrentUser();
-  const { data: _profile } = useProfile();
+  const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
   const logout = useLogout();
 
@@ -62,6 +62,13 @@ export default function ProfilePage() {
     authUser?.displayName || "Traveler",
   );
   const [currency, setCurrency] = useState("EUR");
+
+  useEffect(() => {
+    if (!profile) return;
+    setDisplayName(profile.name);
+    setCurrency(profile.currency);
+    setPreferences(profile.preferences);
+  }, [profile]);
 
   const handleSave = () => {
     updateProfile.mutate(
