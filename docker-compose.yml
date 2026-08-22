@@ -1,22 +1,92 @@
-version: '3.8'
-
 services:
   postgres:
-    image: postgres:16-alpine
+    image: pgvector/pgvector:pg16
     container_name: globetrotter-postgres
-    ports:
-      - "5433:5432"
+    restart: unless-stopped
     environment:
-      POSTGRES_USER: user
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: globetrotter_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: globetrotter
+    ports:
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U user"]
-      interval: 10s
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U postgres -d globetrotter"
+        ]
+      interval: 5s
       timeout: 5s
-      retries: 5
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: backend
+    container_name: globetrotter-backend
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      NODE_ENV: production
+      PORT: 5000
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/globetrotter?schema=public
+      CORS_ORIGIN: http://localhost:3000
+      JWT_SECRET: ${JWT_SECRET:-change-this-jwt-secret}
+      COOKIE_SECRET: ${COOKIE_SECRET:-change-this-cookie-secret}
+      SESSION_SECRET: ${SESSION_SECRET:-change-this-session-secret}
+      SESSION_MAX_AGE: 7d
+      RECOMMENDATION_ENGINE_URL: http://recommendation-engine:8080
+    ports:
+      - "5000:5000"
+    command:
+      - sh
+      - -c
+      - |
+        npx prisma migrate deploy
+        node dist/server.js
+
+  frontend:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: frontend
+    container_name: globetrotter-frontend
+    restart: unless-stopped
+    depends_on:
+      - backend
+    environment:
+      NODE_ENV: production
+      NEXT_TELEMETRY_DISABLED: "1"
+      NEXT_PUBLIC_API_BASE_URL: http://localhost:5000/api/v1
+    ports:
+      - "3000:3000"
+
+  recommendation-engine:
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: recommendation-engine
+    container_name: globetrotter-recommendation-engine
+    restart: unless-stopped
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_URL: postgresql://postgres:postgres@postgres:5432/globetrotter?schema=public
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_DB: globetrotter
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      PORT: 8080
+    ports:
+      - "8080:8080"
 
 volumes:
   postgres_data:
+    name: globetrotter-postgres-data
