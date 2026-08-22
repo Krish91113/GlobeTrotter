@@ -1,59 +1,95 @@
 import { z } from 'zod';
-import { isValidDateString } from '../../utils/date';
 
-const dateString = z
+const decimalString = z
   .string()
-  .regex(/^\d{4}-\d{2}-\d{2}$/, 'Date must be in YYYY-MM-DD format')
-  .refine(isValidDateString, 'Date must be a valid calendar date');
+  .regex(/^\d+(\.\d{1,2})?$/, 'Must be a decimal string, e.g. "1200.00"');
 
-export const CreateTripBaseObjectSchema = z.object({
-  name: z
-    .string()
-    .min(2, 'Name must be at least 2 characters')
-    .max(120, 'Name must not exceed 120 characters')
-    .trim(),
-  description: z.string().max(2000, 'Description must not exceed 2000 characters').optional(),
-  startDate: dateString,
-  endDate: dateString,
-  defaultCurrencyId: z.string().uuid('defaultCurrencyId must be a valid UUID').optional(),
-  targetBudget: z
-    .string()
-    .regex(/^\d+(\.\d{1,2})?$/, 'targetBudget must be a decimal string like "1250.50"')
-    .optional(),
-  visibilityId: z.string().uuid('visibilityId must be a valid UUID').optional(),
-});
+const isoDateTimeWithOffset = z.string().datetime({ offset: true });
 
-export const CreateTripSchema = CreateTripBaseObjectSchema.refine(
-  (data) => data.startDate <= data.endDate,
-  {
-    message: 'startDate must be before or equal to endDate',
-    path: ['startDate'],
-  }
-).refine((data) => !data.targetBudget || !!data.defaultCurrencyId, {
-  message: 'defaultCurrencyId is required when targetBudget is provided',
-  path: ['defaultCurrencyId'],
-});
+export const addItemSchema = z
+  .object({
+    catalogItemId: z.string().uuid('Invalid catalog item id'),
+    plannedStartAt: isoDateTimeWithOffset.optional(),
+    plannedEndAt: isoDateTimeWithOffset.optional(),
+    estimatedCost: decimalString.optional(),
+    currencyId: z.string().uuid('Invalid currency id').optional(),
+    durationMinutes: z.coerce.number().int().min(1).max(10080).optional(),
+    notes: z.string().max(500, 'Notes must be at most 500 characters').optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.plannedStartAt && data.plannedEndAt) {
+        return new Date(data.plannedStartAt) < new Date(data.plannedEndAt);
+      }
+      return true;
+    },
+    {
+      message: 'plannedStartAt must be before plannedEndAt',
+      path: ['plannedStartAt'],
+    }
+  );
 
-export const UpdateTripSchema = CreateTripBaseObjectSchema.partial().refine(
-  (data) => !data.startDate || !data.endDate || data.startDate <= data.endDate,
-  {
-    message: 'startDate must be before or equal to endDate',
-    path: ['startDate'],
-  }
-);
+export type AddItemRequest = z.infer<typeof addItemSchema>;
 
-export const ListTripsQuerySchema = z.object({
-  status: z.string().max(40).optional(),
-  cursor: z.string().optional(),
-  limit: z.coerce
-    .number()
-    .int()
-    .min(1, 'Limit must be at least 1')
-    .max(50, 'Limit must not exceed 50')
-    .default(20),
-  sort: z.enum(['nearest', 'newest', 'oldest']).default('nearest'),
-});
+export const updateItemSchema = z
+  .object({
+    plannedStartAt: isoDateTimeWithOffset.optional(),
+    plannedEndAt: isoDateTimeWithOffset.optional(),
+    estimatedCost: decimalString.optional(),
+    currencyId: z.string().uuid('Invalid currency id').nullable().optional(),
+    durationMinutes: z.coerce.number().int().min(1).max(10080).nullable().optional(),
+    notes: z.string().max(500, 'Notes must be at most 500 characters').nullable().optional(),
+  })
+  .refine(
+    (data) => {
+      if (data.plannedStartAt && data.plannedEndAt) {
+        return new Date(data.plannedStartAt) < new Date(data.plannedEndAt);
+      }
+      return true;
+    },
+    {
+      message: 'plannedStartAt must be before plannedEndAt',
+      path: ['plannedStartAt'],
+    }
+  );
 
-export type CreateTripInput = z.infer<typeof CreateTripSchema>;
-export type UpdateTripInput = z.infer<typeof UpdateTripSchema>;
-export type ListTripsQuery = z.infer<typeof ListTripsQuerySchema>;
+export type UpdateItemRequest = z.infer<typeof updateItemSchema>;
+
+export const reorderItemsSchema = z
+  .object({
+    items: z
+      .array(
+        z.object({
+          itemId: z.string().uuid('Invalid itinerary item id'),
+          sequenceNo: z.coerce.number().int().min(1),
+        })
+      )
+      .min(1, 'At least one item is required'),
+  })
+  .refine(
+    (data) => {
+      const sequenceNos = data.items.map((i) => i.sequenceNo);
+      return new Set(sequenceNos).size === sequenceNos.length;
+    },
+    {
+      message: 'sequenceNo values must be unique',
+      path: ['items'],
+    }
+  )
+  .refine(
+    (data) => {
+      const itemIds = data.items.map((i) => i.itemId);
+      return new Set(itemIds).size === itemIds.length;
+    },
+    {
+      message: 'itemId values must be unique',
+      path: ['items'],
+    }
+  );
+
+export type ReorderItemsRequest = z.infer<typeof reorderItemsSchema>;
+
+export interface OverlapWarning {
+  code: 'ITINERARY_OVERLAP';
+  message: string;
+}

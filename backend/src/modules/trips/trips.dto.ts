@@ -1,103 +1,61 @@
-import { Decimal } from 'decimal.js';
-import { formatDate } from '../../utils/date';
-import { toDecimalString } from '../../utils/money';
+import type { Prisma } from '../../../generated/prisma/client';
 
-export interface TripListItemDto {
+export interface CatalogItemSummaryDto {
   id: string;
   name: string;
-  description: string | null;
-  startDate: string;
-  endDate: string;
-  status: string;
-  stopCount: number;
-  budget: { targetAmount: string; currency: string } | null;
-  defaultCurrency: string | null;
-  createdAt: string;
+  categories: string[];
+  thumbnailUri: string | null;
 }
 
-export interface StopDto {
+export interface ItineraryItemDto {
   id: string;
-  locationId: string;
-  locationName: string;
-  country: { iso2Code: string; displayName: string } | null;
+  tripDayId: string;
   sequenceNo: number;
-  arrivalDate: string | null;
-  departureDate: string | null;
+  catalogItem: CatalogItemSummaryDto;
+  plannedStartAt: string | null;
+  plannedEndAt: string | null;
+  durationMinutes: number | null;
+  estimatedCost: string | null;
+  currency: string | null;
   notes: string | null;
 }
 
-export interface TripDetailDto extends TripListItemDto {
-  stops: StopDto[];
-  days: unknown[];
-  visibility: string;
-  revisionNo: string;
-}
-
-type CurrencyRef = { isoCode: string } | null;
-
-interface TripLike {
-  id: string;
-  name: string;
-  description: string | null;
-  startDate: Date;
-  endDate: Date;
-  revisionNo: bigint;
-  createdAt: Date;
-  status?: { code: string } | null;
-  visibility?: { code: string } | null;
-  defaultCurrency?: CurrencyRef;
-  budget?: {
-    targetAmount: Decimal;
-    currency: { isoCode: string };
-  } | null;
-  _count?: { stops?: number };
-}
-
-export function toTripListItemDto(trip: TripLike): TripListItemDto {
-  return {
-    id: trip.id,
-    name: trip.name,
-    description: trip.description,
-    startDate: formatDate(trip.startDate),
-    endDate: formatDate(trip.endDate),
-    status: trip.status?.code ?? 'unknown',
-    stopCount: trip._count?.stops ?? 0,
-    budget: trip.budget
-      ? {
-          targetAmount: toDecimalString(trip.budget.targetAmount) as string,
-          currency: trip.budget.currency.isoCode,
-        }
-      : null,
-    defaultCurrency: trip.defaultCurrency?.isoCode ?? null,
-    createdAt: trip.createdAt.toISOString(),
+type ItineraryItemWithRelations = Prisma.ItineraryItemGetPayload<{
+  include: {
+    catalogItem: {
+      include: {
+        categories: { include: { category: true } };
+        media: { take: 1; orderBy: { createdAt: 'asc' } };
+      };
+    };
+    currency: { select: { isoCode: true } };
   };
+}>;
+
+function diffMinutes(startAt: Date | null, endAt: Date | null): number | null {
+  if (!startAt || !endAt) return null;
+  const minutes = Math.round((endAt.getTime() - startAt.getTime()) / 60000);
+  return minutes > 0 ? minutes : null;
 }
 
-export function toStopDto(stop: {
-  id: string;
-  locationId: string;
-  sequenceNo: number;
-  arrivalDate: Date | null;
-  departureDate: Date | null;
-  notes: string | null;
-  location: {
-    name: string;
-    country?: { iso2Code: string; displayName: string } | null;
-  } | null;
-}): StopDto {
+export function toItineraryItemDto(item: ItineraryItemWithRelations): ItineraryItemDto {
   return {
-    id: stop.id,
-    locationId: stop.locationId,
-    locationName: stop.location?.name ?? '',
-    country: stop.location?.country
-      ? {
-          iso2Code: stop.location.country.iso2Code,
-          displayName: stop.location.country.displayName,
-        }
-      : null,
-    sequenceNo: stop.sequenceNo,
-    arrivalDate: stop.arrivalDate ? formatDate(stop.arrivalDate) : null,
-    departureDate: stop.departureDate ? formatDate(stop.departureDate) : null,
-    notes: stop.notes,
+    id: item.id,
+    tripDayId: item.tripDayId,
+    sequenceNo: item.sequenceNo,
+    catalogItem: {
+      id: item.catalogItem.id,
+      name: item.catalogItem.name,
+      categories: item.catalogItem.categories.map((c) => c.category.displayName),
+      thumbnailUri:
+        item.catalogItem.media.find((m) => m.thumbnailUri)?.thumbnailUri ?? null,
+    },
+    plannedStartAt: item.plannedStartAt ? item.plannedStartAt.toISOString() : null,
+    plannedEndAt: item.plannedEndAt ? item.plannedEndAt.toISOString() : null,
+    durationMinutes:
+      item.durationMinutes ?? diffMinutes(item.plannedStartAt, item.plannedEndAt),
+    estimatedCost: item.estimatedCost ? item.estimatedCost.toFixed(2) : null,
+    currency: item.currency?.isoCode ?? null,
+    notes: item.notes,
   };
 }
