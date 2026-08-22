@@ -16,7 +16,7 @@ export class AuthController {
           if (!fieldErrors[path]) fieldErrors[path] = [];
           fieldErrors[path].push(err.message);
         });
-        throw new ValidationError('Registration validation failed', fieldErrors, req.id);
+        throw new ValidationError('Registration validation failed', fieldErrors, String(req.id));
       }
 
       const tokens = await authService.register(
@@ -42,7 +42,7 @@ export class AuthController {
           if (!fieldErrors[path]) fieldErrors[path] = [];
           fieldErrors[path].push(err.message);
         });
-        throw new ValidationError('Login validation failed', fieldErrors, req.id);
+        throw new ValidationError('Login validation failed', fieldErrors, String(req.id));
       }
 
       const tokens = await authService.login(
@@ -76,7 +76,7 @@ export class AuthController {
     try {
       const refreshToken = getRefreshTokenFromCookies(req);
       if (!refreshToken) {
-        throw new ValidationError('Refresh token is required', undefined, req.id);
+        throw new ValidationError('Refresh token is required', undefined, String(req.id));
       }
 
       const tokens = await authService.refresh(
@@ -94,7 +94,7 @@ export class AuthController {
 
   async me(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const user = await authService.me(req.user!.userId);
+      const user = await authService.me(req.user!.userId ?? req.user!.id);
       ok(res, { user });
     } catch (error) {
       next(error);
