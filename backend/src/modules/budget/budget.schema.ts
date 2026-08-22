@@ -26,6 +26,8 @@ export const addExpenseSchema = z.object({
     .optional(),
   isEstimate: z.boolean().default(true),
   itineraryItemId: z.string().uuid("Invalid itinerary item id").optional(),
+  splitCount: z.number().int().min(1).default(1),
+  splitParticipants: z.string().optional(),
 });
 
 export type AddExpenseRequest = z.infer<typeof addExpenseSchema>;

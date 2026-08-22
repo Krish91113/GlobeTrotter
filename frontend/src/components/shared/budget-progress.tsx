@@ -14,9 +14,10 @@ interface BudgetProgressProps {
 export function BudgetProgress({ spent, total, currency = "EUR", className, showLabel = true }: BudgetProgressProps) {
   const pct = total > 0 ? Math.min(100, Math.round((spent / total) * 100)) : 0;
   const over = spent > total;
+  const safeCurrency = currency || "EUR";
 
   if (showLabel) {
-    const formatted = new Intl.NumberFormat("en-US", { style: "currency", currency, maximumFractionDigits: 0 });
+    const formatted = new Intl.NumberFormat("en-US", { style: "currency", currency: safeCurrency, maximumFractionDigits: 0 });
     return (
       <div className={className}>
         <div className="flex items-baseline justify-between text-xs">

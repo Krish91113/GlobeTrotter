@@ -1,6 +1,6 @@
 import type { NextFunction, Request, Response } from "express";
 import { ok } from "../../lib/apiResponse";
-import * as tripsService from "./trips.service";
+import { tripsService } from "./trips.service";
 
 export async function getTripsController(
   req: Request,
@@ -8,7 +8,7 @@ export async function getTripsController(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const trips = await tripsService.getTrips(req.user!.id);
+    const trips = await tripsService.listTrips(req.user!.id);
     ok(res, trips);
   } catch (error) {
     next(error);
@@ -21,7 +21,7 @@ export async function getTripController(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const trip = await tripsService.getTripById(
+    const trip = await tripsService.getTrip(
       req.params.tripId as string,
       req.user!.id,
     );

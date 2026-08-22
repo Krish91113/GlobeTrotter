@@ -38,6 +38,8 @@ export interface ExpenseDto {
   description: string | null;
   isEstimate: boolean;
   itineraryItemId: string | null;
+  splitCount: number;
+  splitParticipants: string | null;
 }
 
 type ExpenseWithRelations = Prisma.ExpenseGetPayload<{
@@ -58,5 +60,7 @@ export function toExpenseDto(expense: ExpenseWithRelations): ExpenseDto {
     description: expense.description,
     isEstimate: expense.isEstimate,
     itineraryItemId: expense.itineraryItemId,
+    splitCount: expense.splitCount,
+    splitParticipants: expense.splitParticipants,
   };
 }

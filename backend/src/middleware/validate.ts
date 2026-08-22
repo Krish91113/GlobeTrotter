@@ -6,7 +6,7 @@ import { createError } from "../lib/errors";
  * Validates request body against a Zod schema
  */
 export const validate = (schema: ZodSchema) => {
-  return (req: Request, _res: Response, next: NextFunction): void => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.body);
 
     if (!result.success) {
@@ -28,7 +28,7 @@ export const validate = (schema: ZodSchema) => {
  * Validates request query parameters against a Zod schema
  */
 export const validateQuery = (schema: ZodSchema) => {
-  return (req: Request, _res: Response, next: NextFunction): void => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.query);
 
     if (!result.success) {
@@ -53,7 +53,7 @@ export const validateQuery = (schema: ZodSchema) => {
  * Validates request URL parameters against a Zod schema
  */
 export const validateParams = (schema: ZodSchema) => {
-  return (req: Request, _res: Response, next: NextFunction): void => {
+  return (req: Request, res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.params);
 
     if (!result.success) {

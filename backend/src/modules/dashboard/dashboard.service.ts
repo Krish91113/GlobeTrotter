@@ -1,54 +1,43 @@
-import { prisma } from "../../database/prisma";
-import { type DashboardSummaryDto, toTripListItemDto } from "./dashboard.dto";
+import { prisma } from '../../database/prisma';
+import { DashboardSummaryDto } from './dashboard.dto';
+import { tripsService } from '../trips/trips.service';
 
 const TOP_DESTINATION_LIMIT = 5;
 
 export class DashboardService {
   async getDashboardSummary(userId: string): Promise<DashboardSummaryDto> {
-    const [upcomingTripCount, distinctStops, recentTrips, topLocations] =
-      await Promise.all([
-        prisma.trip.count({
-          where: { ownerUserId: userId, status: { code: "upcoming" } },
-        }),
-        prisma.tripStop.findMany({
-          where: { trip: { ownerUserId: userId } },
-          select: { locationId: true },
-          distinct: ["locationId"],
-        }),
-        prisma.trip.findMany({
-          where: { ownerUserId: userId },
-          orderBy: { updatedAt: "desc" },
-          take: 3,
-          include: {
-            status: { select: { code: true } },
-            _count: { select: { stops: true } },
-            budget: { include: { currency: { select: { isoCode: true } } } },
+    const [allTrips, topLocations] = await Promise.all([
+      tripsService.listTrips(userId),
+      prisma.location.findMany({
+        where: { catalogItems: { some: {} } },
+        orderBy: { catalogItems: { _count: 'desc' } },
+        take: TOP_DESTINATION_LIMIT,
+        include: {
+          country: { select: { displayName: true } },
+          catalogItems: {
+            where: { media: { some: {} } },
+            take: 1,
+            select: { media: { select: { thumbnailUri: true } } },
           },
-        }),
-        prisma.location.findMany({
-          where: { catalogItems: { some: {} } },
-          orderBy: { catalogItems: { _count: "desc" } },
-          take: TOP_DESTINATION_LIMIT,
-          include: {
-            country: { select: { displayName: true } },
-            catalogItems: {
-              where: { media: { some: {} } },
-              take: 1,
-              select: { media: { select: { thumbnailUri: true } } },
-            },
-            _count: { select: { catalogItems: true } },
-          },
-        }),
-      ]);
+          _count: { select: { catalogItems: true } },
+        },
+      }),
+    ]);
+
+    const recentTrips = allTrips
+      .filter((trip) => trip.status !== 'completed')
+      .sort((a, b) => a.startDate.localeCompare(b.startDate))
+      .slice(0, 3);
+    const plannedCities = new Set(allTrips.flatMap((trip) => trip.cities));
 
     return {
-      upcomingTripCount,
-      totalPlannedCities: distinctStops.length,
-      recentTrips: recentTrips.map(toTripListItemDto),
+      upcomingTripCount: allTrips.filter((trip) => trip.status === 'upcoming').length,
+      totalPlannedCities: plannedCities.size,
+      recentTrips,
       recommendedDestinations: topLocations.map((location) => ({
         id: location.id,
         name: location.name,
-        country: location.country?.displayName ?? "",
+        country: location.country?.displayName ?? '',
         thumbnailUri:
           location.catalogItems[0]?.media.find((m) => m.thumbnailUri)
             ?.thumbnailUri ?? null,

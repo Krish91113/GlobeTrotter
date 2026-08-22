@@ -102,6 +102,13 @@ export async function getPreferences(userId: string): Promise<PreferencesDto> {
       theme: true,
       notificationsEnabled: true,
       emailNotifications: true,
+      cultureWeight: true,
+      foodWeight: true,
+      adventureWeight: true,
+      natureWeight: true,
+      relaxationWeight: true,
+      travelPace: true,
+      budgetLevel: true,
     },
   });
 
@@ -170,6 +177,13 @@ export async function upsertPreferences(
       theme: true,
       notificationsEnabled: true,
       emailNotifications: true,
+      cultureWeight: true,
+      foodWeight: true,
+      adventureWeight: true,
+      natureWeight: true,
+      relaxationWeight: true,
+      travelPace: true,
+      budgetLevel: true,
     },
   });
 
