@@ -37,6 +37,9 @@ export const errorHandler = (
       error: {
         code: err.code,
         message: err.message,
+        ...(err.details && typeof err.details === 'object' && 'fieldErrors' in err.details
+          ? { fieldErrors: (err.details as { fieldErrors: Record<string, string[]> }).fieldErrors }
+          : {}),
       },
       requestId,
     });
