@@ -1,18 +1,14 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { differenceInCalendarDays, isValid, parseISO } from "date-fns";
+import { ArrowLeft, Check, Loader2, MapPin, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { ArrowLeft, Check, Loader2, MapPin, Sparkles } from "lucide-react";
-import { differenceInCalendarDays, parseISO, isValid } from "date-fns";
-import { createTripSchema, type CreateTripFormValues } from "@/schemas";
-import { useCreateTrip, useLocations } from "@/hooks/queries";
 import { Money } from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
 import {
   Form,
   FormControl,
@@ -21,6 +17,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
 import {
   Select,
   SelectContent,
@@ -28,7 +25,10 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import { useCreateTrip, useLocations } from "@/hooks/queries";
 import { cn } from "@/lib/utils";
+import { type CreateTripFormValues, createTripSchema } from "@/schemas";
 
 const currencies = [
   { value: "EUR", label: "EUR — Euro €" },
@@ -76,7 +76,7 @@ export default function CreateTripPage() {
         description: values.description || undefined,
         firstDestination: values.firstDestination?.trim() || undefined,
       },
-      { onSuccess: (trip) => router.push(`/trips/${trip.id}/builder`) }
+      { onSuccess: (trip) => router.push(`/trips/${trip.id}/builder`) },
     );
   };
 
@@ -92,7 +92,11 @@ export default function CreateTripPage() {
     startDate && endDate
       ? differenceInCalendarDays(parseISO(endDate), parseISO(startDate))
       : null;
-  const durationValid = days !== null && isValid(parseISO(startDate)) && isValid(parseISO(endDate)) && days >= 0;
+  const durationValid =
+    days !== null &&
+    isValid(parseISO(startDate)) &&
+    isValid(parseISO(endDate)) &&
+    days >= 0;
 
   return (
     <div className="container-page py-10 pb-24 sm:py-12">
@@ -107,13 +111,18 @@ export default function CreateTripPage() {
       <div className="mt-6 grid gap-8 lg:grid-cols-[1fr_380px]">
         {/* Left: form */}
         <div className="rounded-xl border border-border bg-card p-6 shadow-card sm:p-8">
-          <h1 className="text-2xl font-bold tracking-tight text-foreground">Create a trip</h1>
+          <h1 className="text-2xl font-bold tracking-tight text-foreground">
+            Create a trip
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground">
             A few details now — you can refine everything later in the builder.
           </p>
 
           <Form {...form}>
-            <form onSubmit={form.handleSubmit(onSubmit)} className="mt-8 space-y-6">
+            <form
+              onSubmit={form.handleSubmit(onSubmit)}
+              className="mt-8 space-y-6"
+            >
               <FormField
                 control={form.control}
                 name="name"
@@ -134,7 +143,10 @@ export default function CreateTripPage() {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Description</FormLabel>
-                    <span className="text-xs font-normal text-muted-foreground"> (optional)</span>
+                    <span className="text-xs font-normal text-muted-foreground">
+                      {" "}
+                      (optional)
+                    </span>
                     <FormControl>
                       <Textarea
                         rows={3}
@@ -190,9 +202,17 @@ export default function CreateTripPage() {
                           min={0}
                           inputMode="numeric"
                           placeholder="2400"
-                          value={field.value === 0 && field.value !== undefined ? "" : String(field.value ?? "")}
+                          value={
+                            field.value === 0 && field.value !== undefined
+                              ? ""
+                              : String(field.value ?? "")
+                          }
                           onChange={(e) =>
-                            field.onChange(e.target.value === "" ? 0 : Number(e.target.value))
+                            field.onChange(
+                              e.target.value === ""
+                                ? 0
+                                : Number(e.target.value),
+                            )
                           }
                         />
                       </FormControl>
@@ -206,7 +226,10 @@ export default function CreateTripPage() {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Currency</FormLabel>
-                      <Select onValueChange={field.onChange} value={field.value}>
+                      <Select
+                        onValueChange={field.onChange}
+                        value={field.value}
+                      >
                         <FormControl>
                           <SelectTrigger className="w-full">
                             <SelectValue placeholder="Select currency" />
@@ -233,7 +256,11 @@ export default function CreateTripPage() {
                   <FormItem>
                     <FormLabel>Cover image</FormLabel>
                     <FormControl>
-                      <div role="radiogroup" aria-label="Choose a cover image" className="flex flex-wrap gap-2">
+                      <div
+                        role="radiogroup"
+                        aria-label="Choose a cover image"
+                        className="flex flex-wrap gap-2"
+                      >
                         {coverPresets.map((src) => (
                           <button
                             key={src}
@@ -245,14 +272,22 @@ export default function CreateTripPage() {
                               "relative size-16 overflow-hidden rounded-lg border transition",
                               field.value === src
                                 ? "ring-2 ring-primary ring-offset-2 ring-offset-card border-transparent"
-                                : "border-border opacity-80 hover:opacity-100"
+                                : "border-border opacity-80 hover:opacity-100",
                             )}
                           >
                             {/* eslint-disable-next-line @next/next/no-img-element */}
-                            <img src={src} alt="" loading="lazy" className="size-full object-cover" />
+                            <img
+                              src={src}
+                              alt=""
+                              loading="lazy"
+                              className="size-full object-cover"
+                            />
                             {field.value === src && (
                               <span className="absolute inset-0 flex items-center justify-center bg-primary/30">
-                                <Check className="size-4 text-white" aria-hidden />
+                                <Check
+                                  className="size-4 text-white"
+                                  aria-hidden
+                                />
                               </span>
                             )}
                           </button>
@@ -267,12 +302,19 @@ export default function CreateTripPage() {
               <DestinationField form={form} />
 
               {createTrip.isError && (
-                <div role="alert" className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive">
+                <div
+                  role="alert"
+                  className="rounded-lg border border-destructive/20 bg-destructive/10 px-4 py-3 text-sm text-destructive"
+                >
                   {createTrip.error?.message ?? "Something went wrong"}
                 </div>
               )}
 
-              <Button type="submit" disabled={createTrip.isPending} className="w-full sm:w-auto sm:min-w-40">
+              <Button
+                type="submit"
+                disabled={createTrip.isPending}
+                className="w-full sm:w-auto sm:min-w-40"
+              >
                 {createTrip.isPending ? (
                   <>
                     <Loader2 className="size-4 animate-spin" aria-hidden />
@@ -297,7 +339,11 @@ export default function CreateTripPage() {
             />
             <div className="space-y-4 p-5">
               <h2 className="text-lg font-bold text-foreground">
-                {name.trim() || <span className="font-medium italic text-muted-foreground">Your trip name</span>}
+                {name.trim() || (
+                  <span className="font-medium italic text-muted-foreground">
+                    Your trip name
+                  </span>
+                )}
               </h2>
               <p className="text-sm text-muted-foreground">
                 {durationValid
@@ -311,8 +357,14 @@ export default function CreateTripPage() {
                 </span>
               )}
               <div className="flex items-baseline justify-between border-t border-border pt-4">
-                <Money amount={totalBudget} currency={currency} className="text-xl font-bold text-foreground" />
-                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">{currency}</span>
+                <Money
+                  amount={totalBudget}
+                  currency={currency}
+                  className="text-xl font-bold text-foreground"
+                />
+                <span className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {currency}
+                </span>
               </div>
               <p className="flex items-start gap-1.5 text-xs text-muted-foreground">
                 <Sparkles className="mt-0.5 size-3.5 shrink-0" aria-hidden />
@@ -351,7 +403,11 @@ function DestinationField({
       render={({ field }) => (
         <FormItem className="relative">
           <FormLabel>
-            First destination<span className="text-xs font-normal text-muted-foreground"> (optional)</span>
+            First destination
+            <span className="text-xs font-normal text-muted-foreground">
+              {" "}
+              (optional)
+            </span>
           </FormLabel>
           <FormControl>
             <Input
@@ -372,12 +428,11 @@ function DestinationField({
           </FormControl>
           {open && results.length > 0 && (
             <ul
-              role="listbox"
               aria-label="Suggested destinations"
               className="absolute z-20 mt-1 w-full overflow-hidden rounded-lg border border-border bg-popover py-1 shadow-lift"
             >
               {results.slice(0, 6).map((loc) => (
-                <li key={loc.id} role="option" aria-selected={false}>
+                <li key={loc.id} aria-selected={false}>
                   <button
                     type="button"
                     onMouseDown={(e) => {
@@ -389,7 +444,9 @@ function DestinationField({
                     className="flex w-full items-center justify-between px-3 py-2 text-left text-sm transition-colors hover:bg-secondary"
                   >
                     <span>{loc.name}</span>
-                    <span className="text-xs text-muted-foreground">{loc.country}</span>
+                    <span className="text-xs text-muted-foreground">
+                      {loc.country}
+                    </span>
                   </button>
                 </li>
               ))}

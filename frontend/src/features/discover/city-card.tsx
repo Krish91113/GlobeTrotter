@@ -16,7 +16,14 @@ interface CityCardProps {
   onAddToTrip: () => void;
 }
 
-export function CityCard({ location, view, saved, onToggleSave, onView, onAddToTrip }: CityCardProps) {
+export function CityCard({
+  location,
+  view,
+  saved,
+  onToggleSave,
+  onView,
+  onAddToTrip,
+}: CityCardProps) {
   const SaveIcon = saved ? BookmarkCheck : Bookmark;
 
   if (view === "list") {
@@ -46,7 +53,9 @@ export function CityCard({ location, view, saved, onToggleSave, onView, onAddToT
             </div>
             <RatingBadge rating={location.rating} />
           </div>
-          <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">{location.description}</p>
+          <p className="mt-1.5 line-clamp-2 text-sm text-muted-foreground">
+            {location.description}
+          </p>
           <div className="mt-auto flex items-center justify-between gap-2 pt-3">
             <span className="text-sm text-muted-foreground">
               <Money
@@ -60,12 +69,21 @@ export function CityCard({ location, view, saved, onToggleSave, onView, onAddToT
               <Button
                 size="icon"
                 variant="ghost"
-                aria-label={saved ? `Remove ${location.name} from saved cities` : `Save ${location.name}`}
+                aria-label={
+                  saved
+                    ? `Remove ${location.name} from saved cities`
+                    : `Save ${location.name}`
+                }
                 onClick={onToggleSave}
               >
                 <SaveIcon className={cn("size-4", saved && "text-primary")} />
               </Button>
-              <Button size="icon" variant="ghost" aria-label={`Add ${location.name} to trip`} onClick={onAddToTrip}>
+              <Button
+                size="icon"
+                variant="ghost"
+                aria-label={`Add ${location.name} to trip`}
+                onClick={onAddToTrip}
+              >
                 <Plus className="size-4" />
               </Button>
               <Button size="sm" variant="outline" onClick={onView}>
@@ -91,13 +109,19 @@ export function CityCard({ location, view, saved, onToggleSave, onView, onAddToT
         />
         <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-black/60 to-transparent" />
         <div className="absolute bottom-3 left-4 text-white">
-          <h3 className="font-bold leading-tight drop-shadow-sm">{location.name}</h3>
+          <h3 className="font-bold leading-tight drop-shadow-sm">
+            {location.name}
+          </h3>
           <p className="text-xs opacity-90">{location.country}</p>
         </div>
         <div className="absolute right-2.5 top-2.5 flex gap-1.5">
           <button
             type="button"
-            aria-label={saved ? `Remove ${location.name} from saved cities` : `Save ${location.name}`}
+            aria-label={
+              saved
+                ? `Remove ${location.name} from saved cities`
+                : `Save ${location.name}`
+            }
             onClick={onToggleSave}
             className="rounded-full bg-white/90 p-1.5 text-foreground shadow-sm transition hover:bg-white"
           >
@@ -115,7 +139,9 @@ export function CityCard({ location, view, saved, onToggleSave, onView, onAddToT
       </div>
 
       <div className="space-y-3 p-4">
-        <p className="line-clamp-2 min-h-10 text-sm text-muted-foreground">{location.description}</p>
+        <p className="line-clamp-2 min-h-10 text-sm text-muted-foreground">
+          {location.description}
+        </p>
         <div className="flex items-center justify-between">
           <RatingBadge rating={location.rating} />
           <span className="text-xs text-muted-foreground">
@@ -135,7 +161,12 @@ export function CityCard({ location, view, saved, onToggleSave, onView, onAddToT
           ))}
         </div>
         <div className="flex gap-2 pt-1">
-          <Button variant="outline" size="sm" className="flex-1" onClick={onView}>
+          <Button
+            variant="outline"
+            size="sm"
+            className="flex-1"
+            onClick={onView}
+          >
             <Eye className="size-3.5" />
             View
           </Button>

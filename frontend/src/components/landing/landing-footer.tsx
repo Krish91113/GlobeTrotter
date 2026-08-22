@@ -1,5 +1,5 @@
-import Link from "next/link";
 import { Globe2 } from "lucide-react";
+import Link from "next/link";
 
 const footerLinks = [
   { href: "#destinations", label: "Destinations" },
@@ -19,11 +19,18 @@ export function LandingFooter() {
 
         <div className="flex flex-wrap gap-6 text-sm text-muted-foreground">
           {footerLinks.map((link) => (
-            <a key={link.href} href={link.href} className="transition-colors hover:text-foreground">
+            <a
+              key={link.href}
+              href={link.href}
+              className="transition-colors hover:text-foreground"
+            >
               {link.label}
             </a>
           ))}
-          <Link href="/signup" className="transition-colors hover:text-foreground">
+          <Link
+            href="/signup"
+            className="transition-colors hover:text-foreground"
+          >
             Sign up
           </Link>
         </div>

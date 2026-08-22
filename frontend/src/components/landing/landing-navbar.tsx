@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
 import { AnimatePresence, motion } from "framer-motion";
 import { ArrowRight, Globe2, Menu, X } from "lucide-react";
+import Link from "next/link";
+import React from "react";
 import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 
 const navLinks = [

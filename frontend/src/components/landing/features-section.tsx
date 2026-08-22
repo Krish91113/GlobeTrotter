@@ -1,7 +1,7 @@
 "use client";
 
-import { Reveal } from "./reveal";
 import { landingFeatures } from "./landing-data";
+import { Reveal } from "./reveal";
 
 export function FeaturesSection() {
   return (

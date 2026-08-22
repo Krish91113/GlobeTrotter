@@ -1,9 +1,9 @@
 "use client";
 
+import { Clock, MapPin, Plus } from "lucide-react";
 import Link from "next/link";
-import { MapPin, Plus, Clock } from "lucide-react";
-import { useActivities } from "@/hooks/queries";
 import { CardSkeleton, Money, RatingBadge } from "@/components/shared";
+import { useActivities } from "@/hooks/queries";
 import type { Trip } from "@/types";
 
 interface RecommendedActivitiesProps {
@@ -17,7 +17,9 @@ function formatDuration(minutes: number): string {
   return `${rounded} hr${rounded === 1 ? "" : "s"}`;
 }
 
-export function RecommendedActivities({ upcomingTrip }: RecommendedActivitiesProps) {
+export function RecommendedActivities({
+  upcomingTrip,
+}: RecommendedActivitiesProps) {
   const firstCity = upcomingTrip.cities[0] ?? "";
   const { data: activities, isLoading } = useActivities({ query: firstCity });
 
@@ -36,7 +38,8 @@ export function RecommendedActivities({ upcomingTrip }: RecommendedActivitiesPro
   if (suggestions.length === 0) {
     return (
       <p className="rounded-xl border border-border bg-card px-6 py-10 text-center text-sm text-muted-foreground">
-        No activity ideas for {firstCity} yet — browse the full catalog in the builder.
+        No activity ideas for {firstCity} yet — browse the full catalog in the
+        builder.
       </p>
     );
   }
@@ -56,9 +59,14 @@ export function RecommendedActivities({ upcomingTrip }: RecommendedActivitiesPro
           />
           <div className="flex min-w-0 flex-1 flex-col justify-between p-3">
             <div className="min-w-0">
-              <h3 className="truncate text-sm font-semibold text-foreground">{activity.name}</h3>
+              <h3 className="truncate text-sm font-semibold text-foreground">
+                {activity.name}
+              </h3>
               <p className="mt-0.5 truncate text-xs text-muted-foreground">
-                <MapPin className="mr-1 inline size-3 align-[-2px]" aria-hidden />
+                <MapPin
+                  className="mr-1 inline size-3 align-[-2px]"
+                  aria-hidden
+                />
                 {activity.city}
               </p>
             </div>
@@ -69,7 +77,10 @@ export function RecommendedActivities({ upcomingTrip }: RecommendedActivitiesPro
                   <Clock className="size-3" aria-hidden />
                   {formatDuration(activity.durationMinutes)}
                   {" · "}
-                  <Money amount={activity.estimatedCost} currency={activity.currency} />
+                  <Money
+                    amount={activity.estimatedCost}
+                    currency={activity.currency}
+                  />
                 </p>
               </div>
               <Link

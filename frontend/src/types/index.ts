@@ -215,6 +215,26 @@ export interface Recommendation {
   image: string;
 }
 
+export interface RecommendationFilters {
+  tripId?: string;
+  cityId?: string;
+  city?: string;
+  interests?: string[];
+  budget?: number;
+  availableMinutes?: number;
+  travelPace?: "slow" | "moderate" | "fast";
+  category?: string;
+  limit?: number;
+  alreadySelected?: string[];
+}
+
+export interface RecommendationOptions {
+  cities: Array<{ id: string; name: string }>;
+  categories: string[];
+  interests: string[];
+  travelPaces: Array<{ id: string; label: string; minutes: number }>;
+}
+
 // ── Budget ──
 export interface BudgetSummary {
   tripId: string;

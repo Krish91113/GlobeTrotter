@@ -27,7 +27,7 @@ export class ApiError extends Error {
     statusCode: number,
     code: string = "UNKNOWN_ERROR",
     fieldErrors?: Record<string, string[]>,
-    requestId?: string
+    requestId?: string,
   ) {
     super(message);
     this.name = "ApiError";
@@ -50,7 +50,7 @@ export function getApiBaseUrl(): string {
 
 export async function apiClient<T>(
   endpoint: string,
-  options: RequestInit = {}
+  options: RequestInit = {},
 ): Promise<T> {
   const baseUrl = getApiBaseUrl().replace(/\/$/, "");
   const path = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
@@ -77,7 +77,7 @@ export async function apiClient<T>(
     throw new ApiError(
       err?.message || "Unable to connect to server. Please check your network.",
       0,
-      "NETWORK_ERROR"
+      "NETWORK_ERROR",
     );
   }
 
@@ -94,7 +94,7 @@ export async function apiClient<T>(
       throw new ApiError(
         response.statusText || "An unexpected error occurred",
         response.status,
-        "HTTP_ERROR"
+        "HTTP_ERROR",
       );
     }
     return {} as T;
@@ -118,7 +118,7 @@ export async function apiClient<T>(
       response.status,
       errorDetails?.code || "REQUEST_FAILED",
       errorDetails?.fieldErrors,
-      json.requestId
+      json.requestId,
     );
   }
 

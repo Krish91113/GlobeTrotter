@@ -24,7 +24,8 @@ export const landingDestinations: LandingDestination[] = [
     country: "Italy",
     tag: "Culture & Food",
     image: "/images/rome.jpg",
-    description: "Ancient landmarks, cobblestone streets and unforgettable food.",
+    description:
+      "Ancient landmarks, cobblestone streets and unforgettable food.",
   },
   {
     city: "Kyoto",

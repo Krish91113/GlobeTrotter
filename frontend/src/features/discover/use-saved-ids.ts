@@ -11,7 +11,8 @@ export function useSavedIds(storageKey: string, noun: string) {
       const raw = window.localStorage.getItem(storageKey);
       if (raw) {
         const parsed: unknown = JSON.parse(raw);
-        if (Array.isArray(parsed)) setIds(parsed.filter((v): v is string => typeof v === "string"));
+        if (Array.isArray(parsed))
+          setIds(parsed.filter((v): v is string => typeof v === "string"));
       }
     } catch {
       setIds([]);
@@ -28,9 +29,13 @@ export function useSavedIds(storageKey: string, noun: string) {
       } catch {
         // storage unavailable — keep in-memory state only
       }
-      toast.success(wasSaved ? `${name} removed from saved ${noun}` : `${name} added to saved ${noun}`);
+      toast.success(
+        wasSaved
+          ? `${name} removed from saved ${noun}`
+          : `${name} added to saved ${noun}`,
+      );
     },
-    [ids, noun, storageKey]
+    [ids, noun, storageKey],
   );
 
   return { savedIds: ids, toggleSave: toggle };

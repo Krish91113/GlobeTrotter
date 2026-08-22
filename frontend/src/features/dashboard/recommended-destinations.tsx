@@ -1,11 +1,11 @@
 "use client";
 
-import { useState } from "react";
-import Link from "next/link";
-import { toast } from "sonner";
 import { Bookmark } from "lucide-react";
-import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { useState } from "react";
+import { toast } from "sonner";
 import { CardSkeleton, Money, RatingBadge } from "@/components/shared";
+import { cn } from "@/lib/utils";
 import type { Location } from "@/types";
 
 interface RecommendedDestinationsProps {
@@ -13,7 +13,10 @@ interface RecommendedDestinationsProps {
   isLoading?: boolean;
 }
 
-export function RecommendedDestinations({ destinations, isLoading }: RecommendedDestinationsProps) {
+export function RecommendedDestinations({
+  destinations,
+  isLoading,
+}: RecommendedDestinationsProps) {
   const [savedIds, setSavedIds] = useState<Set<string>>(new Set());
 
   function toggleSaved(id: string) {
@@ -34,7 +37,10 @@ export function RecommendedDestinations({ destinations, isLoading }: Recommended
     return (
       <div className="flex snap-x snap-mandatory gap-4 overflow-x-auto pb-2 hide-scrollbar md:grid md:grid-cols-3 md:overflow-visible xl:grid-cols-6">
         {Array.from({ length: 6 }).map((_, i) => (
-          <CardSkeleton key={i} className="w-56 shrink-0 snap-start md:w-auto" />
+          <CardSkeleton
+            key={i}
+            className="w-56 shrink-0 snap-start md:w-auto"
+          />
         ))}
       </div>
     );
@@ -68,14 +74,22 @@ export function RecommendedDestinations({ destinations, isLoading }: Recommended
           <div className="flex flex-1 flex-col gap-1.5 p-4">
             <div className="flex items-start justify-between gap-2">
               <div className="min-w-0">
-                <h3 className="truncate text-sm font-bold text-foreground">{dest.name}</h3>
+                <h3 className="truncate text-sm font-bold text-foreground">
+                  {dest.name}
+                </h3>
                 <p className="text-xs text-muted-foreground">{dest.country}</p>
               </div>
               <RatingBadge rating={dest.rating} className="shrink-0" />
             </div>
 
             <p className="text-xs text-muted-foreground">
-              from <Money amount={dest.averageDailyCost} currency={dest.currency} className="font-semibold text-foreground" /> / day
+              from{" "}
+              <Money
+                amount={dest.averageDailyCost}
+                currency={dest.currency}
+                className="font-semibold text-foreground"
+              />{" "}
+              / day
             </p>
 
             <div className="mt-1 flex flex-wrap gap-1.5">
@@ -92,7 +106,11 @@ export function RecommendedDestinations({ destinations, isLoading }: Recommended
 
           <button
             type="button"
-            aria-label={savedIds.has(dest.id) ? `Remove ${dest.name} from saved places` : `Save ${dest.name}`}
+            aria-label={
+              savedIds.has(dest.id)
+                ? `Remove ${dest.name} from saved places`
+                : `Save ${dest.name}`
+            }
             onClick={(e) => {
               e.preventDefault();
               e.stopPropagation();
@@ -102,10 +120,13 @@ export function RecommendedDestinations({ destinations, isLoading }: Recommended
               "absolute right-2.5 top-2.5 flex size-9 items-center justify-center rounded-lg backdrop-blur-md transition-colors",
               savedIds.has(dest.id)
                 ? "bg-primary text-primary-foreground"
-                : "bg-black/45 text-white hover:bg-black/65"
+                : "bg-black/45 text-white hover:bg-black/65",
             )}
           >
-            <Bookmark className={cn("size-4", savedIds.has(dest.id) && "fill-current")} aria-hidden />
+            <Bookmark
+              className={cn("size-4", savedIds.has(dest.id) && "fill-current")}
+              aria-hidden
+            />
           </button>
         </Link>
       ))}

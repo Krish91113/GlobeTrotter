@@ -1,10 +1,10 @@
 "use client";
 
-import Link from "next/link";
 import { Check } from "lucide-react";
+import Link from "next/link";
 import { useCurrentUser } from "@/features/auth/hooks/use-auth";
-import { Reveal } from "./reveal";
 import { recommendationPreview } from "./landing-data";
+import { Reveal } from "./reveal";
 
 const benefits = [
   "Matches your travel interests",
@@ -29,8 +29,8 @@ export function RecommendationSection() {
             </h2>
 
             <p className="mt-5 max-w-xl leading-7 text-muted-foreground">
-              Suggestions are based on destination, travel preferences,
-              existing activities and your remaining budget.
+              Suggestions are based on destination, travel preferences, existing
+              activities and your remaining budget.
             </p>
 
             <div className="mt-7 space-y-3">
@@ -107,4 +107,3 @@ export function RecommendationSection() {
     </section>
   );
 }
-

@@ -1,7 +1,7 @@
 "use client";
 
+import { ArrowRight, CalendarDays, Eye, MapPin, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { MapPin, CalendarDays, Sparkles, ArrowRight, Eye } from "lucide-react";
 import { BudgetProgress, DateRangeText } from "@/components/shared";
 import type { Trip } from "@/types";
 
@@ -23,8 +23,13 @@ export function ContinuePlanning({ trips }: ContinuePlanningProps) {
   if (relevant.length === 0) {
     return (
       <div className="rounded-2xl border border-dashed border-border bg-card px-6 py-14 text-center">
-        <Sparkles className="mx-auto size-8 text-muted-foreground" aria-hidden />
-        <h3 className="mt-4 text-base font-semibold text-foreground">Nothing in the works</h3>
+        <Sparkles
+          className="mx-auto size-8 text-muted-foreground"
+          aria-hidden
+        />
+        <h3 className="mt-4 text-base font-semibold text-foreground">
+          Nothing in the works
+        </h3>
         <p className="mt-1.5 text-sm text-muted-foreground">
           Start a trip and it will show up here so you can keep planning.
         </p>
@@ -39,7 +44,10 @@ export function ContinuePlanning({ trips }: ContinuePlanningProps) {
           key={trip.id}
           className="flex flex-col overflow-hidden rounded-xl border border-border bg-card shadow-card transition hover:-translate-y-0.5 hover:shadow-lift"
         >
-          <Link href={`/trips/${trip.id}`} className="group relative block aspect-[16/9] overflow-hidden">
+          <Link
+            href={`/trips/${trip.id}`}
+            className="group relative block aspect-[16/9] overflow-hidden"
+          >
             <img
               src={trip.coverImage}
               alt={trip.name}
@@ -61,7 +69,10 @@ export function ContinuePlanning({ trips }: ContinuePlanningProps) {
 
             {trip.cities.length > 0 && (
               <p className="truncate text-sm text-muted-foreground">
-                <MapPin className="mr-1.5 inline size-4 align-[-3px]" aria-hidden />
+                <MapPin
+                  className="mr-1.5 inline size-4 align-[-3px]"
+                  aria-hidden
+                />
                 {trip.cities.join(" → ")}
               </p>
             )}

@@ -1,7 +1,7 @@
 "use client";
 
-import { useCallback } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useCallback } from "react";
 
 export function formatDuration(minutes: number): string {
   if (minutes < 60) return `${minutes} min`;
@@ -25,7 +25,7 @@ export function useQueryParamSync(pathname: string) {
       const qs = next.toString();
       router.replace(qs ? `${pathname}?${qs}` : pathname, { scroll: false });
     },
-    [router, searchParams, pathname]
+    [router, searchParams, pathname],
   );
 }
 

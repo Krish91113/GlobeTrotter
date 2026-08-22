@@ -1,14 +1,14 @@
 "use client";
 
-import { LandingNavbar } from "./landing-navbar";
-import { HeroSection } from "./hero-section";
-import { TripPreviewSection } from "./trip-preview-section";
-import { DestinationsSection } from "./destinations-section";
-import { HowItWorksSection } from "./how-it-works-section";
-import { FeaturesSection } from "./features-section";
-import { RecommendationSection } from "./recommendation-section";
 import { CtaSection } from "./cta-section";
+import { DestinationsSection } from "./destinations-section";
+import { FeaturesSection } from "./features-section";
+import { HeroSection } from "./hero-section";
+import { HowItWorksSection } from "./how-it-works-section";
 import { LandingFooter } from "./landing-footer";
+import { LandingNavbar } from "./landing-navbar";
+import { RecommendationSection } from "./recommendation-section";
+import { TripPreviewSection } from "./trip-preview-section";
 
 export function GlobeTrotterLanding() {
   return (

@@ -1,13 +1,16 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import { AlertCircle, Eye, EyeOff, Globe2, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Globe2, Loader2, AlertCircle } from "lucide-react";
-import { useState, useEffect } from "react";
-import { loginSchema, type LoginFormValues } from "@/features/auth/schemas/auth.schema";
-import { useLogin, useCurrentUser } from "@/features/auth/hooks/use-auth";
+import { useCurrentUser, useLogin } from "@/features/auth/hooks/use-auth";
+import {
+  type LoginFormValues,
+  loginSchema,
+} from "@/features/auth/schemas/auth.schema";
 
 export default function LoginPage() {
   const router = useRouter();
@@ -55,7 +58,9 @@ export default function LoginPage() {
             <span className="flex size-9 items-center justify-center rounded-full bg-primary text-white">
               <Globe2 className="size-5" />
             </span>
-            <span className="text-xl font-bold tracking-tight text-[#0F172A]">GlobeTrotter</span>
+            <span className="text-xl font-bold tracking-tight text-[#0F172A]">
+              GlobeTrotter
+            </span>
           </Link>
 
           <h1 className="text-3xl font-bold text-[#0F172A]">Welcome back</h1>
@@ -63,9 +68,16 @@ export default function LoginPage() {
             Sign in to continue planning your next adventure.
           </p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5" noValidate>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="mt-8 space-y-5"
+            noValidate
+          >
             <div>
-              <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-[#0F172A]">
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-sm font-medium text-[#0F172A]"
+              >
                 Email address
               </label>
               <input
@@ -79,13 +91,18 @@ export default function LoginPage() {
                 {...register("email")}
               />
               {errors.email && (
-                <p className="mt-1.5 text-xs text-[#DC2626]">{errors.email.message}</p>
+                <p className="mt-1.5 text-xs text-[#DC2626]">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
             <div>
               <div className="mb-1.5 flex items-center justify-between">
-                <label htmlFor="password" className="block text-sm font-medium text-[#0F172A]">
+                <label
+                  htmlFor="password"
+                  className="block text-sm font-medium text-[#0F172A]"
+                >
                   Password
                 </label>
               </div>
@@ -106,11 +123,17 @@ export default function LoginPage() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] transition-colors hover:text-[#0F172A]"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+                  {showPassword ? (
+                    <EyeOff className="size-5" />
+                  ) : (
+                    <Eye className="size-5" />
+                  )}
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1.5 text-xs text-[#DC2626]">{errors.password.message}</p>
+                <p className="mt-1.5 text-xs text-[#DC2626]">
+                  {errors.password.message}
+                </p>
               )}
             </div>
 
@@ -122,12 +145,16 @@ export default function LoginPage() {
                 <AlertCircle className="mt-0.5 size-4.5 shrink-0" />
                 <div className="flex-1">
                   <p className="font-semibold">Authentication failed</p>
-                  <p className="text-xs text-[#DC2626]/90 mt-0.5">{login.error.message}</p>
+                  <p className="text-xs text-[#DC2626]/90 mt-0.5">
+                    {login.error.message}
+                  </p>
                   {login.error.fieldErrors && (
                     <ul className="mt-1.5 list-disc pl-4 text-xs space-y-0.5">
-                      {Object.entries(login.error.fieldErrors).map(([field, msgs]) => (
-                        <li key={field}>{msgs.join(", ")}</li>
-                      ))}
+                      {Object.entries(login.error.fieldErrors).map(
+                        ([field, msgs]) => (
+                          <li key={field}>{msgs.join(", ")}</li>
+                        ),
+                      )}
                     </ul>
                   )}
                 </div>
@@ -151,7 +178,10 @@ export default function LoginPage() {
 
           <p className="mt-8 text-center text-sm text-[#64748B]">
             Don&apos;t have an account?{" "}
-            <Link href="/signup" className="font-semibold text-primary hover:underline">
+            <Link
+              href="/signup"
+              className="font-semibold text-primary hover:underline"
+            >
               Create an account
             </Link>
           </p>
@@ -171,9 +201,12 @@ export default function LoginPage() {
             <span className="rounded-full bg-white/20 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider backdrop-blur-md">
               GlobeTrotter Trips
             </span>
-            <h2 className="mt-4 text-3xl font-bold">Plan trips you&apos;ll actually take</h2>
+            <h2 className="mt-4 text-3xl font-bold">
+              Plan trips you&apos;ll actually take
+            </h2>
             <p className="mt-3 max-w-md text-sm leading-relaxed opacity-90">
-              Discover destinations, build day-by-day itineraries, track your budget in real time, and share your adventures.
+              Discover destinations, build day-by-day itineraries, track your
+              budget in real time, and share your adventures.
             </p>
           </div>
         </div>

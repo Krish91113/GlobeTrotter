@@ -22,9 +22,7 @@ export const signupSchema = z
       .min(1, "Email is required")
       .email("Enter a valid email address")
       .transform((v) => v.trim().toLowerCase()),
-    password: z
-      .string()
-      .min(8, "Password must be at least 8 characters"),
+    password: z.string().min(8, "Password must be at least 8 characters"),
     confirmPassword: z.string().min(1, "Please confirm your password"),
   })
   .refine((data) => data.password === data.confirmPassword, {
@@ -55,7 +53,10 @@ export const createTripSchema = z
       if (!data.startDate || !data.endDate) return true;
       return new Date(data.startDate) <= new Date(data.endDate);
     },
-    { message: "Start date must be before or equal to end date", path: ["endDate"] }
+    {
+      message: "Start date must be before or equal to end date",
+      path: ["endDate"],
+    },
   );
 
 export const updateTripSchema = z
@@ -78,7 +79,10 @@ export const updateTripSchema = z
       if (!data.startDate || !data.endDate) return true;
       return new Date(data.startDate) <= new Date(data.endDate);
     },
-    { message: "Start date must be before or equal to end date", path: ["endDate"] }
+    {
+      message: "Start date must be before or equal to end date",
+      path: ["endDate"],
+    },
   );
 
 // ── Stop ──
@@ -93,7 +97,10 @@ export const addStopSchema = z
       if (!data.arrivalDate || !data.departureDate) return true;
       return new Date(data.arrivalDate) <= new Date(data.departureDate);
     },
-    { message: "Arrival must be before or equal to departure", path: ["departureDate"] }
+    {
+      message: "Arrival must be before or equal to departure",
+      path: ["departureDate"],
+    },
   );
 
 // ── Activity / Itinerary Item ──
@@ -109,7 +116,7 @@ export const addActivitySchema = z
       if (!data.startTime || !data.endTime) return true;
       return data.startTime < data.endTime;
     },
-    { message: "End time must be after start time", path: ["endTime"] }
+    { message: "End time must be after start time", path: ["endTime"] },
   );
 
 // ── Expense ──

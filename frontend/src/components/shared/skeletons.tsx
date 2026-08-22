@@ -1,9 +1,20 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
-export function CardSkeleton({ className, image = true }: { className?: string; image?: boolean }) {
+export function CardSkeleton({
+  className,
+  image = true,
+}: {
+  className?: string;
+  image?: boolean;
+}) {
   return (
-    <div className={cn("overflow-hidden rounded-xl border border-border bg-card", className)}>
+    <div
+      className={cn(
+        "overflow-hidden rounded-xl border border-border bg-card",
+        className,
+      )}
+    >
       {image && <Skeleton className="aspect-[16/10] w-full rounded-none" />}
       <div className="space-y-3 p-5">
         <Skeleton className="h-4 w-2/3" />
@@ -28,7 +39,12 @@ export function StatCardSkeleton() {
 
 export function RowSkeleton({ className }: { className?: string }) {
   return (
-    <div className={cn("flex items-center gap-4 rounded-xl border border-border bg-card p-4", className)}>
+    <div
+      className={cn(
+        "flex items-center gap-4 rounded-xl border border-border bg-card p-4",
+        className,
+      )}
+    >
       <Skeleton className="size-12 rounded-lg" />
       <div className="flex-1 space-y-2">
         <Skeleton className="h-3.5 w-1/3" />

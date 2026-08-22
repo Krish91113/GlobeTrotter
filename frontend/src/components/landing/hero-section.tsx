@@ -1,7 +1,5 @@
 "use client";
 
-import React from "react";
-import Link from "next/link";
 import {
   animate,
   motion,
@@ -9,17 +7,13 @@ import {
   useMotionValue,
 } from "framer-motion";
 import { ArrowRight, Check, Sparkles } from "lucide-react";
+import Link from "next/link";
+import React from "react";
 import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 import { FlipWords } from "./flip-words";
 import { heroTrustItems, heroWords } from "./landing-data";
 
-const auroraPalette = [
-  "#dbeafe",
-  "#ccfbf1",
-  "#e0e7ff",
-  "#bae6fd",
-  "#dbeafe",
-];
+const auroraPalette = ["#dbeafe", "#ccfbf1", "#e0e7ff", "#bae6fd", "#dbeafe"];
 
 export function HeroSection() {
   const auroraColor = useMotionValue(auroraPalette[0]);

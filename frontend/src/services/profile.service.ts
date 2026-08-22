@@ -3,5 +3,6 @@ import type { UserProfile } from "@/types";
 
 export const profileService = {
   getProfile: (): Promise<UserProfile> => mockGetProfile(),
-  updateProfile: (input: Partial<UserProfile>): Promise<UserProfile> => mockUpdateProfile(input),
+  updateProfile: (input: Partial<UserProfile>): Promise<UserProfile> =>
+    mockUpdateProfile(input),
 };

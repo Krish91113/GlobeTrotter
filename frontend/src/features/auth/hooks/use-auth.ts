@@ -3,9 +3,9 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
-import { authService } from "../api/auth.service";
-import type { LoginInput, RegisterInput, AuthUser } from "../types/auth.types";
 import { ApiError } from "@/lib/api-client";
+import { authService } from "../api/auth.service";
+import type { AuthUser, LoginInput, RegisterInput } from "../types/auth.types";
 
 export const AUTH_QUERY_KEY = ["auth", "me"] as const;
 
@@ -74,7 +74,9 @@ export function useRegister() {
       router.push("/dashboard");
     },
     onError: (err: ApiError) => {
-      toast.error(err.message || "Registration failed. Please check your details.");
+      toast.error(
+        err.message || "Registration failed. Please check your details.",
+      );
     },
   });
 }

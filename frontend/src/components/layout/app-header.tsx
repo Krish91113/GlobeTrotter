@@ -1,8 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { usePathname } from "next/navigation";
-import { useEffect, useState } from "react";
 import {
   Bell,
   CheckCheck,
@@ -17,8 +14,9 @@ import {
   User,
   X,
 } from "lucide-react";
-import { cn } from "@/lib/utils";
-import { useCurrentUser, useLogout } from "@/features/auth/hooks/use-auth";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useEffect, useState } from "react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -27,6 +25,8 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useCurrentUser, useLogout } from "@/features/auth/hooks/use-auth";
+import { cn } from "@/lib/utils";
 import { GlobalSearch } from "./global-search";
 
 const navItems = [
@@ -44,8 +44,16 @@ const mobileNavItems = [
 ] as const;
 
 const notifications = [
-  { id: "n1", title: "Welcome to GlobeTrotter", body: "Start planning your first adventure." },
-  { id: "n2", title: "Tip: share trips with friends", body: "Generate a share link from any trip." },
+  {
+    id: "n1",
+    title: "Welcome to GlobeTrotter",
+    body: "Start planning your first adventure.",
+  },
+  {
+    id: "n2",
+    title: "Tip: share trips with friends",
+    body: "Generate a share link from any trip.",
+  },
 ];
 
 export function AppHeader() {
@@ -72,7 +80,7 @@ export function AppHeader() {
           "sticky top-0 z-40 transition-all duration-200",
           scrolled
             ? "border-b border-border bg-background/80 shadow-sm backdrop-blur-md"
-            : "border-b border-transparent bg-background/60"
+            : "border-b border-transparent bg-background/60",
         )}
       >
         <div className="container-page flex h-16 items-center gap-6">
@@ -97,7 +105,7 @@ export function AppHeader() {
                     "after:absolute after:inset-x-3 after:-bottom-[17px] after:h-0.5 after:rounded-full after:bg-primary after:transition-transform",
                     isActive
                       ? "text-foreground after:scale-x-100"
-                      : "text-muted-foreground hover:text-foreground after:scale-x-0 after:origin-left"
+                      : "text-muted-foreground hover:text-foreground after:scale-x-0 after:origin-left",
                   )}
                 >
                   {item.label}
@@ -148,7 +156,9 @@ export function AppHeader() {
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-80 rounded-xl">
                 <div className="flex items-center justify-between px-2 py-1.5">
-                  <DropdownMenuLabel className="p-0">Notifications</DropdownMenuLabel>
+                  <DropdownMenuLabel className="p-0">
+                    Notifications
+                  </DropdownMenuLabel>
                   <button
                     type="button"
                     onClick={() => setHasUnread(false)}
@@ -161,14 +171,19 @@ export function AppHeader() {
                 </div>
                 <DropdownMenuSeparator />
                 {notifications.map((n) => (
-                  <DropdownMenuItem key={n.id} className="flex-col items-start gap-0.5 py-2.5">
+                  <DropdownMenuItem
+                    key={n.id}
+                    className="flex-col items-start gap-0.5 py-2.5"
+                  >
                     <span className="flex w-full items-center gap-2 text-sm font-semibold text-foreground">
                       {hasUnread && (
                         <span className="size-1.5 shrink-0 rounded-full bg-primary" />
                       )}
                       {n.title}
                     </span>
-                    <span className="pl-3.5 text-xs text-muted-foreground">{n.body}</span>
+                    <span className="pl-3.5 text-xs text-muted-foreground">
+                      {n.body}
+                    </span>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -182,7 +197,11 @@ export function AppHeader() {
                   className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
                 >
                   <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                    {user?.displayName ? user.displayName.charAt(0).toUpperCase() : <User className="size-3.5" />}
+                    {user?.displayName ? (
+                      user.displayName.charAt(0).toUpperCase()
+                    ) : (
+                      <User className="size-3.5" />
+                    )}
                   </span>
                   <span className="hidden max-w-[120px] truncate sm:inline">
                     {user?.displayName || "Account"}
@@ -223,7 +242,11 @@ export function AppHeader() {
               onClick={() => setMobileOpen(!mobileOpen)}
               className="rounded-full p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground md:hidden"
             >
-              {mobileOpen ? <X className="size-5" /> : <Menu className="size-5" />}
+              {mobileOpen ? (
+                <X className="size-5" />
+              ) : (
+                <Menu className="size-5" />
+              )}
             </button>
           </div>
         </div>
@@ -238,7 +261,9 @@ export function AppHeader() {
           <nav className="absolute right-0 top-0 flex h-full w-72 flex-col justify-between bg-card p-6 shadow-lift">
             <div>
               <div className="flex items-center justify-between">
-                <span className="text-base font-bold text-foreground">Menu</span>
+                <span className="text-base font-bold text-foreground">
+                  Menu
+                </span>
                 <button
                   type="button"
                   aria-label="Close mobile menu"
@@ -251,8 +276,12 @@ export function AppHeader() {
 
               {user && (
                 <div className="mt-4 rounded-xl border border-border bg-secondary p-3">
-                  <p className="text-sm font-bold text-foreground">{user.displayName}</p>
-                  <p className="truncate text-xs text-muted-foreground">{user.email}</p>
+                  <p className="text-sm font-bold text-foreground">
+                    {user.displayName}
+                  </p>
+                  <p className="truncate text-xs text-muted-foreground">
+                    {user.email}
+                  </p>
                 </div>
               )}
 
@@ -266,7 +295,7 @@ export function AppHeader() {
                       "block rounded-xl px-4 py-3 text-sm font-semibold transition-colors",
                       pathname.startsWith(item.href)
                         ? "bg-secondary text-primary"
-                        : "text-muted-foreground hover:bg-secondary hover:text-foreground"
+                        : "text-muted-foreground hover:bg-secondary hover:text-foreground",
                     )}
                   >
                     {item.label}
@@ -319,7 +348,7 @@ export function AppHeader() {
                 href={item.href}
                 className={cn(
                   "flex flex-col items-center gap-1 py-2.5 text-[11px] font-semibold transition-colors",
-                  isActive ? "text-primary" : "text-muted-foreground"
+                  isActive ? "text-primary" : "text-muted-foreground",
                 )}
               >
                 <Icon className="size-5" />

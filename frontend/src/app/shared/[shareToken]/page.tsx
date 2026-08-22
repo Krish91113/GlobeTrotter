@@ -1,35 +1,47 @@
 "use client";
 
-import { useParams } from "next/navigation";
+import { Clock, Copy, Globe2, Share2 } from "lucide-react";
 import Link from "next/link";
-import { Copy, Heart, Globe2, Clock, Share2 } from "lucide-react";
-import { usePublicTrip, useCopyTrip } from "@/hooks/queries";
+import { useParams } from "next/navigation";
+import { useCopyTrip, usePublicTrip } from "@/hooks/queries";
 
 export default function SharedTripPage() {
   const { shareToken } = useParams<{ shareToken: string }>();
   const { data: trip, isLoading, isError } = usePublicTrip(shareToken);
   const copyTrip = useCopyTrip();
 
-  if (isLoading) return (
-    <div className="min-h-screen">
-      <div className="h-[340px] animate-pulse bg-[#E2E8F0]" />
-      <div className="container-page mt-8 space-y-4">
-        {[1, 2, 3].map((i) => <div key={i} className="h-24 animate-pulse rounded-2xl bg-[#E2E8F0]" />)}
+  if (isLoading)
+    return (
+      <div className="min-h-screen">
+        <div className="h-[340px] animate-pulse bg-[#E2E8F0]" />
+        <div className="container-page mt-8 space-y-4">
+          {[1, 2, 3].map((i) => (
+            <div
+              key={i}
+              className="h-24 animate-pulse rounded-2xl bg-[#E2E8F0]"
+            />
+          ))}
+        </div>
       </div>
-    </div>
-  );
+    );
 
-  if (isError || !trip) return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-2xl font-bold text-[#0F172A]">Trip not found</h1>
-        <p className="mt-2 text-[#64748B]">This share link may have expired or been revoked.</p>
-        <Link href="/" className="mt-6 inline-block text-sm font-semibold text-primary hover:underline">
-          Go to GlobeTrotter
-        </Link>
+  if (isError || !trip)
+    return (
+      <div className="flex min-h-screen items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-bold text-[#0F172A]">Trip not found</h1>
+          <p className="mt-2 text-[#64748B]">
+            This share link may have expired or been revoked.
+          </p>
+          <Link
+            href="/"
+            className="mt-6 inline-block text-sm font-semibold text-primary hover:underline"
+          >
+            Go to GlobeTrotter
+          </Link>
+        </div>
       </div>
-    </div>
-  );
+    );
 
   return (
     <div className="min-h-screen pb-24">
@@ -48,12 +60,18 @@ export default function SharedTripPage() {
 
       {/* Hero */}
       <div className="relative h-[340px] w-full overflow-hidden sm:h-[440px]">
-        <img src={trip.coverImage} alt={trip.name} className="size-full object-cover" />
+        <img
+          src={trip.coverImage}
+          alt={trip.name}
+          className="size-full object-cover"
+        />
         <div className="absolute inset-0 bg-gradient-to-t from-[#0F172A]/70 to-transparent" />
         <div className="container-page absolute inset-x-0 bottom-0 pb-8 text-white">
           <p className="text-sm opacity-90">Shared itinerary</p>
           <h1 className="mt-1 text-4xl font-bold sm:text-5xl">{trip.name}</h1>
-          <p className="mt-2 opacity-90">{trip.cities.join(" • ")} · {trip.daysCount} days</p>
+          <p className="mt-2 opacity-90">
+            {trip.cities.join(" • ")} · {trip.daysCount} days
+          </p>
         </div>
       </div>
 
@@ -81,12 +99,16 @@ export default function SharedTripPage() {
           <div className="inline-flex items-center gap-6 rounded-2xl bg-[#F1F5F9] px-6 py-4">
             <div>
               <p className="text-sm text-[#64748B]">Budget</p>
-              <p className="text-lg font-bold text-[#0F172A]">€{trip.budgetSummary.totalBudget.toLocaleString()}</p>
+              <p className="text-lg font-bold text-[#0F172A]">
+                €{trip.budgetSummary.totalBudget.toLocaleString()}
+              </p>
             </div>
             <div className="h-10 w-px bg-[#E2E8F0]" />
             <div>
               <p className="text-sm text-[#64748B]">Estimated spend</p>
-              <p className="text-lg font-bold text-[#0F172A]">€{trip.budgetSummary.estimatedSpend.toLocaleString()}</p>
+              <p className="text-lg font-bold text-[#0F172A]">
+                €{trip.budgetSummary.estimatedSpend.toLocaleString()}
+              </p>
             </div>
           </div>
         </div>
@@ -103,7 +125,9 @@ export default function SharedTripPage() {
                   {day.dayNumber}
                 </div>
                 <div>
-                  <h3 className="font-bold text-[#0F172A]">{day.date} — {day.city}</h3>
+                  <h3 className="font-bold text-[#0F172A]">
+                    {day.date} — {day.city}
+                  </h3>
                 </div>
               </div>
               <ul className="ml-4 mt-4 space-y-4 border-l-2 border-[#E2E8F0] pl-6">

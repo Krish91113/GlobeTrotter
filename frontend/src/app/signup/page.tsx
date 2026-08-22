@@ -1,13 +1,23 @@
 "use client";
 
+import { zodResolver } from "@hookform/resolvers/zod";
+import {
+  AlertCircle,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  Globe2,
+  Loader2,
+} from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { Eye, EyeOff, Globe2, Loader2, AlertCircle, CheckCircle2 } from "lucide-react";
-import { useState, useEffect } from "react";
-import { signupSchema, type SignupFormValues } from "@/features/auth/schemas/auth.schema";
-import { useRegister, useCurrentUser } from "@/features/auth/hooks/use-auth";
+import { useCurrentUser, useRegister } from "@/features/auth/hooks/use-auth";
+import {
+  type SignupFormValues,
+  signupSchema,
+} from "@/features/auth/schemas/auth.schema";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -36,8 +46,14 @@ export default function SignupPage() {
   // Password requirement checks
   const passwordChecks = [
     { label: "At least 8 characters", valid: passwordVal.length >= 8 },
-    { label: "At least one uppercase letter", valid: /[A-Z]/.test(passwordVal) },
-    { label: "At least one lowercase letter", valid: /[a-z]/.test(passwordVal) },
+    {
+      label: "At least one uppercase letter",
+      valid: /[A-Z]/.test(passwordVal),
+    },
+    {
+      label: "At least one lowercase letter",
+      valid: /[a-z]/.test(passwordVal),
+    },
     { label: "At least one number", valid: /[0-9]/.test(passwordVal) },
   ];
 
@@ -73,17 +89,28 @@ export default function SignupPage() {
             <span className="flex size-9 items-center justify-center rounded-full bg-primary text-white">
               <Globe2 className="size-5" />
             </span>
-            <span className="text-xl font-bold tracking-tight text-[#0F172A]">GlobeTrotter</span>
+            <span className="text-xl font-bold tracking-tight text-[#0F172A]">
+              GlobeTrotter
+            </span>
           </Link>
 
-          <h1 className="text-3xl font-bold text-[#0F172A]">Create your account</h1>
+          <h1 className="text-3xl font-bold text-[#0F172A]">
+            Create your account
+          </h1>
           <p className="mt-2 text-[#64748B]">
             Start building personalized multi-city travel itineraries.
           </p>
 
-          <form onSubmit={handleSubmit(onSubmit)} className="mt-8 space-y-5" noValidate>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className="mt-8 space-y-5"
+            noValidate
+          >
             <div>
-              <label htmlFor="displayName" className="mb-1.5 block text-sm font-medium text-[#0F172A]">
+              <label
+                htmlFor="displayName"
+                className="mb-1.5 block text-sm font-medium text-[#0F172A]"
+              >
                 Full name
               </label>
               <input
@@ -97,12 +124,17 @@ export default function SignupPage() {
                 {...register("displayName")}
               />
               {errors.displayName && (
-                <p className="mt-1.5 text-xs text-[#DC2626]">{errors.displayName.message}</p>
+                <p className="mt-1.5 text-xs text-[#DC2626]">
+                  {errors.displayName.message}
+                </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="email" className="mb-1.5 block text-sm font-medium text-[#0F172A]">
+              <label
+                htmlFor="email"
+                className="mb-1.5 block text-sm font-medium text-[#0F172A]"
+              >
                 Email address
               </label>
               <input
@@ -116,12 +148,17 @@ export default function SignupPage() {
                 {...register("email")}
               />
               {errors.email && (
-                <p className="mt-1.5 text-xs text-[#DC2626]">{errors.email.message}</p>
+                <p className="mt-1.5 text-xs text-[#DC2626]">
+                  {errors.email.message}
+                </p>
               )}
             </div>
 
             <div>
-              <label htmlFor="password" className="mb-1.5 block text-sm font-medium text-[#0F172A]">
+              <label
+                htmlFor="password"
+                className="mb-1.5 block text-sm font-medium text-[#0F172A]"
+              >
                 Password
               </label>
               <div className="relative">
@@ -141,17 +178,25 @@ export default function SignupPage() {
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] transition-colors hover:text-[#0F172A]"
                   aria-label={showPassword ? "Hide password" : "Show password"}
                 >
-                  {showPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+                  {showPassword ? (
+                    <EyeOff className="size-5" />
+                  ) : (
+                    <Eye className="size-5" />
+                  )}
                 </button>
               </div>
               {errors.password && (
-                <p className="mt-1.5 text-xs text-[#DC2626]">{errors.password.message}</p>
+                <p className="mt-1.5 text-xs text-[#DC2626]">
+                  {errors.password.message}
+                </p>
               )}
 
               {/* Password complexity checklist */}
               {passwordVal.length > 0 && (
                 <div className="mt-2.5 rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] p-3 text-xs space-y-1.5">
-                  <p className="font-semibold text-[#0F172A] mb-1">Password requirements:</p>
+                  <p className="font-semibold text-[#0F172A] mb-1">
+                    Password requirements:
+                  </p>
                   {passwordChecks.map((chk) => (
                     <div key={chk.label} className="flex items-center gap-2">
                       <CheckCircle2
@@ -159,7 +204,13 @@ export default function SignupPage() {
                           chk.valid ? "text-[#16A34A]" : "text-[#94A3B8]"
                         }`}
                       />
-                      <span className={chk.valid ? "text-[#16A34A] font-medium" : "text-[#64748B]"}>
+                      <span
+                        className={
+                          chk.valid
+                            ? "text-[#16A34A] font-medium"
+                            : "text-[#64748B]"
+                        }
+                      >
                         {chk.label}
                       </span>
                     </div>
@@ -169,7 +220,10 @@ export default function SignupPage() {
             </div>
 
             <div>
-              <label htmlFor="confirmPassword" className="mb-1.5 block text-sm font-medium text-[#0F172A]">
+              <label
+                htmlFor="confirmPassword"
+                className="mb-1.5 block text-sm font-medium text-[#0F172A]"
+              >
                 Confirm password
               </label>
               <div className="relative">
@@ -179,7 +233,9 @@ export default function SignupPage() {
                   autoComplete="new-password"
                   placeholder="Re-enter password"
                   className={`h-12 w-full rounded-xl border bg-white px-4 pr-12 text-sm outline-none transition-colors focus:border-primary focus:ring-2 focus:ring-primary/20 ${
-                    errors.confirmPassword ? "border-[#DC2626]" : "border-[#E2E8F0]"
+                    errors.confirmPassword
+                      ? "border-[#DC2626]"
+                      : "border-[#E2E8F0]"
                   }`}
                   {...register("confirmPassword")}
                 />
@@ -187,13 +243,21 @@ export default function SignupPage() {
                   type="button"
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className="absolute right-3 top-1/2 -translate-y-1/2 text-[#64748B] transition-colors hover:text-[#0F172A]"
-                  aria-label={showConfirmPassword ? "Hide password" : "Show password"}
+                  aria-label={
+                    showConfirmPassword ? "Hide password" : "Show password"
+                  }
                 >
-                  {showConfirmPassword ? <EyeOff className="size-5" /> : <Eye className="size-5" />}
+                  {showConfirmPassword ? (
+                    <EyeOff className="size-5" />
+                  ) : (
+                    <Eye className="size-5" />
+                  )}
                 </button>
               </div>
               {errors.confirmPassword && (
-                <p className="mt-1.5 text-xs text-[#DC2626]">{errors.confirmPassword.message}</p>
+                <p className="mt-1.5 text-xs text-[#DC2626]">
+                  {errors.confirmPassword.message}
+                </p>
               )}
             </div>
 
@@ -205,12 +269,16 @@ export default function SignupPage() {
                 <AlertCircle className="mt-0.5 size-4.5 shrink-0" />
                 <div className="flex-1">
                   <p className="font-semibold">Registration failed</p>
-                  <p className="text-xs text-[#DC2626]/90 mt-0.5">{registerMutation.error.message}</p>
+                  <p className="text-xs text-[#DC2626]/90 mt-0.5">
+                    {registerMutation.error.message}
+                  </p>
                   {registerMutation.error.fieldErrors && (
                     <ul className="mt-1.5 list-disc pl-4 text-xs space-y-0.5">
-                      {Object.entries(registerMutation.error.fieldErrors).map(([field, msgs]) => (
-                        <li key={field}>{msgs.join(", ")}</li>
-                      ))}
+                      {Object.entries(registerMutation.error.fieldErrors).map(
+                        ([field, msgs]) => (
+                          <li key={field}>{msgs.join(", ")}</li>
+                        ),
+                      )}
                     </ul>
                   )}
                 </div>
@@ -224,7 +292,8 @@ export default function SignupPage() {
             >
               {registerMutation.isPending ? (
                 <span className="flex items-center gap-2">
-                  <Loader2 className="size-4 animate-spin" /> Creating account...
+                  <Loader2 className="size-4 animate-spin" /> Creating
+                  account...
                 </span>
               ) : (
                 "Create account"
@@ -234,7 +303,10 @@ export default function SignupPage() {
 
           <p className="mt-8 text-center text-sm text-[#64748B]">
             Already have an account?{" "}
-            <Link href="/login" className="font-semibold text-primary hover:underline">
+            <Link
+              href="/login"
+              className="font-semibold text-primary hover:underline"
+            >
               Sign in
             </Link>
           </p>
@@ -254,9 +326,12 @@ export default function SignupPage() {
             <span className="rounded-full bg-white/20 px-3.5 py-1 text-xs font-semibold uppercase tracking-wider backdrop-blur-md">
               Join GlobeTrotter
             </span>
-            <h2 className="mt-4 text-3xl font-bold">Your next journey begins here</h2>
+            <h2 className="mt-4 text-3xl font-bold">
+              Your next journey begins here
+            </h2>
             <p className="mt-3 max-w-md text-sm leading-relaxed opacity-90">
-              Create multi-city itineraries, discover catalog activities, and collaborate with ease.
+              Create multi-city itineraries, discover catalog activities, and
+              collaborate with ease.
             </p>
           </div>
         </div>

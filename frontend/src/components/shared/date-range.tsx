@@ -7,7 +7,10 @@ function toDate(value: string | Date): Date {
   return typeof value === "string" ? parseISO(value) : value;
 }
 
-export function formatDate(value: string | Date, pattern = "MMM d, yyyy"): string {
+export function formatDate(
+  value: string | Date,
+  pattern = "MMM d, yyyy",
+): string {
   try {
     return format(toDate(value), pattern);
   } catch {

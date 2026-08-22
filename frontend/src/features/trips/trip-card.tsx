@@ -1,7 +1,5 @@
 "use client";
 
-import Link from "next/link";
-import { useState } from "react";
 import {
   CalendarDays,
   Clock,
@@ -14,7 +12,15 @@ import {
   Share2,
   Trash2,
 } from "lucide-react";
-import { StatusBadge, BudgetProgress, DateRangeText, Money, ConfirmDialog } from "@/components/shared";
+import Link from "next/link";
+import { useState } from "react";
+import {
+  BudgetProgress,
+  ConfirmDialog,
+  DateRangeText,
+  Money,
+  StatusBadge,
+} from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -23,8 +29,12 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  useCreateShareLink,
+  useCreateTrip,
+  useDeleteTrip,
+} from "@/hooks/queries";
 import { cn } from "@/lib/utils";
-import { useCreateShareLink, useCreateTrip, useDeleteTrip } from "@/hooks/queries";
 import type { Trip } from "@/types";
 
 interface TripCardProps {
@@ -58,17 +68,24 @@ export function TripCard({ trip, variant = "grid" }: TripCardProps) {
       <article
         className={cn(
           "group relative overflow-hidden rounded-xl border border-border bg-card shadow-card transition-shadow hover:shadow-lift",
-          isList && "sm:flex"
+          isList && "sm:flex",
         )}
       >
         <Link
           href={href}
           className={cn(
             "relative block overflow-hidden",
-            isList ? "h-full w-full aspect-[16/9] sm:aspect-auto sm:w-44 sm:shrink-0" : "w-full"
+            isList
+              ? "h-full w-full aspect-[16/9] sm:aspect-auto sm:w-44 sm:shrink-0"
+              : "w-full",
           )}
         >
-          <span className={cn("block", isList ? "h-40 sm:h-full" : "aspect-[16/10]")}>
+          <span
+            className={cn(
+              "block",
+              isList ? "h-40 sm:h-full" : "aspect-[16/10]",
+            )}
+          >
             {/* eslint-disable-next-line @next/next/no-img-element */}
             <img
               src={trip.coverImage}
@@ -77,14 +94,20 @@ export function TripCard({ trip, variant = "grid" }: TripCardProps) {
               className="size-full object-cover transition-transform duration-500 group-hover:scale-105"
             />
           </span>
-          <StatusBadge status={trip.status} className="absolute left-3 top-3 shadow-sm" />
+          <StatusBadge
+            status={trip.status}
+            className="absolute left-3 top-3 shadow-sm"
+          />
         </Link>
 
         <div className={cn("flex min-w-0 flex-1 flex-col gap-3 p-5")}>
           <div className="flex items-start justify-between gap-2">
             <div className="min-w-0">
               <h3 className="truncate text-base font-bold text-foreground">
-                <Link href={href} className="transition-colors hover:text-primary">
+                <Link
+                  href={href}
+                  className="transition-colors hover:text-primary"
+                >
                   {trip.name}
                 </Link>
               </h3>
@@ -118,7 +141,10 @@ export function TripCard({ trip, variant = "grid" }: TripCardProps) {
                 <DropdownMenuItem onSelect={() => share.mutate()}>
                   <Share2 className="size-4" /> Share
                 </DropdownMenuItem>
-                <DropdownMenuItem onSelect={() => duplicate()} disabled={createTrip.isPending}>
+                <DropdownMenuItem
+                  onSelect={() => duplicate()}
+                  disabled={createTrip.isPending}
+                >
                   <Copy className="size-4" /> Duplicate
                 </DropdownMenuItem>
                 <DropdownMenuSeparator />
@@ -153,7 +179,11 @@ export function TripCard({ trip, variant = "grid" }: TripCardProps) {
             <p className="text-sm font-semibold text-success">
               <Money amount={remaining} currency={trip.currency} />{" "}
               <span className="font-normal text-muted-foreground">left of</span>{" "}
-              <Money amount={trip.totalBudget} currency={trip.currency} className="text-muted-foreground" />
+              <Money
+                amount={trip.totalBudget}
+                currency={trip.currency}
+                className="text-muted-foreground"
+              />
             </p>
             <BudgetProgress
               spent={trip.estimatedSpend}

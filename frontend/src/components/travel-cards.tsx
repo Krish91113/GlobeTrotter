@@ -1,18 +1,26 @@
+import { Heart, Plus, Star } from "lucide-react";
 import Link from "next/link";
 import type { ReactNode } from "react";
-import { Heart, Plus, Star } from "lucide-react";
-import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import type { Place, Trip } from "@/data/travel";
 import { cn } from "@/lib/utils";
 
-export function Rating({ value, reviews }: { value: number; reviews?: number }) {
+export function Rating({
+  value,
+  reviews,
+}: {
+  value: number;
+  reviews?: number;
+}) {
   return (
     <span className="flex items-center gap-1 text-sm font-semibold">
       <Star className="size-3.5 fill-coral text-coral" />
       {value.toFixed(1)}
       {reviews ? (
-        <span className="font-normal text-muted-foreground">({reviews.toLocaleString()})</span>
+        <span className="font-normal text-muted-foreground">
+          ({reviews.toLocaleString()})
+        </span>
       ) : null}
     </span>
   );
@@ -48,11 +56,15 @@ export function PlaceCard({
           aria-label="Save place"
           className="absolute right-3 top-3 flex size-9 items-center justify-center rounded-full bg-background/90 text-foreground shadow-card transition-colors hover:bg-background"
         >
-          <Heart className={cn("size-4.5", place.saved && "fill-coral text-coral")} />
+          <Heart
+            className={cn("size-4.5", place.saved && "fill-coral text-coral")}
+          />
         </button>
       </div>
       <div className="space-y-2 p-4">
-        <h3 className="font-display text-base font-bold leading-snug">{place.name}</h3>
+        <h3 className="font-display text-base font-bold leading-snug">
+          {place.name}
+        </h3>
         <Rating value={place.rating} reviews={place.reviews} />
         <p className="text-sm text-muted-foreground">
           {place.category} • {place.city}
@@ -60,17 +72,26 @@ export function PlaceCard({
         <p className="text-sm font-semibold">
           {place.price}
           {place.duration ? (
-            <span className="font-normal text-muted-foreground"> • {place.duration}</span>
+            <span className="font-normal text-muted-foreground">
+              {" "}
+              • {place.duration}
+            </span>
           ) : null}
         </p>
         {place.note ? (
-          <p className="rounded-lg bg-sand px-3 py-2 text-sm text-muted-foreground">“{place.note}”</p>
+          <p className="rounded-lg bg-sand px-3 py-2 text-sm text-muted-foreground">
+            “{place.note}”
+          </p>
         ) : null}
         {action !== "none" ? (
           <div className="flex gap-2 pt-1">
             {action === "save" ? (
               <>
-                <Button variant="outline" size="sm" className="flex-1 rounded-full font-semibold">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="flex-1 rounded-full font-semibold"
+                >
                   Save
                 </Button>
                 <Button size="sm" className="flex-1 rounded-full font-semibold">
@@ -79,10 +100,17 @@ export function PlaceCard({
               </>
             ) : (
               <>
-                <Badge variant="secondary" className="rounded-full px-3 py-1 font-semibold">
+                <Badge
+                  variant="secondary"
+                  className="rounded-full px-3 py-1 font-semibold"
+                >
                   Saved
                 </Badge>
-                <Button size="sm" variant="outline" className="ml-auto rounded-full font-semibold">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="ml-auto rounded-full font-semibold"
+                >
                   <Plus className="size-4" />
                   Add to itinerary
                 </Button>
@@ -144,7 +172,9 @@ export function TripCard({ trip }: { trip: Trip }) {
       <div className="space-y-3 p-5">
         <div>
           <h3 className="font-display text-xl font-bold">{trip.name}</h3>
-          <p className="text-sm text-muted-foreground">{trip.cities.join(" • ")}</p>
+          <p className="text-sm text-muted-foreground">
+            {trip.cities.join(" • ")}
+          </p>
         </div>
         <p className="text-sm font-semibold">{trip.dates}</p>
         <p className="text-sm text-muted-foreground">
@@ -152,14 +182,17 @@ export function TripCard({ trip }: { trip: Trip }) {
         </p>
         <div className="flex items-center justify-between gap-3">
           <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">
-            €{remaining.toLocaleString()} left of €{trip.budgetTotal.toLocaleString()}
+            €{remaining.toLocaleString()} left of €
+            {trip.budgetTotal.toLocaleString()}
           </span>
           <AvatarGroup people={trip.collaborators} />
         </div>
-        <Button asChild variant="outline" className="w-full rounded-full font-semibold">
-          <Link href={`/trips/${trip.id}`}>
-            Continue planning
-          </Link>
+        <Button
+          asChild
+          variant="outline"
+          className="w-full rounded-full font-semibold"
+        >
+          <Link href={`/trips/${trip.id}`}>Continue planning</Link>
         </Button>
       </div>
     </article>
@@ -181,7 +214,13 @@ export function AvatarGroup({ people }: { people: string[] }) {
   );
 }
 
-export function SectionHeading({ title, action }: { title: string; action?: ReactNode }) {
+export function SectionHeading({
+  title,
+  action,
+}: {
+  title: string;
+  action?: ReactNode;
+}) {
   return (
     <div className="mb-5 flex items-end justify-between gap-4">
       <h2 className="font-display text-2xl font-bold sm:text-3xl">{title}</h2>

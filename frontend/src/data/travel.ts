@@ -13,7 +13,18 @@ export const img = {
   emptyTrips: "/images/empty-trips.png",
 };
 
-const { rome, florence, venice, vatican, trastevere, cooking, kyoto, lisbon, barcelona, santorini, hero, emptyTrips } = img;
+const {
+  rome,
+  florence,
+  venice,
+  vatican,
+  trastevere,
+  cooking,
+  kyoto,
+  lisbon,
+  barcelona,
+  santorini,
+} = img;
 
 export type Trip = {
   id: string;
@@ -213,12 +224,42 @@ export const recommendations: Place[] = [
 ];
 
 export const destinations = [
-  { name: "Rome", country: "Italy", image: rome, blurb: "Ancient wonders & long dinners" },
-  { name: "Kyoto", country: "Japan", image: kyoto, blurb: "Temples, gardens, quiet lanes" },
-  { name: "Lisbon", country: "Portugal", image: lisbon, blurb: "Tiles, trams and tascas" },
-  { name: "Barcelona", country: "Spain", image: barcelona, blurb: "Gaudí, beaches, tapas" },
-  { name: "Santorini", country: "Greece", image: santorini, blurb: "Caldera views at sunset" },
-  { name: "Venice", country: "Italy", image: venice, blurb: "Canals and hidden squares" },
+  {
+    name: "Rome",
+    country: "Italy",
+    image: rome,
+    blurb: "Ancient wonders & long dinners",
+  },
+  {
+    name: "Kyoto",
+    country: "Japan",
+    image: kyoto,
+    blurb: "Temples, gardens, quiet lanes",
+  },
+  {
+    name: "Lisbon",
+    country: "Portugal",
+    image: lisbon,
+    blurb: "Tiles, trams and tascas",
+  },
+  {
+    name: "Barcelona",
+    country: "Spain",
+    image: barcelona,
+    blurb: "Gaudí, beaches, tapas",
+  },
+  {
+    name: "Santorini",
+    country: "Greece",
+    image: santorini,
+    blurb: "Caldera views at sunset",
+  },
+  {
+    name: "Venice",
+    country: "Italy",
+    image: venice,
+    blurb: "Canals and hidden squares",
+  },
 ];
 
 export type ItineraryItem = {
@@ -245,9 +286,24 @@ export const itinerary: ItineraryDay[] = [
     weekday: "Monday",
     city: "Rome",
     items: [
-      { time: "09:00", title: "Colosseum Guided Tour", meta: "2 hrs • €50", image: rome },
-      { time: "12:00", title: "Lunch in Trastevere", meta: "1.5 hrs • €30", image: trastevere },
-      { time: "15:30", title: "Roman Forum walk", meta: "2 hrs • €18", image: rome },
+      {
+        time: "09:00",
+        title: "Colosseum Guided Tour",
+        meta: "2 hrs • €50",
+        image: rome,
+      },
+      {
+        time: "12:00",
+        title: "Lunch in Trastevere",
+        meta: "1.5 hrs • €30",
+        image: trastevere,
+      },
+      {
+        time: "15:30",
+        title: "Roman Forum walk",
+        meta: "2 hrs • €18",
+        image: rome,
+      },
     ],
   },
   {
@@ -257,9 +313,24 @@ export const itinerary: ItineraryDay[] = [
     weekday: "Tuesday",
     city: "Rome",
     items: [
-      { time: "09:30", title: "Vatican Museums", meta: "3 hrs • €32", image: vatican },
-      { time: "13:30", title: "Pizza al taglio stop", meta: "45 min • €12", image: trastevere },
-      { time: "18:00", title: "Italian Cooking Class", meta: "2.5 hrs • €70", image: cooking },
+      {
+        time: "09:30",
+        title: "Vatican Museums",
+        meta: "3 hrs • €32",
+        image: vatican,
+      },
+      {
+        time: "13:30",
+        title: "Pizza al taglio stop",
+        meta: "45 min • €12",
+        image: trastevere,
+      },
+      {
+        time: "18:00",
+        title: "Italian Cooking Class",
+        meta: "2.5 hrs • €70",
+        image: cooking,
+      },
     ],
   },
   {
@@ -269,9 +340,24 @@ export const itinerary: ItineraryDay[] = [
     weekday: "Wednesday",
     city: "Florence",
     items: [
-      { time: "08:10", title: "Train Rome → Florence", meta: "1.5 hrs • €39", image: florence },
-      { time: "11:00", title: "Duomo climb", meta: "1 hr • €20", image: florence },
-      { time: "16:00", title: "Sunset at Piazzale Michelangelo", meta: "1 hr • Free", image: florence },
+      {
+        time: "08:10",
+        title: "Train Rome → Florence",
+        meta: "1.5 hrs • €39",
+        image: florence,
+      },
+      {
+        time: "11:00",
+        title: "Duomo climb",
+        meta: "1 hr • €20",
+        image: florence,
+      },
+      {
+        time: "16:00",
+        title: "Sunset at Piazzale Michelangelo",
+        meta: "1 hr • Free",
+        image: florence,
+      },
     ],
   },
   {
@@ -281,8 +367,18 @@ export const itinerary: ItineraryDay[] = [
     weekday: "Thursday",
     city: "Venice",
     items: [
-      { time: "10:00", title: "Grand Canal Gondola Ride", meta: "40 min • €80", image: venice },
-      { time: "13:00", title: "Cicchetti crawl", meta: "2 hrs • €35", image: venice },
+      {
+        time: "10:00",
+        title: "Grand Canal Gondola Ride",
+        meta: "40 min • €80",
+        image: venice,
+      },
+      {
+        time: "13:00",
+        title: "Cicchetti crawl",
+        meta: "2 hrs • €35",
+        image: venice,
+      },
     ],
   },
 ];

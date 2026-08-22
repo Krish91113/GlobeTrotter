@@ -4,11 +4,10 @@ import { Clock, MapPin, Plus, Star } from "lucide-react";
 import { Money, RatingBadge } from "@/components/shared";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Sheet, SheetContent, SheetTitle } from "@/components/ui/skeleton";
+import { Sheet, SheetContent, SheetTitle } from "@/components/ui/sheet";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useActivities } from "@/hooks/queries";
 import type { Location } from "@/types";
-import { AddToTripDialog } from "./add-to-trip-dialog";
 import { formatDuration } from "./discover-utils";
 
 interface CityDetailsSheetProps {
@@ -17,9 +16,13 @@ interface CityDetailsSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
-export function CityDetailsSheet({ location, open, onOpenChange }: CityDetailsSheetProps) {
+export function CityDetailsSheet({
+  location,
+  open,
+  onOpenChange,
+}: CityDetailsSheetProps) {
   const { data: cityActivities, isLoading } = useActivities(
-    open && location ? { cityId: location.id } : undefined
+    open && location ? { cityId: location.id } : undefined,
   );
   const top = (cityActivities ?? []).slice(0, 4);
 
@@ -60,7 +63,9 @@ export function CityDetailsSheet({ location, open, onOpenChange }: CityDetailsSh
                 </span>
               </div>
 
-              <p className="text-sm leading-relaxed text-foreground">{location.description}</p>
+              <p className="text-sm leading-relaxed text-foreground">
+                {location.description}
+              </p>
 
               <div className="flex flex-wrap gap-2">
                 {location.travelStyles.map((style) => (
@@ -82,7 +87,9 @@ export function CityDetailsSheet({ location, open, onOpenChange }: CityDetailsSh
                     ))}
                   </div>
                 ) : top.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">No activities listed for this city yet.</p>
+                  <p className="text-sm text-muted-foreground">
+                    No activities listed for this city yet.
+                  </p>
                 ) : (
                   <ul className="space-y-2">
                     {top.map((activity) => (
@@ -97,14 +104,20 @@ export function CityDetailsSheet({ location, open, onOpenChange }: CityDetailsSh
                           className="size-11 shrink-0 rounded-lg object-cover"
                         />
                         <div className="min-w-0 flex-1">
-                          <p className="truncate text-sm font-medium text-foreground">{activity.name}</p>
+                          <p className="truncate text-sm font-medium text-foreground">
+                            {activity.name}
+                          </p>
                           <p className="flex items-center gap-2 text-xs text-muted-foreground">
                             <Clock className="size-3" />
                             {formatDuration(activity.durationMinutes)}
                             <RatingBadge rating={activity.rating} />
                           </p>
                         </div>
-                        <Money amount={activity.estimatedCost} currency={activity.currency} className="shrink-0 text-xs text-muted-foreground" />
+                        <Money
+                          amount={activity.estimatedCost}
+                          currency={activity.currency}
+                          className="shrink-0 text-xs text-muted-foreground"
+                        />
                       </li>
                     ))}
                   </ul>
@@ -120,13 +133,23 @@ export function CityDetailsSheet({ location, open, onOpenChange }: CityDetailsSh
   );
 }
 
-function CitySheetActions({ locationId, name }: { locationId: string; name: string }) {
-  return (
-    <AddToTripDialogWrapper locationId={locationId} name={name} />
-  );
+function CitySheetActions({
+  locationId,
+  name,
+}: {
+  locationId: string;
+  name: string;
+}) {
+  return <AddToTripDialogWrapper locationId={locationId} name={name} />;
 }
 
-function AddToTripDialogWrapper({ locationId, name }: { locationId: string; name: string }) {
+function AddToTripDialogWrapper({
+  locationId,
+  name,
+}: {
+  locationId: string;
+  name: string;
+}) {
   const open = false;
   const setOpen = (_v: boolean) => {};
   void open;

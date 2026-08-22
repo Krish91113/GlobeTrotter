@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
 import { ArrowRight } from "lucide-react";
+import Link from "next/link";
 import { useCurrentUser } from "@/features/auth/hooks/use-auth";
 import { Reveal } from "./reveal";
 

@@ -1,8 +1,8 @@
 "use client";
 
+import { landingSteps } from "./landing-data";
 import { Reveal } from "./reveal";
 import { SectionHeader } from "./section-header";
-import { landingSteps } from "./landing-data";
 
 export function HowItWorksSection() {
   return (

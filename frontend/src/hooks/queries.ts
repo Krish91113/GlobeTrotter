@@ -1,18 +1,27 @@
 "use client";
 
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { authService } from "@/services/auth.service";
+import { activitiesService } from "@/services/activities.service";
+import { budgetService } from "@/services/budget.service";
 import { dashboardService } from "@/services/dashboard.service";
-import { tripsService } from "@/services/trips.service";
 import { itineraryService } from "@/services/itinerary.service";
 import { locationsService } from "@/services/locations.service";
-import { activitiesService } from "@/services/activities.service";
-import { recommendationsService } from "@/services/recommendations.service";
-import { budgetService } from "@/services/budget.service";
-import { sharingService } from "@/services/sharing.service";
 import { profileService } from "@/services/profile.service";
-import type { CreateTripInput, UpdateTripInput, AddStopInput, AddActivityInput, AddExpenseInput, LocationFilters, ActivityFilters, UserProfile } from "@/types";
+import { recommendationsService } from "@/services/recommendations.service";
+import { sharingService } from "@/services/sharing.service";
+import { tripsService } from "@/services/trips.service";
+import type {
+  ActivityFilters,
+  AddActivityInput,
+  AddExpenseInput,
+  AddStopInput,
+  CreateTripInput,
+  LocationFilters,
+  RecommendationFilters,
+  UpdateTripInput,
+  UserProfile,
+} from "@/types";
 
 /* ── Query Keys ── */
 export const queryKeys = {
@@ -27,10 +36,12 @@ export const queryKeys = {
     expenses: (tripId: string) => ["trip", tripId, "expenses"] as const,
   },
   locations: {
-    search: (filters?: LocationFilters) => ["locations", "search", filters] as const,
+    search: (filters?: LocationFilters) =>
+      ["locations", "search", filters] as const,
   },
   activities: {
-    search: (filters?: ActivityFilters) => ["activities", "search", filters] as const,
+    search: (filters?: ActivityFilters) =>
+      ["activities", "search", filters] as const,
   },
   recommendations: {
     forTrip: (tripId: string) => ["recommendations", tripId] as const,
@@ -40,7 +51,13 @@ export const queryKeys = {
 };
 
 /* ── Auth ── */
-export { useCurrentUser, useLogin, useSignup, useRegister, useLogout } from "@/features/auth/hooks/use-auth";
+export {
+  useCurrentUser,
+  useLogin,
+  useLogout,
+  useRegister,
+  useSignup,
+} from "@/features/auth/hooks/use-auth";
 
 /* ── Dashboard ── */
 export function useDashboard() {
@@ -82,7 +99,8 @@ export function useCreateTrip() {
 export function useUpdateTrip(tripId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: UpdateTripInput) => tripsService.updateTrip(tripId, input),
+    mutationFn: (input: UpdateTripInput) =>
+      tripsService.updateTrip(tripId, input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.trips.detail(tripId) });
       qc.invalidateQueries({ queryKey: ["trips"] });
@@ -125,7 +143,8 @@ export function useTripStops(tripId: string) {
 export function useAddStop(tripId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: AddStopInput) => itineraryService.addStop(tripId, input),
+    mutationFn: (input: AddStopInput) =>
+      itineraryService.addStop(tripId, input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.trips.stops(tripId) });
       qc.invalidateQueries({ queryKey: queryKeys.trips.days(tripId) });
@@ -151,7 +170,8 @@ export function useDeleteStop(tripId: string) {
 export function useAddActivity(dayId: string, tripId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: AddActivityInput) => itineraryService.addActivity(dayId, input),
+    mutationFn: (input: AddActivityInput) =>
+      itineraryService.addActivity(dayId, input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.trips.days(tripId) });
       toast.success("Activity added");
@@ -163,7 +183,8 @@ export function useAddActivity(dayId: string, tripId: string) {
 export function useDeleteActivity(dayId: string, tripId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (itemId: string) => itineraryService.deleteActivity(dayId, itemId),
+    mutationFn: (itemId: string) =>
+      itineraryService.deleteActivity(dayId, itemId),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.trips.days(tripId) });
       toast.success("Activity removed");
@@ -189,11 +210,20 @@ export function useActivities(filters?: ActivityFilters) {
 }
 
 /* ── Recommendations ── */
-export function useRecommendations(tripId: string) {
+export function useRecommendations(filters?: RecommendationFilters | string) {
+  const filterKey =
+    typeof filters === "string" ? filters : JSON.stringify(filters ?? {});
   return useQuery({
-    queryKey: queryKeys.recommendations.forTrip(tripId),
-    queryFn: () => recommendationsService.generate(tripId),
-    enabled: !!tripId,
+    queryKey: ["recommendations", filterKey],
+    queryFn: () => recommendationsService.generate(filters ?? {}),
+  });
+}
+
+export function useRecommendationOptions() {
+  return useQuery({
+    queryKey: ["recommendations", "options"],
+    queryFn: () => recommendationsService.getOptions(),
+    staleTime: 1000 * 60 * 15,
   });
 }
 
@@ -217,7 +247,8 @@ export function useTripExpenses(tripId: string) {
 export function useAddExpense(tripId: string) {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: AddExpenseInput) => budgetService.addExpense(tripId, input),
+    mutationFn: (input: AddExpenseInput) =>
+      budgetService.addExpense(tripId, input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.trips.budget(tripId) });
       qc.invalidateQueries({ queryKey: queryKeys.trips.expenses(tripId) });
@@ -253,7 +284,9 @@ export function useCreateShareLink(tripId: string) {
   return useMutation({
     mutationFn: () => sharingService.createShareLink(tripId),
     onSuccess: (data) => {
-      navigator.clipboard?.writeText(`${window.location.origin}/shared/${data.token}`);
+      navigator.clipboard?.writeText(
+        `${window.location.origin}/shared/${data.token}`,
+      );
       toast.success("Share link copied!");
     },
     onError: (err: Error) => toast.error(err.message),
@@ -283,7 +316,8 @@ export function useProfile() {
 export function useUpdateProfile() {
   const qc = useQueryClient();
   return useMutation({
-    mutationFn: (input: Partial<UserProfile>) => profileService.updateProfile(input),
+    mutationFn: (input: Partial<UserProfile>) =>
+      profileService.updateProfile(input),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: queryKeys.profile });
       qc.invalidateQueries({ queryKey: queryKeys.auth.me });

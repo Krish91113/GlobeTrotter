@@ -1,8 +1,8 @@
 "use client";
 
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { useRouter } from "next/navigation";
 import { Clock, Loader2, Map, MapPin, Ticket } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   CommandDialog,
   CommandEmpty,
@@ -11,7 +11,7 @@ import {
   CommandItem,
   CommandList,
 } from "@/components/ui/command";
-import { useTrips, useLocations, useActivities } from "@/hooks/queries";
+import { useActivities, useLocations, useTrips } from "@/hooks/queries";
 
 const RECENT_KEY = "gt-recent-searches";
 
@@ -54,8 +54,12 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
   }, [open]);
 
   const tripsQuery = useTrips();
-  const locationsQuery = useLocations(debounced ? { query: debounced } : undefined);
-  const activitiesQuery = useActivities(debounced ? { query: debounced } : undefined);
+  const locationsQuery = useLocations(
+    debounced ? { query: debounced } : undefined,
+  );
+  const activitiesQuery = useActivities(
+    debounced ? { query: debounced } : undefined,
+  );
 
   const trips = useMemo(() => {
     if (!debounced) return [];
@@ -67,20 +71,24 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
 
   const cities = useMemo(
     () => (debounced ? (locationsQuery.data ?? []).slice(0, 5) : []),
-    [locationsQuery.data, debounced]
+    [locationsQuery.data, debounced],
   );
 
   const activities = useMemo(
     () => (debounced ? (activitiesQuery.data ?? []).slice(0, 5) : []),
-    [activitiesQuery.data, debounced]
+    [activitiesQuery.data, debounced],
   );
 
   const loading =
-    Boolean(debounced) && (locationsQuery.isPending || activitiesQuery.isPending);
+    Boolean(debounced) &&
+    (locationsQuery.isPending || activitiesQuery.isPending);
 
   const saveRecent = useCallback((q: string) => {
     setRecent((prev) => {
-      const next = [q, ...prev.filter((r) => r.toLowerCase() !== q.toLowerCase())].slice(0, 5);
+      const next = [
+        q,
+        ...prev.filter((r) => r.toLowerCase() !== q.toLowerCase()),
+      ].slice(0, 5);
       writeRecent(next);
       return next;
     });
@@ -92,11 +100,12 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
       onOpenChange(false);
       router.push(href);
     },
-    [debounced, onOpenChange, router, saveRecent]
+    [debounced, onOpenChange, router, saveRecent],
   );
 
   const showRecent = !debounced && recent.length > 0;
-  const hasResults = trips.length > 0 || cities.length > 0 || activities.length > 0;
+  const hasResults =
+    trips.length > 0 || cities.length > 0 || activities.length > 0;
 
   return (
     <CommandDialog open={open} onOpenChange={onOpenChange}>
@@ -121,7 +130,11 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
             {showRecent && (
               <CommandGroup heading="Recent">
                 {recent.map((q) => (
-                  <CommandItem key={q} value={`recent-${q}`} onSelect={() => setText(q)}>
+                  <CommandItem
+                    key={q}
+                    value={`recent-${q}`}
+                    onSelect={() => setText(q)}
+                  >
                     <Clock className="text-muted-foreground" />
                     <span className="truncate">{q}</span>
                   </CommandItem>
@@ -149,7 +162,9 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                     key={city.id}
                     value={`${debounced} ${city.name} ${city.country}`}
                     onSelect={() =>
-                      select(`/discover/cities?q=${encodeURIComponent(city.name)}`)
+                      select(
+                        `/discover/cities?q=${encodeURIComponent(city.name)}`,
+                      )
                     }
                   >
                     <MapPin className="text-muted-foreground" />
@@ -169,7 +184,7 @@ export function GlobalSearch({ open, onOpenChange }: GlobalSearchProps) {
                     value={`${debounced} ${activity.name}`}
                     onSelect={() =>
                       select(
-                        `/discover/activities?q=${encodeURIComponent(activity.name)}`
+                        `/discover/activities?q=${encodeURIComponent(activity.name)}`,
                       )
                     }
                   >

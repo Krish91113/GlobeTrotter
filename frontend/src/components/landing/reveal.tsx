@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
 import { motion, useInView } from "framer-motion";
+import React from "react";
 
 interface RevealProps {
   children: React.ReactNode;

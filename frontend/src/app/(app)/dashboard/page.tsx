@@ -1,12 +1,12 @@
 "use client";
 
-import { useDashboard, useCurrentUser } from "@/hooks/queries";
 import { ErrorState, StatCardSkeleton } from "@/components/shared";
-import { HeroSection } from "@/features/dashboard/hero-section";
-import { SummaryCards } from "@/features/dashboard/summary-cards";
 import { ContinuePlanning } from "@/features/dashboard/continue-planning";
-import { RecommendedDestinations } from "@/features/dashboard/recommended-destinations";
+import { HeroSection } from "@/features/dashboard/hero-section";
 import { RecommendedActivities } from "@/features/dashboard/recommended-activities";
+import { RecommendedDestinations } from "@/features/dashboard/recommended-destinations";
+import { SummaryCards } from "@/features/dashboard/summary-cards";
+import { useCurrentUser, useDashboard } from "@/hooks/queries";
 
 export default function DashboardPage() {
   const { data: user } = useCurrentUser();
@@ -15,7 +15,10 @@ export default function DashboardPage() {
   if (isError) {
     return (
       <div className="container-page py-16">
-        <ErrorState message="We couldn't load your dashboard." onRetry={() => refetch()} />
+        <ErrorState
+          message="We couldn't load your dashboard."
+          onRetry={() => refetch()}
+        />
       </div>
     );
   }
@@ -36,7 +39,10 @@ export default function DashboardPage() {
 
       <section aria-labelledby="continue-planning-heading">
         <div className="mb-5 flex items-end justify-between gap-4">
-          <h2 id="continue-planning-heading" className="text-xl font-bold text-foreground sm:text-2xl">
+          <h2
+            id="continue-planning-heading"
+            className="text-xl font-bold text-foreground sm:text-2xl"
+          >
             Continue planning
           </h2>
         </div>
@@ -47,7 +53,10 @@ export default function DashboardPage() {
         <section aria-labelledby="recommended-activities-heading">
           <div className="mb-5 flex items-end justify-between gap-4">
             <div>
-              <h2 id="recommended-activities-heading" className="text-xl font-bold text-foreground sm:text-2xl">
+              <h2
+                id="recommended-activities-heading"
+                className="text-xl font-bold text-foreground sm:text-2xl"
+              >
                 Ideas for {upcomingTrip.name}
               </h2>
               <p className="mt-1 text-sm text-muted-foreground">
@@ -61,7 +70,10 @@ export default function DashboardPage() {
 
       <section aria-labelledby="recommended-destinations-heading">
         <div className="mb-5 flex items-end justify-between gap-4">
-          <h2 id="recommended-destinations-heading" className="text-xl font-bold text-foreground sm:text-2xl">
+          <h2
+            id="recommended-destinations-heading"
+            className="text-xl font-bold text-foreground sm:text-2xl"
+          >
             Recommended destinations
           </h2>
         </div>
@@ -92,7 +104,10 @@ function DashboardSkeleton() {
         <div className="h-7 w-64 animate-pulse rounded-md bg-secondary" />
         <div className="flex gap-4 overflow-hidden">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="aspect-[4/3] w-56 shrink-0 animate-pulse rounded-xl bg-card" />
+            <div
+              key={i}
+              className="aspect-[4/3] w-56 shrink-0 animate-pulse rounded-xl bg-card"
+            />
           ))}
         </div>
       </div>

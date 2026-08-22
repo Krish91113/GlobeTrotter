@@ -1,9 +1,9 @@
 import { apiClient } from "@/lib/api-client";
 import type {
+  AuthResponseData,
   AuthUser,
   LoginInput,
   RegisterInput,
-  AuthResponseData,
 } from "../types/auth.types";
 
 export const authService = {

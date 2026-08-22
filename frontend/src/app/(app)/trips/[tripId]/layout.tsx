@@ -1,9 +1,9 @@
 "use client";
 
+import { MapPin, Pencil, Share2 } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
-import { ArrowRight, MapPin, Share2, Pencil, MoreHorizontal } from "lucide-react";
-import { useTrip, useCreateShareLink } from "@/hooks/queries";
+import { useCreateShareLink, useTrip } from "@/hooks/queries";
 import { cn } from "@/lib/utils";
 
 const tabs = [
@@ -13,14 +13,28 @@ const tabs = [
   { href: "/timeline", label: "Timeline", exact: false },
 ];
 
-export default function TripLayout({ children }: { children: React.ReactNode }) {
+export default function TripLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const { tripId } = useParams<{ tripId: string }>();
   const pathname = usePathname();
   const { data: trip, isLoading } = useTrip(tripId);
   const shareLink = useCreateShareLink(tripId);
 
-  if (isLoading) return <div className="container-page py-12"><div className="h-80 animate-pulse rounded-2xl bg-[#E2E8F0]" /></div>;
-  if (!trip) return <div className="container-page py-12 text-center text-[#64748B]">Trip not found</div>;
+  if (isLoading)
+    return (
+      <div className="container-page py-12">
+        <div className="h-80 animate-pulse rounded-2xl bg-[#E2E8F0]" />
+      </div>
+    );
+  if (!trip)
+    return (
+      <div className="container-page py-12 text-center text-[#64748B]">
+        Trip not found
+      </div>
+    );
 
   return (
     <div className="pb-24">
@@ -28,7 +42,9 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
         {/* Header */}
         <div className="flex flex-wrap items-start justify-between gap-6">
           <div>
-            <h1 className="text-3xl font-bold text-[#0F172A] sm:text-4xl">{trip.name}</h1>
+            <h1 className="text-3xl font-bold text-[#0F172A] sm:text-4xl">
+              {trip.name}
+            </h1>
             <p className="mt-2 flex flex-wrap items-center gap-1.5 text-[#64748B]">
               <MapPin className="size-4" />
               {trip.cities.join(" • ")}
@@ -59,14 +75,18 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
         <nav className="mt-8 flex gap-1 overflow-x-auto border-b border-[#E2E8F0] hide-scrollbar">
           {tabs.map((tab) => {
             const href = `/trips/${tripId}${tab.href}`;
-            const isActive = tab.exact ? pathname === href : pathname.startsWith(href);
+            const isActive = tab.exact
+              ? pathname === href
+              : pathname.startsWith(href);
             return (
               <Link
                 key={tab.label}
                 href={href}
                 className={cn(
                   "shrink-0 border-b-2 px-4 pb-3 text-sm font-semibold transition-colors hover:text-[#0F172A]",
-                  isActive ? "border-primary text-[#0F172A]" : "border-transparent text-[#64748B]"
+                  isActive
+                    ? "border-primary text-[#0F172A]"
+                    : "border-transparent text-[#64748B]",
                 )}
               >
                 {tab.label}

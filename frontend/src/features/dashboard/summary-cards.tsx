@@ -1,7 +1,7 @@
 "use client";
 
-import { Map, MapPin, Wallet, CalendarDays } from "lucide-react";
-import { StatCard, formatDate, formatMoney } from "@/components/shared";
+import { CalendarDays, Map, MapPin, Wallet } from "lucide-react";
+import { formatDate, formatMoney, StatCard } from "@/components/shared";
 import type { DashboardData } from "@/types";
 
 interface SummaryCardsProps {

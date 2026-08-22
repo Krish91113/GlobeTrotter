@@ -1,10 +1,10 @@
 "use client";
 
-import { useState } from "react";
-import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { motion } from "framer-motion";
-import { Search, Plus } from "lucide-react";
+import { Plus, Search } from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useState } from "react";
 
 interface HeroSectionProps {
   userName?: string;
@@ -56,7 +56,10 @@ export function HeroSection({ userName }: HeroSectionProps) {
             submit();
           }}
         >
-          <Search className="ml-3 size-5 shrink-0 text-muted-foreground" aria-hidden />
+          <Search
+            className="ml-3 size-5 shrink-0 text-muted-foreground"
+            aria-hidden
+          />
           <input
             value={term}
             onChange={(e) => setTerm(e.target.value)}

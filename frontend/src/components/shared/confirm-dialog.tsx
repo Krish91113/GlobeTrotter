@@ -47,7 +47,11 @@ export function ConfirmDialog({
               e.preventDefault();
               onConfirm();
             }}
-            className={destructive ? "bg-destructive text-destructive-foreground hover:bg-destructive/90" : ""}
+            className={
+              destructive
+                ? "bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                : ""
+            }
           >
             {pending ? "Working…" : confirmLabel}
           </AlertDialogAction>

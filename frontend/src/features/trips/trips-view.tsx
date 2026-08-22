@@ -1,13 +1,18 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { differenceInCalendarDays } from "date-fns";
+import { LayoutGrid, List, Map, Plus } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import { LayoutGrid, List, Map, Plus } from "lucide-react";
-import { differenceInCalendarDays } from "date-fns";
-import { PageHeader, SearchInput, EmptyState, ErrorState, CardSkeleton } from "@/components/shared";
+import { useMemo, useState } from "react";
+import {
+  CardSkeleton,
+  EmptyState,
+  ErrorState,
+  PageHeader,
+  SearchInput,
+} from "@/components/shared";
 import { Button } from "@/components/ui/button";
-import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select,
   SelectContent,
@@ -15,8 +20,9 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { cn } from "@/lib/utils";
+import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTrips } from "@/hooks/queries";
+import { cn } from "@/lib/utils";
 import type { Trip } from "@/types";
 import { TripCard } from "./trip-card";
 
@@ -28,7 +34,9 @@ type ViewOption = "grid" | "list";
 const PAGE_SIZE = 9;
 
 function parseStatus(value: string | null): StatusTab {
-  return (STATUS_TABS as readonly string[]).includes(value ?? "") ? (value as StatusTab) : "all";
+  return (STATUS_TABS as readonly string[]).includes(value ?? "")
+    ? (value as StatusTab)
+    : "all";
 }
 
 function parseSort(value: string | null): SortOption {
@@ -70,15 +78,19 @@ export function TripsView() {
       list = list.filter(
         (t) =>
           t.name.toLowerCase().includes(needle) ||
-          t.cities.some((c) => c.toLowerCase().includes(needle))
+          t.cities.some((c) => c.toLowerCase().includes(needle)),
       );
     }
     const today = new Date();
     return [...list].sort((a, b) => {
       if (sort === "newest")
-        return new Date(b.startDate).getTime() - new Date(a.startDate).getTime();
+        return (
+          new Date(b.startDate).getTime() - new Date(a.startDate).getTime()
+        );
       if (sort === "oldest")
-        return new Date(a.startDate).getTime() - new Date(b.startDate).getTime();
+        return (
+          new Date(a.startDate).getTime() - new Date(b.startDate).getTime()
+        );
       // nearest: soonest from today considering status
       const distance = (t: Trip) => {
         const diff = differenceInCalendarDays(new Date(t.startDate), today);
@@ -183,7 +195,7 @@ export function TripsView() {
         <div
           className={cn(
             "mt-8 grid gap-6",
-            view === "grid" ? "sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1"
+            view === "grid" ? "sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1",
           )}
         >
           {Array.from({ length: 6 }).map((_, i) => (
@@ -192,7 +204,10 @@ export function TripsView() {
         </div>
       ) : isError ? (
         <div className="mt-8">
-          <ErrorState message="We couldn't load your trips. Check your connection and try again." onRetry={() => refetch()} />
+          <ErrorState
+            message="We couldn't load your trips. Check your connection and try again."
+            onRetry={() => refetch()}
+          />
         </div>
       ) : visible.length === 0 ? (
         <div className="mt-8">
@@ -213,7 +228,9 @@ export function TripsView() {
           <div
             className={cn(
               "mt-8 grid gap-6",
-              view === "grid" ? "sm:grid-cols-2 lg:grid-cols-3" : "grid-cols-1 gap-4"
+              view === "grid"
+                ? "sm:grid-cols-2 lg:grid-cols-3"
+                : "grid-cols-1 gap-4",
             )}
           >
             {visible.map((trip) => (
@@ -222,7 +239,10 @@ export function TripsView() {
           </div>
           {hasMore && (
             <div className="mt-10 flex justify-center">
-              <Button variant="outline" onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}>
+              <Button
+                variant="outline"
+                onClick={() => setVisibleCount((c) => c + PAGE_SIZE)}
+              >
                 Load more ({filtered.length - visibleCount} remaining)
               </Button>
             </div>

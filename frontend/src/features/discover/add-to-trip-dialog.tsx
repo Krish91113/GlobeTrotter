@@ -1,7 +1,7 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import { CalendarPlus, MapPin, Plus } from "lucide-react";
+import { useRouter } from "next/navigation";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import {
@@ -36,8 +36,10 @@ export function AddToTripDialog({
 
   const handleSelect = (trip: Trip) => {
     onOpenChange(false);
-    if (locationId) router.push(`/trips/${trip.id}/builder?addCity=${locationId}`);
-    else if (activityId) router.push(`/trips/${trip.id}/builder?addActivity=${activityId}`);
+    if (locationId)
+      router.push(`/trips/${trip.id}/builder?addCity=${locationId}`);
+    else if (activityId)
+      router.push(`/trips/${trip.id}/builder?addActivity=${activityId}`);
     toast.success(`Add "${itemLabel}" in the ${trip.name} builder`);
   };
 
@@ -53,13 +55,17 @@ export function AddToTripDialog({
 
         <div className="max-h-72 space-y-2 overflow-y-auto pr-1">
           {isLoading ? (
-            [0, 1, 2].map((i) => <Skeleton key={i} className="h-16 w-full rounded-xl" />)
+            [0, 1, 2].map((i) => (
+              <Skeleton key={i} className="h-16 w-full rounded-xl" />
+            ))
           ) : eligible.length === 0 ? (
             <div className="flex flex-col items-center rounded-xl border border-dashed border-border px-4 py-8 text-center">
               <span className="flex size-11 items-center justify-center rounded-full bg-secondary text-muted-foreground">
                 <MapPin className="size-5" />
               </span>
-              <p className="mt-3 text-sm font-semibold text-foreground">No trips yet</p>
+              <p className="mt-3 text-sm font-semibold text-foreground">
+                No trips yet
+              </p>
               <p className="mt-1 max-w-xs text-sm text-muted-foreground">
                 Create a trip first, then add &ldquo;{itemLabel}&rdquo; to it.
               </p>
@@ -83,7 +89,8 @@ export function AddToTripDialog({
                     {trip.name}
                   </span>
                   <span className="block truncate text-xs capitalize text-muted-foreground">
-                    {trip.status} · {trip.cities.join(", ") || `${trip.daysCount} days`}
+                    {trip.status} ·{" "}
+                    {trip.cities.join(", ") || `${trip.daysCount} days`}
                   </span>
                 </span>
                 <CalendarPlus className="size-4 shrink-0 text-muted-foreground" />

@@ -14,7 +14,7 @@ export function FilterChip({ label, value, onRemove }: FilterChipProps) {
     <span
       className={cn(
         "inline-flex items-center gap-1 rounded-full border border-border bg-card py-1 pl-3 text-xs font-medium text-foreground shadow-sm",
-        onRemove ? "pr-1.5" : "pr-3"
+        onRemove ? "pr-1.5" : "pr-3",
       )}
     >
       {label}
