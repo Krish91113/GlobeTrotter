@@ -52,8 +52,9 @@ export function setAuthCookies(
 }
 
 export function clearAuthCookies(res: Response): void {
-  res.clearCookie('gt_access');
-  res.clearCookie('gt_refresh');
+  const options = getCookieOptions(0);
+  res.clearCookie('gt_access', options);
+  res.clearCookie('gt_refresh', options);
 }
 
 export function getAccessTokenFromCookies(req: any): string | undefined {
