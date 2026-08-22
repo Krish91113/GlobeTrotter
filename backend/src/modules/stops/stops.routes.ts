@@ -4,6 +4,7 @@ import { requireAuth } from "../../middleware/requireAuth";
 import { validate, validateParams } from "../../middleware/validate";
 import {
   addStopController,
+  listStopsController,
   removeStopController,
   reorderStopsController,
   updateStopController,
@@ -14,7 +15,7 @@ import {
   UpdateStopSchema,
 } from "./stops.schema";
 
-const router = Router();
+const router = Router({ mergeParams: true });
 
 router.use(requireAuth);
 
@@ -26,6 +27,12 @@ const stopParams = z.object({
 const tripParams = z.object({
   tripId: z.string().uuid("tripId must be a valid UUID"),
 });
+
+/**
+ * GET /api/v1/trips/:tripId/stops
+ * All city stops in order with location context
+ */
+router.get("/", validateParams(tripParams), listStopsController);
 
 /**
  * POST /api/v1/trips/:tripId/stops

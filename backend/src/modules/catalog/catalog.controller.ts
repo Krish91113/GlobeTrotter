@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { ok } from "../../lib/apiResponse";
 import { getCatalogItemById, searchCatalogItems } from "./catalog.service";
 
 /**
@@ -10,8 +11,8 @@ export async function searchCatalogItemsController(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const result = await searchCatalogItems(req.query as any);
-    res.status(200).json(result);
+    const result = await searchCatalogItems(res.locals.validatedQuery);
+    ok(res, result);
   } catch (error) {
     next(error);
   }
@@ -27,7 +28,7 @@ export async function getCatalogItemByIdController(
 ): Promise<void> {
   try {
     const item = await getCatalogItemById(req.params.id as string);
-    res.status(200).json({ item });
+    ok(res, { item });
   } catch (error) {
     next(error);
   }

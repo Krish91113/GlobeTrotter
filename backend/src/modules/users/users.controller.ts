@@ -1,4 +1,5 @@
 import type { NextFunction, Request, Response } from "express";
+import { ok } from "../../lib/apiResponse";
 import {
   getPreferences,
   getProfile,
@@ -21,7 +22,7 @@ export async function getProfileController(
 
     const profile = await getProfile(req.user.id);
 
-    res.status(200).json({ profile });
+    ok(res, profile);
   } catch (error) {
     next(error);
   }
@@ -42,7 +43,7 @@ export async function updateProfileController(
 
     const profile = await updateProfile(req.user.id, req.body);
 
-    res.status(200).json({ profile });
+    ok(res, profile);
   } catch (error) {
     next(error);
   }
@@ -63,7 +64,7 @@ export async function getPreferencesController(
 
     const preferences = await getPreferences(req.user.id);
 
-    res.status(200).json({ preferences });
+    ok(res, preferences);
   } catch (error) {
     next(error);
   }
@@ -84,7 +85,7 @@ export async function upsertPreferencesController(
 
     const preferences = await upsertPreferences(req.user.id, req.body);
 
-    res.status(200).json({ preferences });
+    ok(res, preferences);
   } catch (error) {
     next(error);
   }

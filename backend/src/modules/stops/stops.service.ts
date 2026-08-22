@@ -65,6 +65,28 @@ function assertDatesWithinTrip(
   }
 }
 
+export async function listStops(
+  tripId: string,
+  userId: string,
+): Promise<StopDto[]> {
+  await getOwnedTripOrThrow(tripId, userId);
+
+  const stops = await prisma.tripStop.findMany({
+    where: { tripId },
+    orderBy: { sequenceNo: "asc" },
+    include: {
+      location: {
+        select: {
+          name: true,
+          country: { select: { iso2Code: true, displayName: true } },
+        },
+      },
+    },
+  });
+
+  return stops.map(toStopDto);
+}
+
 export async function addStop(
   tripId: string,
   userId: string,

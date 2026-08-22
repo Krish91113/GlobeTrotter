@@ -18,11 +18,13 @@ function computeStatus(
   startDate: Date,
   endDate: Date,
 ): "upcoming" | "ongoing" | "completed" {
+  // Dates arrive as calendar days ("YYYY-MM-DD"), so compare them as local
+  // calendar days. Using raw instants misclassifies trips starting "today"
+  // whenever the server's UTC offset lags behind the user's.
+  const day = (d: Date) => d.toLocaleDateString("en-CA"); // YYYY-MM-DD
   const now = new Date();
-  const start = new Date(startDate);
-  const end = new Date(endDate);
-  if (now < start) return "upcoming";
-  if (now > end) return "completed";
+  if (day(now) < day(new Date(startDate))) return "upcoming";
+  if (day(now) > day(new Date(endDate))) return "completed";
   return "ongoing";
 }
 
@@ -198,7 +200,7 @@ export const tripsService = {
       (await resolveCurrency(data.currency)) ??
       (data.defaultCurrencyId ? data.defaultCurrencyId : null) ??
       (await resolveCurrency("INR"));
-    const statusId = await resolveStatus("PLANNING");
+    const statusId = await resolveStatus("upcoming");
     const visibilityId = await resolveVisibility("PRIVATE");
 
     const dates = dateRange(data.startDate, data.endDate);
