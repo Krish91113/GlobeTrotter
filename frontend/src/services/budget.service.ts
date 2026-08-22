@@ -62,7 +62,7 @@ export const budgetService = {
       method: "POST",
       body: JSON.stringify({
         description: input.description,
-        category: input.category,
+        categoryCode: input.category,
         amount: input.amount.toString(),
         expenseDate: input.date,
         isEstimate: false,

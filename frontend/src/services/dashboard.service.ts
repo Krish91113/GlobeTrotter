@@ -5,12 +5,11 @@ import { normalizeCurrency } from "@/lib/currency";
 
 export const dashboardService = {
   getDashboard: async (): Promise<DashboardData> => {
-      const [data, availableImages, locationData] = await Promise.all([
+      const [data, locationData] = await Promise.all([
         apiClient<any>("/dashboard/summary"),
-        fetch("/api/city-images").then((response) => response.ok ? response.json() : { cities: [] }).catch(() => ({ cities: [] })),
-        apiClient<any>("/locations/search?limit=50").catch(() => ({ locations: [] })),
+        apiClient<any>("/locations/search?limit=50").catch(() => null),
       ]);
-      
+
       const recentTrips: Trip[] = (data.recentTrips || []).map((t: any) => ({
         id: t.id,
         name: t.name,
@@ -26,21 +25,23 @@ export const dashboardService = {
         daysCount: t.daysCount ?? 1,
       }));
 
-      const normalize = (value: string) => value.normalize("NFKD").replace(/[\u0300-\u036f]/g, "").toLowerCase().replace(/[^a-z0-9]/g, "");
-      const availableCityNames = new Set<string>((availableImages.cities || []).map((name: string) => normalize(name)));
       const backendDestinations = data.recommendedDestinations || [];
-      const allLocations = locationData.locations || [];
-      const imageBackedLocations = allLocations
-        .filter((location: any) => availableCityNames.has(normalize(location.name)))
-        .map((location: any) => ({
+      const allLocations = locationData?.locations || [];
+      const destinationRows = [
+        ...backendDestinations,
+        ...allLocations.map((location: any) => ({
           ...location,
           country: location.country?.displayName || location.country || "",
-          activityCount: backendDestinations.find((item: any) => item.id === location.id)?.activityCount || 0,
-        }));
-      const destinationRows = [
-        ...backendDestinations.filter((destination: any) => availableCityNames.has(normalize(destination.name))),
-        ...imageBackedLocations,
-      ].filter((destination: any, index: number, rows: any[]) => rows.findIndex((item) => item.id === destination.id) === index).slice(0, 6);
+          activityCount:
+            backendDestinations.find((item: any) => item.id === location.id)
+              ?.activityCount || 0,
+        })),
+      ]
+        .filter(
+          (destination: any, index: number, rows: any[]) =>
+            rows.findIndex((item) => item.id === destination.id) === index,
+        )
+        .slice(0, 6);
 
       const recommendedDestinations: Location[] = destinationRows.map((d: any) => ({
         id: d.id,
@@ -55,15 +56,27 @@ export const dashboardService = {
         travelStyles: ["Culture", "Food"],
       }));
 
+      const activeTrips = recentTrips.filter((t) => t.status !== "completed");
+
       return {
-        upcomingTrip: recentTrips.find((t) => t.status === "upcoming") || recentTrips.find((t) => t.status === "ongoing") || recentTrips[0],
+        upcomingTrip:
+          recentTrips.find((t) => t.status === "upcoming") ||
+          recentTrips.find((t) => t.status === "ongoing") ||
+          undefined,
         recentTrips,
         recommendedDestinations,
         stats: {
-          upcomingTripsCount: data.upcomingTripCount ?? recentTrips.filter((trip) => trip.status === "upcoming").length,
+          upcomingTripsCount:
+            data.upcomingTripCount ??
+            recentTrips.filter(
+              (trip) => trip.status === "upcoming" || trip.status === "ongoing",
+            ).length,
           plannedCities: data.totalPlannedCities ?? 0,
-          totalRemainingBudget: recentTrips.reduce((acc, t) => acc + (t.totalBudget - t.estimatedSpend), 0),
-          currency: normalizeCurrency(recentTrips[0]?.currency),
+          totalRemainingBudget: activeTrips.reduce(
+            (acc, t) => acc + (t.totalBudget - t.estimatedSpend),
+            0,
+          ),
+          currency: normalizeCurrency(activeTrips[0]?.currency ?? recentTrips[0]?.currency),
         },
       };
   },
