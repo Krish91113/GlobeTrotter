@@ -1,11 +1,11 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const createShareLinkSchema = z.object({
   expiresAt: z
     .string()
     .datetime({ offset: true })
     .refine((value) => new Date(value) > new Date(), {
-      message: 'expiresAt must be in the future',
+      message: "expiresAt must be in the future",
     })
     .optional(),
 });

@@ -15,7 +15,11 @@ export interface RecommendationDto {
   thumbnailUri: string | null;
 }
 
-export type BudgetInsightStatus = 'on_track' | 'at_risk' | 'over_budget' | 'no_budget';
+export type BudgetInsightStatus =
+  | "on_track"
+  | "at_risk"
+  | "over_budget"
+  | "no_budget";
 
 export interface InsightsDto {
   budgetStatus: BudgetInsightStatus;
@@ -28,4 +32,11 @@ export interface FeedbackDto {
   recommendationId: string;
   actionType: string;
   feedbackValue: string | null;
+}
+
+export interface FilterOptionsDto {
+  cities: Array<{ id: string; name: string }>;
+  categories: string[];
+  interests: string[];
+  travelPaces: Array<{ id: string; label: string; minutes: number }>;
 }

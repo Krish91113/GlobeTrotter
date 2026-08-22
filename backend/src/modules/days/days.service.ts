@@ -1,8 +1,11 @@
-import prisma from '../../lib/prisma';
-import { getOwnedTripOrThrow } from '../trips/trips.service';
-import { toTripDayDto, type TripDayDto } from './days.dto';
+import prisma from "../../lib/prisma";
+import { getOwnedTripOrThrow } from "../trips/trips.service";
+import { type TripDayDto, toTripDayDto } from "./days.dto";
 
-export async function getTripDays(tripId: string, userId: string): Promise<TripDayDto[]> {
+export async function getTripDays(
+  tripId: string,
+  userId: string,
+): Promise<TripDayDto[]> {
   await getOwnedTripOrThrow(tripId, userId);
 
   const days = await prisma.tripDay.findMany({
@@ -19,16 +22,18 @@ export async function getTripDays(tripId: string, userId: string): Promise<TripD
             select: {
               id: true,
               name: true,
-              categories: { select: { category: { select: { displayName: true } } } },
+              categories: {
+                select: { category: { select: { displayName: true } } },
+              },
               media: { select: { thumbnailUri: true }, take: 1 },
             },
           },
           currency: { select: { isoCode: true } },
         },
-        orderBy: { sequenceNo: 'asc' },
+        orderBy: { sequenceNo: "asc" },
       },
     },
-    orderBy: { dayNumber: 'asc' },
+    orderBy: { dayNumber: "asc" },
   });
 
   return days.map(toTripDayDto);

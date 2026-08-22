@@ -1,13 +1,13 @@
-import { Router } from 'express';
+import { Router } from "express";
+import { requireAuth } from "../../middleware/auth";
+import { validate } from "../../middleware/validate";
 import {
+  getPreferencesController,
   getProfileController,
   updateProfileController,
-  getPreferencesController,
   upsertPreferencesController,
-} from './users.controller';
-import { validate } from '../../middleware/validate';
-import { requireAuth } from '../../middleware/requireAuth';
-import { UpdateProfileSchema, UpsertPreferencesSchema } from './users.schema';
+} from "./users.controller";
+import { UpdateProfileSchema, UpsertPreferencesSchema } from "./users.schema";
 
 const router = Router();
 
@@ -18,32 +18,32 @@ router.use(requireAuth);
  * GET /users/me/profile
  * Get current user's profile
  */
-router.get('/me/profile', getProfileController);
+router.get("/me/profile", getProfileController);
 
 /**
  * PATCH /users/me/profile
  * Update current user's profile
  */
 router.patch(
-  '/me/profile',
+  "/me/profile",
   validate(UpdateProfileSchema),
-  updateProfileController
+  updateProfileController,
 );
 
 /**
  * GET /users/me/preferences
  * Get current user's preferences
  */
-router.get('/me/preferences', getPreferencesController);
+router.get("/me/preferences", getPreferencesController);
 
 /**
  * PUT /users/me/preferences
  * Update or create current user's preferences
  */
 router.put(
-  '/me/preferences',
+  "/me/preferences",
   validate(UpsertPreferencesSchema),
-  upsertPreferencesController
+  upsertPreferencesController,
 );
 
 export default router;

@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
-import { ZodSchema, ZodError } from 'zod';
-import { createError } from '../lib/errors';
+import type { NextFunction, Request, Response } from "express";
+import type { ZodSchema } from "zod";
+import { createError } from "../lib/errors";
 
 /**
  * Validates request body against a Zod schema
@@ -11,9 +11,9 @@ export const validate = (schema: ZodSchema) => {
 
     if (!result.success) {
       const error = createError(
-        'VALIDATION_ERROR',
-        'Request validation failed',
-        result.error.flatten()
+        "VALIDATION_ERROR",
+        "Request validation failed",
+        result.error.flatten(),
       );
       next(error);
       return;
@@ -33,9 +33,9 @@ export const validateQuery = (schema: ZodSchema) => {
 
     if (!result.success) {
       const error = createError(
-        'VALIDATION_ERROR',
-        'Query parameter validation failed',
-        result.error.flatten()
+        "VALIDATION_ERROR",
+        "Query parameter validation failed",
+        result.error.flatten(),
       );
       next(error);
       return;
@@ -58,9 +58,9 @@ export const validateParams = (schema: ZodSchema) => {
 
     if (!result.success) {
       const error = createError(
-        'VALIDATION_ERROR',
-        'URL parameter validation failed',
-        result.error.flatten()
+        "VALIDATION_ERROR",
+        "URL parameter validation failed",
+        result.error.flatten(),
       );
       next(error);
       return;

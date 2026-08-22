@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router } from "express";
+import { z } from "zod";
+import { validateParams, validateQuery } from "../../middleware/validate";
 import {
-  searchLocationsController,
   getLocationByIdController,
-} from './locations.controller';
-import { validateQuery, validateParams } from '../../middleware/validate';
-import { LocationSearchQuerySchema } from './locations.schema';
-import { z } from 'zod';
+  searchLocationsController,
+} from "./locations.controller";
+import { LocationSearchQuerySchema } from "./locations.schema";
 
 const router = Router();
 
@@ -16,9 +16,9 @@ const router = Router();
  * Search locations (cities) with optional filters
  */
 router.get(
-  '/search',
+  "/search",
   validateQuery(LocationSearchQuerySchema),
-  searchLocationsController
+  searchLocationsController,
 );
 
 /**
@@ -26,9 +26,9 @@ router.get(
  * Get detailed location information
  */
 router.get(
-  '/:id',
+  "/:id",
   validateParams(z.object({ id: z.string().uuid() })),
-  getLocationByIdController
+  getLocationByIdController,
 );
 
 export default router;

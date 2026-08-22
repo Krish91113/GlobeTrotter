@@ -1,13 +1,10 @@
-import type { Request, Response, NextFunction } from 'express';
-import {
-  addStop,
-  removeStop,
-  reorderStops,
-  updateStop,
-  listStops,
-} from './stops.service';
-import { ok } from '../../lib/apiResponse';
-import type { AddStopInput, ReorderStopsInput, UpdateStopInput } from './stops.schema';
+import type { NextFunction, Request, Response } from "express";
+import type {
+  AddStopInput,
+  ReorderStopsInput,
+  UpdateStopInput,
+} from "./stops.schema";
+import { addStop, removeStop, reorderStops, updateStop } from "./stops.service";
 
 /**
  * POST /api/v1/trips/:tripId/stops
@@ -15,15 +12,15 @@ import type { AddStopInput, ReorderStopsInput, UpdateStopInput } from './stops.s
 export async function addStopController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const stop = await addStop(
       req.params.tripId as string,
       req.user!.id,
-      req.body as AddStopInput
+      req.body as AddStopInput,
     );
-    ok(res, stop, 201);
+    res.status(201).json({ stop });
   } catch (error) {
     next(error);
   }
@@ -35,16 +32,16 @@ export async function addStopController(
 export async function updateStopController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const stop = await updateStop(
       req.params.tripId as string,
       req.params.stopId as string,
       req.user!.id,
-      req.body as UpdateStopInput
+      req.body as UpdateStopInput,
     );
-    ok(res, stop);
+    res.status(200).json({ stop });
   } catch (error) {
     next(error);
   }
@@ -56,11 +53,15 @@ export async function updateStopController(
 export async function removeStopController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
-    await removeStop(req.params.tripId as string, req.params.stopId as string, req.user!.id);
-    ok(res, {});
+    await removeStop(
+      req.params.tripId as string,
+      req.params.stopId as string,
+      req.user!.id,
+    );
+    res.status(200).json({ message: "Stop removed successfully" });
   } catch (error) {
     next(error);
   }
@@ -72,21 +73,16 @@ export async function removeStopController(
 export async function reorderStopsController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const stops = await reorderStops(
       req.params.tripId as string,
       req.user!.id,
-      req.body as ReorderStopsInput
+      req.body as ReorderStopsInput,
     );
-    ok(res, stops);
+    res.status(200).json({ stops });
   } catch (error) {
     next(error);
   }
-}
-export async function listStopsController(req: Request, res: Response, next: NextFunction): Promise<void> {
-  try {
-    ok(res, await listStops(req.params.tripId as string, req.user!.id));
-  } catch (error) { next(error); }
 }

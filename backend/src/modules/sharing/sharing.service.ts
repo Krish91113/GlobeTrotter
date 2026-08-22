@@ -1,21 +1,21 @@
-import { Prisma } from '../../../generated/prisma/client';
-import { prisma } from '../../database/prisma';
-import { ForbiddenError, NotFoundError } from '../../errors/AppError';
-import { getEnv } from '../../config/env';
-import { generateToken, sha256 } from '../../lib/crypto';
-import type { CreateShareLinkRequest } from './sharing.schema';
-import { isValidShareToken } from './sharing.schema';
-import {
+import { Prisma } from "../../../generated/prisma/client";
+import { getEnv } from "../../config/env";
+import { prisma } from "../../database/prisma";
+import { ForbiddenError, NotFoundError } from "../../errors/AppError";
+import { generateToken, sha256 } from "../../lib/crypto";
+import type {
   CopiedTripDto,
   PublicDayDto,
   PublicTripDto,
   ShareLinkDto,
   ShareLinkListItemDto,
-} from './sharing.dto';
+} from "./sharing.dto";
+import type { CreateShareLinkRequest } from "./sharing.schema";
+import { isValidShareToken } from "./sharing.schema";
 
 const TRIP_ITEM_INCLUDE = {
   categories: { include: { category: { select: { displayName: true } } } },
-  media: { take: 1, orderBy: { createdAt: 'asc' as const } },
+  media: { take: 1, orderBy: { createdAt: "asc" as const } },
 } as const;
 
 function toDateKey(date: Date): string {
@@ -26,7 +26,7 @@ export class SharingService {
   async createShareLink(
     tripId: string,
     data: CreateShareLinkRequest,
-    userId: string
+    userId: string,
   ): Promise<ShareLinkDto> {
     const trip = await this.assertTripOwnership(tripId, userId);
 
@@ -54,12 +54,15 @@ export class SharingService {
     };
   }
 
-  async listShareLinks(tripId: string, userId: string): Promise<ShareLinkListItemDto[]> {
+  async listShareLinks(
+    tripId: string,
+    userId: string,
+  ): Promise<ShareLinkListItemDto[]> {
     await this.assertTripOwnership(tripId, userId);
 
     const links = await prisma.tripShareLink.findMany({
       where: { tripId },
-      orderBy: { createdAt: 'desc' },
+      orderBy: { createdAt: "desc" },
     });
 
     return links.map((link) => ({
@@ -71,7 +74,11 @@ export class SharingService {
     }));
   }
 
-  async revokeShareLink(tripId: string, linkId: string, userId: string): Promise<void> {
+  async revokeShareLink(
+    tripId: string,
+    linkId: string,
+    userId: string,
+  ): Promise<void> {
     await this.assertTripOwnership(tripId, userId);
 
     const result = await prisma.tripShareLink.updateMany({
@@ -79,7 +86,7 @@ export class SharingService {
       data: { revokedAt: new Date() },
     });
     if (result.count === 0) {
-      throw new NotFoundError('Share link not found');
+      throw new NotFoundError("Share link not found");
     }
   }
 
@@ -94,14 +101,14 @@ export class SharingService {
       where: { id: link.tripId },
       include: {
         stops: {
-          orderBy: { sequenceNo: 'asc' as const },
+          orderBy: { sequenceNo: "asc" as const },
           include: { location: { select: { name: true } } },
         },
         days: {
-          orderBy: { dayNumber: 'asc' as const },
+          orderBy: { dayNumber: "asc" as const },
           include: {
             itineraryItems: {
-              orderBy: { sequenceNo: 'asc' as const },
+              orderBy: { sequenceNo: "asc" as const },
               include: {
                 catalogItem: { include: TRIP_ITEM_INCLUDE },
               },
@@ -113,7 +120,7 @@ export class SharingService {
     });
 
     if (!trip) {
-      throw new NotFoundError('Resource not found');
+      throw new NotFoundError("Resource not found");
     }
 
     const days: PublicDayDto[] = trip.days.map((day) => ({
@@ -121,11 +128,19 @@ export class SharingService {
       serviceDate: toDateKey(day.serviceDate),
       items: day.itineraryItems.map((item) => ({
         name: item.catalogItem.name,
-        categories: item.catalogItem.categories.map((c) => c.category.displayName),
-        plannedStartAt: item.plannedStartAt ? item.plannedStartAt.toISOString() : null,
-        plannedEndAt: item.plannedEndAt ? item.plannedEndAt.toISOString() : null,
+        categories: item.catalogItem.categories.map(
+          (c) => c.category.displayName,
+        ),
+        plannedStartAt: item.plannedStartAt
+          ? item.plannedStartAt.toISOString()
+          : null,
+        plannedEndAt: item.plannedEndAt
+          ? item.plannedEndAt.toISOString()
+          : null,
         durationMinutes: item.durationMinutes,
-        estimatedCost: item.estimatedCost ? item.estimatedCost.toFixed(2) : null,
+        estimatedCost: item.estimatedCost
+          ? item.estimatedCost.toFixed(2)
+          : null,
       })),
     }));
 
@@ -139,7 +154,9 @@ export class SharingService {
         sequenceNo: stop.sequenceNo,
         locationName: stop.location.name,
         arrivalDate: stop.arrivalDate ? toDateKey(stop.arrivalDate) : null,
-        departureDate: stop.departureDate ? toDateKey(stop.departureDate) : null,
+        departureDate: stop.departureDate
+          ? toDateKey(stop.departureDate)
+          : null,
       })),
       days,
       estimatedBudget: trip.budget ? trip.budget.targetAmount.toFixed(2) : null,
@@ -154,24 +171,32 @@ export class SharingService {
       where: { id: link.tripId },
       include: {
         days: {
-          orderBy: { dayNumber: 'asc' as const },
-          include: { itineraryItems: { orderBy: { sequenceNo: 'asc' as const } } },
+          orderBy: { dayNumber: "asc" as const },
+          include: {
+            itineraryItems: { orderBy: { sequenceNo: "asc" as const } },
+          },
         },
         budget: true,
       },
     });
 
     if (!source) {
-      throw new NotFoundError('Resource not found');
+      throw new NotFoundError("Resource not found");
     }
 
     return prisma.$transaction(async (tx) => {
       const [visibility, status] = await Promise.all([
-        tx.tripVisibility.findUnique({ where: { code: 'private' }, select: { id: true } }),
-        tx.tripStatus.findUnique({ where: { code: 'upcoming' }, select: { id: true } }),
+        tx.tripVisibility.findUnique({
+          where: { code: "private" },
+          select: { id: true },
+        }),
+        tx.tripStatus.findUnique({
+          where: { code: "upcoming" },
+          select: { id: true },
+        }),
       ]);
       if (!visibility || !status) {
-        throw new NotFoundError('Trip defaults missing');
+        throw new NotFoundError("Trip defaults missing");
       }
 
       const newTrip = await tx.trip.create({
@@ -246,7 +271,7 @@ export class SharingService {
 
   private async findValidLinkByToken(token: string) {
     if (!isValidShareToken(token)) {
-      throw new NotFoundError('Resource not found');
+      throw new NotFoundError("Resource not found");
     }
     const shareTokenHash = sha256(token.toLowerCase());
     const link = await prisma.tripShareLink.findUnique({
@@ -258,7 +283,7 @@ export class SharingService {
       link.revokedAt !== null ||
       (link.expiresAt !== null && link.expiresAt <= new Date())
     ) {
-      throw new NotFoundError('Resource not found');
+      throw new NotFoundError("Resource not found");
     }
     return link;
   }
@@ -269,10 +294,10 @@ export class SharingService {
       select: { id: true, ownerUserId: true, visibilityId: true },
     });
     if (!trip) {
-      throw new NotFoundError('Trip not found');
+      throw new NotFoundError("Trip not found");
     }
     if (trip.ownerUserId !== userId) {
-      throw new ForbiddenError('You do not have access to this trip');
+      throw new ForbiddenError("You do not have access to this trip");
     }
     return trip;
   }

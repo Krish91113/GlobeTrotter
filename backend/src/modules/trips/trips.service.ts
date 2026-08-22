@@ -1,6 +1,6 @@
 import prisma from '../../lib/prisma';
 import { NotFoundError, ForbiddenError, ValidationError } from '../../errors/AppError';
-import type { CreateTripRequest, UpdateTripRequest } from './trips.schema';
+import type { CreateTripInput, UpdateTripInput } from './trips.schema';
 import type { TripDto } from './trips.dto';
 
 export async function getOwnedTripOrThrow(tripId: string, userId: string) {
@@ -116,7 +116,7 @@ async function toDto(tripId: string): Promise<TripDto> {
     endDate: trip.endDate.toISOString().slice(0, 10),
     daysCount: trip.days.length,
     cities,
-    currency: trip.defaultCurrency?.isoCode ?? 'EUR',
+    currency: trip.defaultCurrency?.isoCode ?? 'INR',
     coverImage: null,
     totalBudget,
     estimatedSpend,
@@ -152,7 +152,7 @@ export const tripsService = {
     return toDto(tripId);
   },
 
-  async createTrip(data: CreateTripRequest, userId: string): Promise<TripDto> {
+  async createTrip(data: CreateTripInput, userId: string): Promise<TripDto> {
     const currencyId = await resolveCurrency(data.currency);
     const statusId = await resolveStatus('PLANNING');
     const visibilityId = await resolveVisibility('PRIVATE');
@@ -200,7 +200,7 @@ export const tripsService = {
     return toDto(trip.id);
   },
 
-  async updateTrip(tripId: string, data: UpdateTripRequest, userId: string): Promise<TripDto> {
+  async updateTrip(tripId: string, data: UpdateTripInput, userId: string): Promise<TripDto> {
     const existing = await prisma.trip.findUnique({ where: { id: tripId }, select: { ownerUserId: true } });
     if (!existing) throw new NotFoundError('Trip not found');
     if (existing.ownerUserId !== userId) throw new ForbiddenError();
@@ -219,7 +219,7 @@ export const tripsService = {
     });
 
     if (data.totalBudget !== undefined && data.totalBudget !== null) {
-      const activeCurrencyId = currencyId ?? (await resolveCurrency('EUR'));
+      const activeCurrencyId = currencyId ?? (await resolveCurrency('INR'));
       if (activeCurrencyId) {
         await prisma.tripBudget.upsert({
           where: { tripId },

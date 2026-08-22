@@ -1,14 +1,15 @@
 import { cn } from "@/lib/utils";
 
 export function formatMoney(amount: number, currency = "EUR"): string {
+  const safeCurrency = currency || "EUR";
   try {
     return new Intl.NumberFormat("en-US", {
       style: "currency",
-      currency,
+      currency: safeCurrency,
       maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
     }).format(amount);
   } catch {
-    return `${amount} ${currency}`;
+    return `${amount} ${safeCurrency}`;
   }
 }
 
@@ -19,7 +20,8 @@ interface MoneyProps {
 }
 
 export function Money({ amount, currency = "EUR", className }: MoneyProps) {
-  return <span className={cn("tabular-nums", className)}>{formatMoney(amount, currency)}</span>;
+  const safeCurrency = currency || "EUR";
+  return <span className={cn("tabular-nums", className)}>{formatMoney(amount, safeCurrency)}</span>;
 }
 
 export function RatingBadge({ rating, reviewCount, className }: { rating: number; reviewCount?: number; className?: string }) {

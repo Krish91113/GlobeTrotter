@@ -1,9 +1,9 @@
-import { Router } from 'express';
+import { Router } from "express";
 import {
-  getCurrenciesController,
   getCategoriesController,
+  getCurrenciesController,
   getExpenseCategoriesController,
-} from './reference.controller';
+} from "./reference.controller";
 
 const router = Router();
 
@@ -13,18 +13,18 @@ const router = Router();
  * GET /reference/currencies
  * Get all available currencies
  */
-router.get('/currencies', getCurrenciesController);
+router.get("/currencies", getCurrenciesController);
 
 /**
  * GET /reference/categories
  * Get all activity categories
  */
-router.get('/categories', getCategoriesController);
+router.get("/categories", getCategoriesController);
 
 /**
  * GET /reference/expense-categories
  * Get all expense categories
  */
-router.get('/expense-categories', getExpenseCategoriesController);
+router.get("/expense-categories", getExpenseCategoriesController);
 
 export default router;

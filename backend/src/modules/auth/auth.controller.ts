@@ -1,28 +1,40 @@
-import type { Request, Response, NextFunction } from 'express';
-import { authService } from './auth.service';
-import { registerSchema, loginSchema } from './auth.schema';
-import { ok } from '../../lib/apiResponse';
-import { ValidationError } from '../../errors/AppError';
-import { setAuthCookies, clearAuthCookies, getRefreshTokenFromCookies } from '../../lib/cookies';
+import type { NextFunction, Request, Response } from "express";
+import { ValidationError } from "../../errors/AppError";
+import { ok } from "../../lib/apiResponse";
+import {
+  clearAuthCookies,
+  getRefreshTokenFromCookies,
+  setAuthCookies,
+} from "../../lib/cookies";
+import { loginSchema, registerSchema } from "./auth.schema";
+import { authService } from "./auth.service";
 
 export class AuthController {
-  async register(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async register(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
       const parsed = registerSchema.safeParse(req.body);
       if (!parsed.success) {
         const fieldErrors: Record<string, string[]> = {};
         parsed.error.issues.forEach((err: any) => {
-          const path = err.path.join('.');
+          const path = err.path.join(".");
           if (!fieldErrors[path]) fieldErrors[path] = [];
           fieldErrors[path].push(err.message);
         });
-        throw new ValidationError('Registration validation failed', fieldErrors, String(req.id));
+        throw new ValidationError(
+          "Registration validation failed",
+          fieldErrors,
+          String(req.id),
+        );
       }
 
       const tokens = await authService.register(
         parsed.data,
         req.ip,
-        req.get('user-agent')
+        req.get("user-agent"),
       );
 
       setAuthCookies(res, tokens.accessToken, tokens.refreshToken);
@@ -38,17 +50,21 @@ export class AuthController {
       if (!parsed.success) {
         const fieldErrors: Record<string, string[]> = {};
         parsed.error.issues.forEach((err: any) => {
-          const path = err.path.join('.');
+          const path = err.path.join(".");
           if (!fieldErrors[path]) fieldErrors[path] = [];
           fieldErrors[path].push(err.message);
         });
-        throw new ValidationError('Login validation failed', fieldErrors, String(req.id));
+        throw new ValidationError(
+          "Login validation failed",
+          fieldErrors,
+          String(req.id),
+        );
       }
 
       const tokens = await authService.login(
         parsed.data,
         req.ip,
-        req.get('user-agent')
+        req.get("user-agent"),
       );
 
       setAuthCookies(res, tokens.accessToken, tokens.refreshToken);
@@ -72,17 +88,25 @@ export class AuthController {
     }
   }
 
-  async refresh(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async refresh(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
       const refreshToken = getRefreshTokenFromCookies(req);
       if (!refreshToken) {
-        throw new ValidationError('Refresh token is required', undefined, String(req.id));
+        throw new ValidationError(
+          "Refresh token is required",
+          undefined,
+          String(req.id),
+        );
       }
 
       const tokens = await authService.refresh(
         refreshToken,
         req.ip,
-        req.get('user-agent')
+        req.get("user-agent"),
       );
 
       setAuthCookies(res, tokens.accessToken, tokens.refreshToken);
@@ -94,7 +118,7 @@ export class AuthController {
 
   async me(req: Request, res: Response, next: NextFunction): Promise<void> {
     try {
-      const user = await authService.me(req.user!.userId ?? req.user!.id);
+      const user = await authService.me(req.user!.id);
       ok(res, { user });
     } catch (error) {
       next(error);

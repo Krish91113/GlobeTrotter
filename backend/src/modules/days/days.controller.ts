@@ -1,6 +1,5 @@
-import type { Request, Response, NextFunction } from 'express';
-import { getTripDays } from './days.service';
-import { ok } from '../../lib/apiResponse';
+import type { NextFunction, Request, Response } from "express";
+import { getTripDays } from "./days.service";
 
 /**
  * GET /api/v1/trips/:tripId/days
@@ -8,11 +7,11 @@ import { ok } from '../../lib/apiResponse';
 export async function getTripDaysController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const days = await getTripDays(req.params.tripId as string, req.user!.id);
-    ok(res, days);
+    res.status(200).json({ days });
   } catch (error) {
     next(error);
   }

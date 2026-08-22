@@ -1,14 +1,17 @@
-import type { Request, Response, NextFunction } from 'express';
-import type { AccessTokenPayload } from '../lib/jwt';
-import { AuthRequiredError } from '../errors/AppError';
-import { verifyAccessToken } from '../lib/jwt';
-import { getAccessTokenFromCookies } from '../lib/cookies';
+import type { NextFunction, Request, Response } from "express";
+import { AuthRequiredError } from "../errors/AppError";
+import { getAccessTokenFromCookies } from "../lib/cookies";
+import { verifyAccessToken } from "../lib/jwt";
 
-export function requireAuth(req: Request, _res: Response, next: NextFunction): void {
+export function requireAuth(
+  req: Request,
+  _res: Response,
+  next: NextFunction,
+): void {
   const token = getAccessTokenFromCookies(req);
 
   if (!token) {
-    throw new AuthRequiredError('No access token provided', String(req.id));
+    throw new AuthRequiredError("No access token provided", String(req.id));
   }
 
   try {
@@ -21,7 +24,10 @@ export function requireAuth(req: Request, _res: Response, next: NextFunction): v
       email: payload.email,
     };
     next();
-  } catch (_err) {
-    throw new AuthRequiredError('Invalid or expired access token', String(req.id));
+  } catch {
+    throw new AuthRequiredError(
+      "Invalid or expired access token",
+      String(req.id),
+    );
   }
 }

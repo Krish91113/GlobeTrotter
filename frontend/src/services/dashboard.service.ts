@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/api-client";
 import type { DashboardData, Trip, Location } from "@/types";
 import { cityImageUrl } from "@/lib/image-resolver";
+import { normalizeCurrency } from "@/lib/currency";
 
 export const dashboardService = {
   getDashboard: async (): Promise<DashboardData> => {
@@ -19,7 +20,7 @@ export const dashboardService = {
         activitiesCount: t.activitiesCount ?? 0,
         estimatedSpend: Number(t.estimatedSpend ?? 0),
         totalBudget: Number(t.totalBudget ?? 0),
-        currency: t.currency || "EUR",
+        currency: normalizeCurrency(t.currency),
         coverImage: cityImageUrl(t.cities?.[0], t.coverImage),
         cities: t.cities || [],
         daysCount: t.daysCount ?? 1,
@@ -50,7 +51,7 @@ export const dashboardService = {
         image: cityImageUrl(d.name, d.thumbnailUri),
         rating: 4.8,
         averageDailyCost: 120,
-        currency: "EUR",
+        currency: "INR",
         travelStyles: ["Culture", "Food"],
       }));
 
@@ -62,7 +63,7 @@ export const dashboardService = {
           upcomingTripsCount: data.upcomingTripCount ?? recentTrips.filter((trip) => trip.status === "upcoming").length,
           plannedCities: data.totalPlannedCities ?? 0,
           totalRemainingBudget: recentTrips.reduce((acc, t) => acc + (t.totalBudget - t.estimatedSpend), 0),
-          currency: recentTrips[0]?.currency || "EUR",
+          currency: normalizeCurrency(recentTrips[0]?.currency),
         },
       };
   },

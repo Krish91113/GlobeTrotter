@@ -1,11 +1,11 @@
-import { prisma } from '../../database/prisma';
-import type { User, Session } from '../../../generated/prisma/client';
+import type { Session, User } from "../../../generated/prisma/client";
+import { prisma } from "../../database/prisma";
 
 export class AuthRepository {
   async createUser(
     email: string,
     passwordHash: string,
-    displayName: string
+    displayName: string,
   ): Promise<User> {
     return prisma.user.create({
       data: {
@@ -40,7 +40,7 @@ export class AuthRepository {
     tokenHash: string,
     expiresAt: Date,
     ipAddress?: string,
-    userAgent?: string
+    userAgent?: string,
   ): Promise<Session> {
     return prisma.session.create({
       data: {

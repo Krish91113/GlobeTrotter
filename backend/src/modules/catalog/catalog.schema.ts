@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 export const CatalogSearchQuerySchema = z.object({
   q: z.string().min(1).max(100).optional(),
@@ -14,8 +14,8 @@ export const CatalogSearchQuerySchema = z.object({
   limit: z.coerce
     .number()
     .int()
-    .min(1, 'Limit must be at least 1')
-    .max(50, 'Limit must not exceed 50')
+    .min(1, "Limit must be at least 1")
+    .max(50, "Limit must not exceed 50")
     .default(20),
 }).transform(({ query, ...value }) => ({ ...value, q: value.q ?? query }));
 
