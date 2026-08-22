@@ -1,18 +1,30 @@
 import pino from 'pino';
-import { getEnv } from '../config/env';
+import { env } from '../config/env';
 
-const env = getEnv();
+const isDevelopment = env.NODE_ENV === 'development';
 
-const logger = pino({
-  level: env.LOG_LEVEL,
-  transport: {
-    target: 'pino-pretty',
-    options: {
-      colorize: true,
-      singleLine: env.NODE_ENV === 'production',
-      translateTime: 'SYS:standard',
-    },
+export const logger = pino({
+  level: isDevelopment ? 'debug' : 'info',
+  transport: isDevelopment
+    ? {
+        target: 'pino-pretty',
+        options: {
+          colorize: true,
+          translateTime: 'HH:MM:ss',
+          ignore: 'pid,hostname',
+        },
+      }
+    : undefined,
+  redact: {
+    paths: [
+      'req.headers.authorization',
+      'req.headers.cookie',
+      'password',
+      'passwordHash',
+      'tokenHash',
+      'rawToken',
+      'shareTokenHash',
+    ],
+    remove: true,
   },
 });
-
-export { logger };
