@@ -22,6 +22,10 @@ router.post("/:tripId/expenses", requireAuth, (req, res, next) =>
   budgetController.addExpense(req, res, next),
 );
 
+router.get("/:tripId/expenses", requireAuth, (req, res, next) =>
+  budgetController.listExpenses(req, res, next),
+);
+
 router.patch("/:tripId/expenses/:expenseId", requireAuth, (req, res, next) =>
   budgetController.updateExpense(req, res, next),
 );

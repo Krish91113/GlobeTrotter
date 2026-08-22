@@ -15,20 +15,30 @@ export const updateBudgetSchema = z.object({
 
 export type UpdateBudgetRequest = z.infer<typeof updateBudgetSchema>;
 
-export const addExpenseSchema = z.object({
-  expenseCategoryId: z.string().uuid("Invalid expense category id"),
-  amount: decimalString,
-  currencyId: z.string().uuid("Invalid currency id"),
-  expenseDate: isoDateString,
-  description: z
-    .string()
-    .max(200, "Description must be at most 200 characters")
-    .optional(),
-  isEstimate: z.boolean().default(true),
-  itineraryItemId: z.string().uuid("Invalid itinerary item id").optional(),
-  splitCount: z.number().int().min(1).default(1),
-  splitParticipants: z.string().optional(),
-});
+export const addExpenseSchema = z
+  .object({
+    expenseCategoryId: z.string().uuid("Invalid expense category id").optional(),
+    categoryCode: z.string().min(1).max(60).optional(),
+    amount: decimalString,
+    currencyId: z.string().uuid("Invalid currency id").optional(),
+    expenseDate: isoDateString,
+    description: z
+      .string()
+      .max(200, "Description must be at most 200 characters")
+      .optional(),
+    isEstimate: z.boolean().default(true),
+    itineraryItemId: z.string().uuid("Invalid itinerary item id").optional(),
+    splitCount: z.number().int().min(1).default(1),
+    splitParticipants: z.string().optional(),
+  })
+  .refine(
+    (data) => Boolean(data.expenseCategoryId ?? data.categoryCode),
+    {
+      message:
+        "Provide either expenseCategoryId or categoryCode",
+      path: ["categoryCode"],
+    },
+  );
 
 export type AddExpenseRequest = z.infer<typeof addExpenseSchema>;
 

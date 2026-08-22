@@ -171,25 +171,39 @@ export class BudgetService {
     };
   }
 
+  async listExpenses(
+    tripId: string,
+    userId: string,
+  ): Promise<ExpenseDto[]> {
+    await this.assertTripOwnership(tripId, userId);
+
+    const expenses = await prisma.expense.findMany({
+      where: { tripId },
+      orderBy: [{ expenseDate: "desc" }, { createdAt: "desc" }],
+      include: {
+        expenseCategory: { select: { displayName: true } },
+        currency: { select: { isoCode: true } },
+      },
+    });
+
+    return expenses.map(toExpenseDto);
+  }
+
   async addExpense(
     tripId: string,
     data: AddExpenseRequest,
     userId: string,
   ): Promise<ExpenseDto> {
-    await this.assertTripOwnership(tripId, userId);
+    const trip = await this.assertTripOwnership(tripId, userId);
 
-    const [category, currency] = await Promise.all([
-      prisma.expenseCategory.findUnique({
-        where: { id: data.expenseCategoryId },
-        select: { id: true },
-      }),
-      prisma.currency.findUnique({
-        where: { id: data.currencyId },
-        select: { id: true },
-      }),
-    ]);
-    if (!category) throw new NotFoundError("Expense category not found");
-    if (!currency) throw new NotFoundError("Currency not found");
+    const category = await this.resolveExpenseCategory(
+      data.expenseCategoryId,
+      data.categoryCode,
+    );
+    const currency = await this.resolveCurrency(
+      data.currencyId,
+      trip.defaultCurrency?.isoCode ?? null,
+    );
 
     if (data.itineraryItemId) {
       await this.assertItineraryItemInTrip(data.itineraryItemId, tripId);
@@ -198,9 +212,9 @@ export class BudgetService {
     const created = await prisma.expense.create({
       data: {
         tripId,
-        expenseCategoryId: data.expenseCategoryId,
+        expenseCategoryId: category.id,
         amount: new Prisma.Decimal(data.amount),
-        currencyId: data.currencyId,
+        currencyId: currency.id,
         expenseDate: new Date(`${data.expenseDate}T00:00:00.000Z`),
         description: data.description,
         isEstimate: data.isEstimate,
@@ -215,6 +229,56 @@ export class BudgetService {
     });
 
     return toExpenseDto(created);
+  }
+
+  private async resolveExpenseCategory(
+    categoryId?: string,
+    categoryCode?: string,
+  ) {
+    if (categoryId) {
+      const category = await prisma.expenseCategory.findUnique({
+        where: { id: categoryId },
+        select: { id: true },
+      });
+      if (!category) throw new NotFoundError("Expense category not found");
+      return category;
+    }
+
+    const name = (categoryCode ?? "Other").trim();
+    const code = name.toUpperCase().replace(/[^A-Z0-9]+/g, "_").slice(0, 60);
+
+    return prisma.expenseCategory.upsert({
+      where: { code },
+      update: {},
+      create: { code, displayName: name },
+      select: { id: true },
+    });
+  }
+
+  private async resolveCurrency(currencyId?: string, fallbackIso?: string | null) {
+    if (currencyId) {
+      const currency = await prisma.currency.findUnique({
+        where: { id: currencyId },
+        select: { id: true },
+      });
+      if (!currency) throw new NotFoundError("Currency not found");
+      return currency;
+    }
+
+    if (fallbackIso) {
+      const currency = await prisma.currency.findUnique({
+        where: { isoCode: fallbackIso },
+        select: { id: true },
+      });
+      if (currency) return currency;
+    }
+
+    const eur = await prisma.currency.findUnique({
+      where: { isoCode: "EUR" },
+      select: { id: true },
+    });
+    if (!eur) throw new NotFoundError("Currency not found");
+    return eur;
   }
 
   async updateExpense(
