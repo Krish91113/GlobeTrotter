@@ -87,6 +87,22 @@ export class BudgetController {
     }
   }
 
+  async getExpenses(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const expenses = await budgetService.getExpenses(
+        uuidParam(req, "tripId"),
+        req.user!.id,
+      );
+      ok(res, expenses);
+    } catch (error) {
+      next(error);
+    }
+  }
+
   async addExpense(
     req: Request,
     res: Response,
@@ -149,7 +165,7 @@ export class BudgetController {
         uuidParam(req, "expenseId"),
         req.user!.id,
       );
-      ok(res, {}, 204);
+      res.status(204).send();
     } catch (error) {
       next(error);
     }
@@ -157,3 +173,4 @@ export class BudgetController {
 }
 
 export const budgetController = new BudgetController();
+

@@ -32,7 +32,10 @@ async function getStopOrThrow(tripId: string, stopId: string) {
     include: {
       location: {
         select: {
+          id: true,
           name: true,
+          latitude: true,
+          longitude: true,
           country: { select: { iso2Code: true, displayName: true } },
         },
       },
@@ -42,6 +45,31 @@ async function getStopOrThrow(tripId: string, stopId: string) {
     throw createError("NOT_FOUND", "Stop not found");
   }
   return stop;
+}
+
+export async function getStops(
+  tripId: string,
+  userId: string,
+): Promise<StopDto[]> {
+  await getOwnedTripOrThrow(tripId, userId);
+
+  const stops = await prisma.tripStop.findMany({
+    where: { tripId },
+    include: {
+      location: {
+        select: {
+          id: true,
+          name: true,
+          latitude: true,
+          longitude: true,
+          country: { select: { iso2Code: true, displayName: true } },
+        },
+      },
+    },
+    orderBy: { sequenceNo: "asc" },
+  });
+
+  return stops.map(toStopDto);
 }
 
 function assertDatesWithinTrip(
@@ -271,7 +299,10 @@ export async function reorderStops(
     include: {
       location: {
         select: {
+          id: true,
           name: true,
+          latitude: true,
+          longitude: true,
           country: { select: { iso2Code: true, displayName: true } },
         },
       },

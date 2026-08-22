@@ -4,6 +4,7 @@ import prisma from "../../lib/prisma";
 import { buildCursorWhere, extractNextCursor } from "../../utils/pagination";
 import {
   type CatalogItemDetailDto,
+  type CatalogItemDto,
   type CatalogSearchResponse,
   toCatalogItemDetailDto,
   toCatalogItemDto,
@@ -19,13 +20,15 @@ export async function searchCatalogItems(
   const {
     locationId,
     categoryId,
+    category,
+    q,
     minCost,
     maxCost,
     ratingMin,
     durationMax,
     cursor,
     limit,
-  } = query;
+  } = query as any;
 
   // Build where clause
   const where: any = {
@@ -39,13 +42,29 @@ export async function searchCatalogItems(
     where.locationId = locationId;
   }
 
-  // Filter by category
+  // Filter by category (UUID or name)
   if (categoryId) {
     where.categories = {
       some: {
         categoryId,
       },
     };
+  } else if (category) {
+    where.categories = {
+      some: {
+        category: {
+          displayName: { contains: category, mode: "insensitive" },
+        },
+      },
+    };
+  }
+
+  // Text search
+  if (q) {
+    where.OR = [
+      { name: { contains: q, mode: "insensitive" } },
+      { shortDescription: { contains: q, mode: "insensitive" } },
+    ];
   }
 
   // Filter by rating
@@ -82,6 +101,11 @@ export async function searchCatalogItems(
   const results = await prisma.catalogItem.findMany({
     where,
     include: {
+      location: {
+        select: {
+          name: true,
+        },
+      },
       place: {
         select: {
           ratingValue: true,
@@ -144,6 +168,86 @@ export async function searchCatalogItems(
 }
 
 /**
+ * Haversine formula distance helper in meters
+ */
+function haversineDistanceMeters(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number,
+): number {
+  const R = 6371000;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos((lat1 * Math.PI) / 180) *
+      Math.cos((lat2 * Math.PI) / 180) *
+      Math.sin(dLon / 2) *
+      Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return Math.round(R * c);
+}
+
+/**
+ * Search nearby catalog items by coordinates and radius
+ */
+export async function searchNearbyCatalogItems(
+  lat: number,
+  lng: number,
+  radiusMeters: number = 5000,
+  limit: number = 20,
+): Promise<{ items: CatalogItemDto[] }> {
+  // Bounding box approximation (~1 deg lat ~ 111km)
+  const latDelta = radiusMeters / 111000;
+  const lngDelta = radiusMeters / (111000 * Math.cos((lat * Math.PI) / 180) || 1);
+
+  const candidates = await prisma.catalogItem.findMany({
+    where: {
+      status: { code: "active" },
+      latitude: {
+        gte: lat - latDelta,
+        lte: lat + latDelta,
+      },
+      longitude: {
+        gte: lng - lngDelta,
+        lte: lng + lngDelta,
+      },
+    },
+    include: {
+      location: { select: { name: true } },
+      place: { select: { ratingValue: true } },
+      categories: {
+        include: { category: { select: { displayName: true } } },
+        take: 3,
+      },
+      media: { select: { thumbnailUri: true }, take: 1 },
+      prices: {
+        select: { amount: true, currency: { select: { isoCode: true } } },
+        orderBy: { observedAt: "desc" },
+        take: 1,
+      },
+      experience: { select: { durationMinutes: true } },
+    },
+    take: 100,
+  });
+
+  const itemsWithDistance = candidates
+    .map((item) => {
+      const dto = toCatalogItemDto(item);
+      const itemLat = item.latitude ?? 0;
+      const itemLng = item.longitude ?? 0;
+      const distanceMeters = haversineDistanceMeters(lat, lng, itemLat, itemLng);
+      return { ...dto, distanceMeters };
+    })
+    .filter((item) => (item.distanceMeters ?? Infinity) <= radiusMeters)
+    .sort((a, b) => (a.distanceMeters ?? 0) - (b.distanceMeters ?? 0))
+    .slice(0, limit);
+
+  return { items: itemsWithDistance };
+}
+
+/**
  * Get catalog item by ID with full details
  */
 export async function getCatalogItemById(
@@ -152,6 +256,11 @@ export async function getCatalogItemById(
   const item = await prisma.catalogItem.findUnique({
     where: { id },
     include: {
+      location: {
+        select: {
+          name: true,
+        },
+      },
       place: {
         select: {
           ratingValue: true,
@@ -215,3 +324,4 @@ export async function getCatalogItemById(
 
   return toCatalogItemDetailDto(item);
 }
+

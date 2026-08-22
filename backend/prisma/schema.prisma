@@ -24,6 +24,7 @@ model User {
   isActive        Boolean   @default(true)
   isVerified      Boolean   @default(false)
   lastLoginAt     DateTime?
+  role            String    @default("TRAVELER")
   createdAt       DateTime  @default(now())
   updatedAt       DateTime  @updatedAt
   deletedAt       DateTime?
@@ -37,6 +38,8 @@ model User {
   trips                   Trip[]
   tripMembers             TripMember[]
   shareLinks              TripShareLink[]
+  savedLocations          SavedLocation[]
+  notifications           Notification[]
   aiRequests              AiRequest[]
   aiPlanDrafts            AiPlanDraft[]
   aiRecommendations       AiRecommendation[]
@@ -304,6 +307,7 @@ model Location {
   aliases        LocationAlias[]
   catalogItems   CatalogItem[]
   tripStops      TripStop[]
+  savedLocations SavedLocation[]
   routeFrom      RouteObservation[] @relation("FromLocation")
   routeTo        RouteObservation[] @relation("ToLocation")
   status         RecordStatus?      @relation(fields: [statusId], references: [id])
@@ -1079,3 +1083,38 @@ model UserEvent {
   @@index([eventType, occurredAt])
   @@map("user_events")
 }
+
+// ============================================================================
+// 10. USER EXTENSIONS - Saved Locations & Notifications
+// ============================================================================
+
+model SavedLocation {
+  id         String   @id @default(uuid())
+  userId     String
+  locationId String
+  createdAt  DateTime @default(now())
+
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  location Location @relation(fields: [locationId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, locationId])
+  @@index([userId])
+  @@map("saved_locations")
+}
+
+model Notification {
+  id        String    @id @default(uuid())
+  userId    String
+  type      String
+  title     String
+  body      String
+  readAt    DateTime?
+  metadata  Json?
+  createdAt DateTime  @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@map("notifications")
+}
+

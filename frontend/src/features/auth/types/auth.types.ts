@@ -8,6 +8,8 @@ export interface AuthUser {
   email: string;
   displayName: string;
   profileImageUri: string | null;
+  role?: string;
+  avatarUrl?: string;
 }
 
 export interface RegisterInput {

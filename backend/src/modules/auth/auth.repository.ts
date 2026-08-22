@@ -6,12 +6,15 @@ export class AuthRepository {
     email: string,
     passwordHash: string,
     displayName: string,
+    role: string = "TRAVELER",
   ): Promise<User> {
     return prisma.user.create({
       data: {
         email,
         passwordHash,
         displayName,
+        role,
+        isVerified: true,
       },
     });
   }

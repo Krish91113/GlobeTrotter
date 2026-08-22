@@ -13,6 +13,9 @@ export type CatalogItemDto = {
   durationMinutes: number | null;
   rating: number | null;
   thumbnailUri: string | null;
+  latitude: number | null;
+  longitude: number | null;
+  distanceMeters?: number;
 };
 
 /**
@@ -74,8 +77,10 @@ export function toCatalogItemDto(item: {
   id: string;
   name: string;
   locationId: string | null;
-  location: { name: string } | null;
+  location?: { name: string } | null;
   shortDescription: string | null;
+  latitude?: number | null;
+  longitude?: number | null;
   categories: {
     category: {
       displayName: string;
@@ -107,7 +112,7 @@ export function toCatalogItemDto(item: {
     id: item.id,
     name: item.name,
     locationId: item.locationId,
-    location: item.location,
+    location: item.location ?? null,
     shortDescription: item.shortDescription,
     categories,
     estimatedCost: latestPrice ? latestPrice.amount.toString() : null,
@@ -115,6 +120,8 @@ export function toCatalogItemDto(item: {
     durationMinutes,
     rating,
     thumbnailUri,
+    latitude: item.latitude ?? null,
+    longitude: item.longitude ?? null,
   };
 }
 

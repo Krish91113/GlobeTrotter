@@ -1,10 +1,20 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { User, Settings, Save, LogOut, CheckCircle2, Shield } from "lucide-react";
+import { useEffect, useState, useRef } from "react";
+import { User, Settings, Save, LogOut, Camera, Trash2, Heart, AlertTriangle, ImageOff, Shield } from "lucide-react";
 import { useCurrentUser, useLogout } from "@/features/auth/hooks/use-auth";
-import { useProfile, useUpdateProfile } from "@/hooks/queries";
+import {
+  useProfile,
+  useUpdateProfile,
+  useUploadProfileImage,
+  useRemoveProfileImage,
+  useDeleteAccount,
+  useSavedLocations,
+  useUnsaveLocation,
+  useCurrencies,
+} from "@/hooks/queries";
 import { toast } from "sonner";
+import { ConfirmDialog } from "@/components/shared/confirm-dialog";
 
 const travelPaces = [
   { value: "slow", label: "Relaxed & Slow", desc: "1-2 activities per day with plenty of free time." },
@@ -22,7 +32,14 @@ export default function ProfilePage() {
   const { data: authUser } = useCurrentUser();
   const { data: profile } = useProfile();
   const updateProfile = useUpdateProfile();
+  const uploadImage = useUploadProfileImage();
+  const removeImage = useRemoveProfileImage();
+  const deleteAccount = useDeleteAccount();
   const logout = useLogout();
+  const { data: savedLocations } = useSavedLocations();
+  const unsaveLocation = useUnsaveLocation();
+  const { data: currencies } = useCurrencies();
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [preferences, setPreferences] = useState({
     culture: 80,
@@ -36,6 +53,7 @@ export default function ProfilePage() {
 
   const [displayName, setDisplayName] = useState(authUser?.displayName || "Traveler");
   const [currency, setCurrency] = useState("INR");
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
 
   useEffect(() => {
     if (!profile) return;
@@ -45,19 +63,39 @@ export default function ProfilePage() {
   }, [profile]);
 
   const handleSave = () => {
-    updateProfile.mutate(
-      {
-        name: displayName,
-        currency,
-        preferences,
-      },
-      {
-        onSuccess: () => {
-          toast.success("Preferences updated successfully");
-        },
-      }
-    );
+    updateProfile.mutate({ name: displayName, currency, preferences });
   };
+
+  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      toast.error("Image must be smaller than 5MB");
+      return;
+    }
+    if (!["image/jpeg", "image/png", "image/webp"].includes(file.type)) {
+      toast.error("Only JPEG, PNG, and WebP formats are supported");
+      return;
+    }
+    uploadImage.mutate(file);
+    e.target.value = "";
+  };
+
+  const handleDeleteAccount = () => {
+    deleteAccount.mutate(undefined, {
+      onSuccess: () => {
+        logout.mutate();
+      },
+    });
+  };
+
+  const userInitials = (displayName || "T").split(" ").map((w: string) => w[0]).join("").toUpperCase().slice(0, 2);
+  const avatarUrl = profile?.avatarUrl || authUser?.avatarUrl || authUser?.profileImageUri || "";
+  const [imageError, setImageError] = useState(false);
+
+  useEffect(() => {
+    setImageError(false);
+  }, [avatarUrl]);
 
   return (
     <div className="container-page py-12 pb-28 max-w-4xl">
@@ -77,49 +115,114 @@ export default function ProfilePage() {
       </div>
 
       <div className="mt-10 space-y-12">
-        {/* Account Info */}
+        {/* Profile Photo & Account Info */}
         <section className="rounded-2xl border border-[#E2E8F0]/80 bg-white p-6 sm:p-8 shadow-sm">
           <h2 className="text-xl font-bold text-[#0F172A] flex items-center gap-2">
             <User className="size-5 text-primary" />
             Account Information
           </h2>
-          <div className="mt-6 grid gap-6 sm:grid-cols-2">
-            <div>
-              <label className="block text-sm font-medium text-[#0F172A] mb-1.5">Display name</label>
-              <input
-                type="text"
-                value={displayName}
-                onChange={(e) => setDisplayName(e.target.value)}
-                className="h-12 w-full rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 text-sm outline-none focus:border-primary focus:bg-white"
-              />
+
+          <div className="mt-6 flex flex-col sm:flex-row gap-6">
+            {/* Avatar */}
+            <div className="shrink-0">
+              <div className="relative group">
+                <div className="size-24 rounded-full overflow-hidden bg-[#F1F5F9] flex items-center justify-center border border-[#E2E8F0]">
+                  {avatarUrl && !imageError ? (
+                    <img
+                      src={avatarUrl}
+                      alt="Profile"
+                      className="size-full object-cover"
+                      onError={() => setImageError(true)}
+                    />
+                  ) : (
+                    <span className="text-2xl font-bold text-primary">{userInitials}</span>
+                  )}
+                </div>
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadImage.isPending}
+                  className="absolute inset-0 flex items-center justify-center rounded-full bg-black/40 opacity-0 group-hover:opacity-100 transition-opacity"
+                >
+                  <Camera className="size-5 text-white" />
+                </button>
+                <input
+                  ref={fileInputRef}
+                  type="file"
+                  accept="image/jpeg,image/png,image/webp,image/gif,image/svg+xml"
+                  onChange={handleImageUpload}
+                  className="hidden"
+                />
+              </div>
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={() => fileInputRef.current?.click()}
+                  disabled={uploadImage.isPending}
+                  className="text-xs font-semibold text-primary hover:underline disabled:opacity-50"
+                >
+                  {uploadImage.isPending ? "Uploading..." : "Change Photo"}
+                </button>
+                {avatarUrl && (
+                  <button
+                    onClick={() => removeImage.mutate()}
+                    disabled={removeImage.isPending}
+                    className="text-xs font-semibold text-[#DC2626] hover:underline disabled:opacity-50"
+                  >
+                    Remove
+                  </button>
+                )}
+              </div>
             </div>
-            <div>
-              <label className="block text-sm font-medium text-[#0F172A] mb-1.5">Email address</label>
-              <input
-                type="email"
-                disabled
-                value={authUser?.email || "user@example.com"}
-                className="h-12 w-full rounded-xl border border-[#E2E8F0] bg-[#F1F5F9] px-4 text-sm text-[#64748B] cursor-not-allowed"
-              />
-              <p className="mt-1 text-xs text-[#64748B]">Email address is managed by authentication provider.</p>
-            </div>
-            <div>
-              <label className="block text-sm font-medium text-[#0F172A] mb-1.5">Preferred currency</label>
-              <select
-                value={currency}
-                onChange={(e) => setCurrency(e.target.value)}
-                className="h-12 w-full rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 text-sm outline-none focus:border-primary focus:bg-white"
-              >
-                <option value="INR">INR (₹) Indian Rupee</option>
-                <option value="USD">USD ($) US Dollar</option>
-                <option value="GBP">GBP (£) British Pound</option>
-                <option value="JPY">JPY (¥) Japanese Yen</option>
-              </select>
+
+
+            {/* Form fields */}
+            <div className="flex-1 grid gap-4 sm:grid-cols-2">
+              <div>
+                <label className="block text-sm font-medium text-[#0F172A] mb-1.5">Display name</label>
+                <input
+                  type="text"
+                  value={displayName}
+                  onChange={(e) => setDisplayName(e.target.value)}
+                  className="h-12 w-full rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 text-sm outline-none focus:border-primary focus:bg-white"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-[#0F172A] mb-1.5">Email address</label>
+                <input
+                  type="email"
+                  disabled
+                  value={authUser?.email || "user@example.com"}
+                  className="h-12 w-full rounded-xl border border-[#E2E8F0] bg-[#F1F5F9] px-4 text-sm text-[#64748B] cursor-not-allowed"
+                />
+              </div>
+              <div className="sm:col-span-2">
+                <label className="block text-sm font-medium text-[#0F172A] mb-1.5">Preferred currency</label>
+                <select
+                  value={currency}
+                  onChange={(e) => setCurrency(e.target.value)}
+                  className="h-12 w-full rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 text-sm outline-none focus:border-primary focus:bg-white"
+                >
+                  {currencies && currencies.length > 0 ? (
+                    currencies.map((c) => (
+                      <option key={c.isoCode} value={c.isoCode}>
+                        {c.isoCode} {c.symbol ? `(${c.symbol})` : ""} — {c.name}
+                      </option>
+                    ))
+                  ) : (
+                    <>
+                      <option value="INR">INR (₹) Indian Rupee</option>
+                      <option value="USD">USD ($) US Dollar</option>
+                      <option value="EUR">EUR (€) Euro</option>
+                      <option value="GBP">GBP (£) British Pound</option>
+                      <option value="JPY">JPY (¥) Japanese Yen</option>
+                    </>
+                  )}
+                </select>
+              </div>
             </div>
           </div>
         </section>
 
-        {/* Travel Interests (0-100 sliders) */}
+        {/* Travel Interests */}
         <section className="rounded-2xl border border-[#E2E8F0]/80 bg-white p-6 sm:p-8 shadow-sm">
           <h2 className="text-xl font-bold text-[#0F172A] flex items-center gap-2">
             <Settings className="size-5 text-primary" />
@@ -152,12 +255,7 @@ export default function ProfilePage() {
                     min={0}
                     max={100}
                     value={val}
-                    onChange={(e) =>
-                      setPreferences({
-                        ...preferences,
-                        [interest.key]: Number(e.target.value),
-                      })
-                    }
+                    onChange={(e) => setPreferences({ ...preferences, [interest.key]: Number(e.target.value) })}
                     className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-[#E2E8F0] accent-primary"
                   />
                 </div>
@@ -169,7 +267,6 @@ export default function ProfilePage() {
         {/* Travel Style & Pace */}
         <section className="rounded-2xl border border-[#E2E8F0]/80 bg-white p-6 sm:p-8 shadow-sm">
           <h2 className="text-xl font-bold text-[#0F172A] mb-6">Travel Pace & Budget Level</h2>
-
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-semibold text-[#0F172A] mb-3">Preferred travel pace</label>
@@ -191,7 +288,6 @@ export default function ProfilePage() {
                 ))}
               </div>
             </div>
-
             <div>
               <label className="block text-sm font-semibold text-[#0F172A] mb-3">Budget profile</label>
               <div className="grid gap-3 sm:grid-cols-3">
@@ -215,6 +311,35 @@ export default function ProfilePage() {
           </div>
         </section>
 
+        {/* Saved Destinations */}
+        <section className="rounded-2xl border border-[#E2E8F0]/80 bg-white p-6 sm:p-8 shadow-sm">
+          <h2 className="text-xl font-bold text-[#0F172A] flex items-center gap-2">
+            <Heart className="size-5 text-primary" />
+            Saved Destinations
+          </h2>
+          {savedLocations && savedLocations.length > 0 ? (
+            <div className="mt-4 grid gap-3 sm:grid-cols-2">
+              {savedLocations.map((sl) => (
+                <div key={sl.id} className="flex items-center justify-between rounded-xl border border-[#E2E8F0] p-3">
+                  <div>
+                    <p className="text-sm font-semibold text-[#0F172A]">{sl.location.name}</p>
+                    <p className="text-xs text-[#64748B]">{sl.location.country.displayName || sl.location.country.iso2Code}</p>
+                  </div>
+                  <button
+                    onClick={() => unsaveLocation.mutate(sl.locationId)}
+                    disabled={unsaveLocation.isPending}
+                    className="rounded-full p-1.5 text-[#94A3B8] hover:bg-[#FEF2F2] hover:text-[#DC2626]"
+                  >
+                    <Heart className="size-4 fill-[#DC2626] text-[#DC2626]" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <p className="mt-4 text-sm text-[#64748B]">No saved destinations yet. Browse cities to save your favorites.</p>
+          )}
+        </section>
+
         {/* Save button */}
         <div className="flex justify-end gap-4">
           <button
@@ -227,7 +352,37 @@ export default function ProfilePage() {
             {updateProfile.isPending ? "Saving..." : "Save Preferences"}
           </button>
         </div>
+
+        {/* Danger Zone */}
+        <section className="rounded-2xl border border-[#DC2626]/20 bg-[#FEF2F2]/50 p-6 sm:p-8">
+          <h2 className="text-xl font-bold text-[#DC2626] flex items-center gap-2">
+            <Shield className="size-5" />
+            Danger Zone
+          </h2>
+          <p className="mt-2 text-sm text-[#64748B]">
+            Permanently delete your account and all associated data. This action cannot be undone.
+          </p>
+          <button
+            onClick={() => setShowDeleteDialog(true)}
+            disabled={deleteAccount.isPending}
+            className="mt-4 inline-flex items-center gap-2 rounded-full border border-[#DC2626]/30 bg-white px-5 py-2.5 text-sm font-semibold text-[#DC2626] hover:bg-[#FEF2F2] transition-colors disabled:opacity-60"
+          >
+            <Trash2 className="size-4" />
+            Delete Account
+          </button>
+        </section>
       </div>
+
+      <ConfirmDialog
+        open={showDeleteDialog}
+        onOpenChange={setShowDeleteDialog}
+        title="Delete Account"
+        description="This will permanently delete your account, all trips, preferences, and data. This cannot be undone. Type DELETE to confirm."
+        confirmLabel="Delete Account"
+        onConfirm={handleDeleteAccount}
+        destructive
+        pending={deleteAccount.isPending}
+      />
     </div>
   );
 }

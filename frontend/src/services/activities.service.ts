@@ -16,6 +16,7 @@ export const activitiesService = {
       const qs = params.toString() ? `?${params.toString()}` : "";
 
       const res = await apiClient<any>(`/catalog/items${qs}`);
+      // The API returns { items: [...], nextCursor } in the data envelope
       const items = Array.isArray(res) ? res : res.items || [];
       return items.map((item: any) => ({
         id: item.id,

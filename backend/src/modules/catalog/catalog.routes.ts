@@ -4,12 +4,19 @@ import { validateParams, validateQuery } from "../../middleware/validate";
 import {
   getCatalogItemByIdController,
   searchCatalogItemsController,
+  searchNearbyCatalogItemsController,
 } from "./catalog.controller";
 import { CatalogSearchQuerySchema } from "./catalog.schema";
 
 const router = Router();
 
 // Public endpoints - no authentication required
+
+/**
+ * GET /catalog/items/nearby
+ * Search nearby catalog items by coordinates and radius
+ */
+router.get("/items/nearby", searchNearbyCatalogItemsController);
 
 /**
  * GET /catalog/items

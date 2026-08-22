@@ -21,6 +21,14 @@ router.post("/refresh", (req, res, next) =>
   authController.refresh(req, res, next),
 );
 
+router.post("/forgot-password", (req, res, next) =>
+  authController.forgotPassword(req, res, next),
+);
+
+router.post("/reset-password", (req, res, next) =>
+  authController.resetPassword(req, res, next),
+);
+
 router.get("/me", requireAuth, (req, res, next) =>
   authController.me(req, res, next),
 );

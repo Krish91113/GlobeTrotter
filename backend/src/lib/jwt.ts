@@ -7,6 +7,7 @@ const env = getEnv();
 export interface AccessTokenPayload {
   userId: string;
   email: string;
+  role?: string;
 }
 
 export interface RefreshTokenPayload {

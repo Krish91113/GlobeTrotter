@@ -6,6 +6,14 @@ import type {
   AuthResponseData,
 } from "../types/auth.types";
 
+function normalizeUser(user: AuthUser): AuthUser {
+  if (!user) return user;
+  return {
+    ...user,
+    avatarUrl: user.profileImageUri || user.avatarUrl || undefined,
+  };
+}
+
 export const authService = {
   /**
    * Register a new user and set auth cookies
@@ -15,7 +23,7 @@ export const authService = {
       method: "POST",
       body: JSON.stringify(input),
     });
-    return data.user;
+    return normalizeUser(data.user);
   },
 
   /**
@@ -26,7 +34,7 @@ export const authService = {
       method: "POST",
       body: JSON.stringify(input),
     });
-    return data.user;
+    return normalizeUser(data.user);
   },
 
   /**
@@ -36,7 +44,7 @@ export const authService = {
     const data = await apiClient<AuthResponseData>("/auth/me", {
       method: "GET",
     });
-    return data.user;
+    return normalizeUser(data.user);
   },
 
   /**
@@ -55,6 +63,28 @@ export const authService = {
     const data = await apiClient<AuthResponseData>("/auth/refresh", {
       method: "POST",
     });
-    return data.user;
+    return normalizeUser(data.user);
+  },
+
+  /**
+   * Request password reset token / email
+   */
+  async forgotPassword(email: string): Promise<{ message: string; resetToken?: string }> {
+    return apiClient<{ message: string; resetToken?: string }>("/auth/forgot-password", {
+      method: "POST",
+      body: JSON.stringify({ email }),
+    });
+  },
+
+  /**
+   * Reset password with valid reset token
+   */
+  async resetPassword(token: string, password: string): Promise<{ message: string }> {
+    return apiClient<{ message: string }>("/auth/reset-password", {
+      method: "POST",
+      body: JSON.stringify({ token, password }),
+    });
   },
 };
+
+

@@ -8,7 +8,25 @@ export type ProfileDto = {
   profileImageUri: string | null;
   preferredLocale: string;
   isVerified: boolean;
+  role: string;
   createdAt: string;
+};
+
+export type SavedLocationDto = {
+  id: string;
+  locationId: string;
+  savedAt: string;
+  location: {
+    id: string;
+    name: string;
+    description: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    country: {
+      iso2Code: string;
+      displayName: string;
+    };
+  };
 };
 
 /**
@@ -39,6 +57,7 @@ export function toProfileDto(user: {
   profileImageUri: string | null;
   preferredLocale: string;
   isVerified: boolean;
+  role?: string;
   createdAt: Date;
 }): ProfileDto {
   return {
@@ -48,6 +67,7 @@ export function toProfileDto(user: {
     profileImageUri: user.profileImageUri,
     preferredLocale: user.preferredLocale,
     isVerified: user.isVerified,
+    role: user.role || "TRAVELER",
     createdAt: user.createdAt.toISOString(),
   };
 }

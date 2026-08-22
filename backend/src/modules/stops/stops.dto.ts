@@ -7,7 +7,10 @@ export interface StopDto {
   departureDate: string | null;
   notes: string | null;
   location: {
+    id?: string;
     name: string;
+    latitude: number | null;
+    longitude: number | null;
     country: {
       iso2Code: string;
       displayName: string;
@@ -24,7 +27,10 @@ export function toStopDto(stop: {
   departureDate: Date | string | null;
   notes: string | null;
   location: {
+    id?: string;
     name: string;
+    latitude?: number | null;
+    longitude?: number | null;
     country: {
       iso2Code: string;
       displayName: string;
@@ -48,7 +54,10 @@ export function toStopDto(stop: {
       : null,
     notes: stop.notes,
     location: {
+      id: stop.location.id ?? stop.locationId,
       name: stop.location.name,
+      latitude: stop.location.latitude ?? null,
+      longitude: stop.location.longitude ?? null,
       country: {
         iso2Code: stop.location.country?.iso2Code ?? "",
         displayName: stop.location.country?.displayName ?? "",

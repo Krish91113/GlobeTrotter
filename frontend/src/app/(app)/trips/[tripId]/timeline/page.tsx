@@ -3,8 +3,9 @@
 import { useParams } from "next/navigation";
 import { useState } from "react";
 import { Calendar as CalendarIcon, List, Clock } from "lucide-react";
-import { useTripDays } from "@/hooks/queries";
+import { useTripDays, useTrip } from "@/hooks/queries";
 import { cn } from "@/lib/utils";
+import { formatMoney } from "@/lib/format";
 
 const views = [
   { value: "timeline", label: "Timeline", icon: Clock },
@@ -15,6 +16,7 @@ const views = [
 export default function TimelinePage() {
   const { tripId } = useParams<{ tripId: string }>();
   const { data: days, isLoading } = useTripDays(tripId);
+  const { data: trip } = useTrip(tripId);
   const [view, setView] = useState<"timeline" | "list" | "calendar">("timeline");
 
   if (isLoading) return (
@@ -75,7 +77,7 @@ export default function TimelinePage() {
                     <p className="text-sm text-[#64748B]">{item.startTime} — {item.endTime}</p>
                     <p className="font-semibold text-[#0F172A]">{item.name}</p>
                     <p className="text-sm text-[#64748B]">
-                      {item.durationMinutes}min • ₹{item.estimatedCost} • {item.category}
+                      {item.durationMinutes}min • {formatMoney(item.estimatedCost, item.currency || trip?.currency)} • {item.category}
                     </p>
                   </li>
                 ))}
@@ -98,7 +100,7 @@ export default function TimelinePage() {
                     <img src={item.image} alt={item.name} className="size-10 rounded-lg object-cover" />
                     <div className="flex-1">
                       <p className="font-semibold text-[#0F172A]">{item.name}</p>
-                      <p className="text-xs text-[#64748B]">{item.durationMinutes}min • ₹{item.estimatedCost}</p>
+                      <p className="text-xs text-[#64748B]">{item.durationMinutes}min • {formatMoney(item.estimatedCost, item.currency || trip?.currency)}</p>
                     </div>
                   </div>
                 ))}

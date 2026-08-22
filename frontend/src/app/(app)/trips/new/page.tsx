@@ -8,7 +8,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { ArrowLeft, Check, Loader2, MapPin, Sparkles } from "lucide-react";
 import { differenceInCalendarDays, parseISO, isValid } from "date-fns";
 import { createTripSchema, type CreateTripFormValues } from "@/schemas";
-import { useCreateTrip, useLocations } from "@/hooks/queries";
+import { useCreateTrip, useLocations, useCurrencies } from "@/hooks/queries";
 import { Money } from "@/components/shared";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -30,12 +30,12 @@ import {
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
 
-const currencies = [
-  { value: "INR", label: "INR — Indian Rupee ₹" },
-  { value: "USD", label: "USD — US Dollar $" },
-  { value: "GBP", label: "GBP — British Pound £" },
-  { value: "JPY", label: "JPY — Japanese Yen ¥" },
-  { value: "INR", label: "INR — Indian Rupee ₹" },
+const fallbackCurrencies = [
+  { value: "INR", label: "INR — Indian Rupee" },
+  { value: "USD", label: "USD — US Dollar" },
+  { value: "EUR", label: "EUR — Euro" },
+  { value: "GBP", label: "GBP — British Pound" },
+  { value: "JPY", label: "JPY — Japanese Yen" },
 ] as const;
 
 const coverPresets = [
@@ -86,6 +86,10 @@ export default function CreateTripPage() {
   const endDate = form.watch("endDate");
   const totalBudget = form.watch("totalBudget");
   const currency = form.watch("currency");
+  const { data: currenciesData } = useCurrencies();
+  const currencies = currenciesData && currenciesData.length > 0
+    ? currenciesData.map((c) => ({ value: c.isoCode, label: `${c.isoCode} — ${c.name}` }))
+    : [...fallbackCurrencies];
   const coverImage = form.watch("coverImage");
   const firstDestination = form.watch("firstDestination");
 

@@ -124,6 +124,46 @@ export class AuthController {
       next(error);
     }
   }
+
+  async forgotPassword(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { email } = req.body;
+      if (!email || typeof email !== "string") {
+        throw new ValidationError("Email is required");
+      }
+      const result = await authService.forgotPassword(email);
+      ok(res, {
+        message:
+          "If an account with that email exists, a password reset link has been generated.",
+        ...result,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async resetPassword(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
+    try {
+      const { token, password } = req.body;
+      if (!token || !password || typeof password !== "string" || password.length < 8) {
+        throw new ValidationError("Valid token and minimum 8-character password required");
+      }
+      await authService.resetPassword(token, password);
+      clearAuthCookies(res);
+      ok(res, { message: "Password reset successfully. Please sign in with your new password." });
+    } catch (error) {
+      next(error);
+    }
+  }
 }
 
 export const authController = new AuthController();
+

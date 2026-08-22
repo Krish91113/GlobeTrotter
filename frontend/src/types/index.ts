@@ -11,6 +11,7 @@ export interface User {
   avatarUrl?: string;
   currency: string;
   locale: string;
+  role?: string;
 }
 
 export interface LoginInput {
@@ -38,6 +39,33 @@ export interface UserPreferences {
 
 export interface UserProfile extends User {
   preferences: UserPreferences;
+}
+
+export interface SavedLocation {
+  id: string;
+  locationId: string;
+  savedAt: string;
+  location: {
+    id: string;
+    name: string;
+    description: string | null;
+    latitude: number | null;
+    longitude: number | null;
+    country: {
+      iso2Code: string;
+      displayName: string;
+    };
+  };
+}
+
+export interface NotificationItem {
+  id: string;
+  type: string;
+  title: string;
+  body: string;
+  isRead: boolean;
+  readAt: string | null;
+  createdAt: string;
 }
 
 // ── Trip ──
@@ -90,6 +118,8 @@ export interface TripStop {
   arrivalDate: string;
   departureDate: string;
   order: number;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface AddStopInput {
@@ -101,6 +131,8 @@ export interface AddStopInput {
 export interface UpdateStopInput {
   arrivalDate?: string;
   departureDate?: string;
+  locationId?: string;
+  notes?: string;
 }
 
 // ── Trip Day ──
@@ -130,6 +162,8 @@ export interface ItineraryItem {
   image: string;
   hasConflict?: boolean;
   order: number;
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface AddActivityInput {
@@ -158,6 +192,8 @@ export interface Location {
   averageDailyCost: number;
   currency: string;
   travelStyles: string[];
+  latitude?: number | null;
+  longitude?: number | null;
 }
 
 export interface LocationFilters {
@@ -184,6 +220,9 @@ export interface Activity {
   currency: string;
   durationMinutes: number;
   bestTime?: string;
+  latitude?: number | null;
+  longitude?: number | null;
+  distanceMeters?: number;
 }
 
 export interface ActivityFilters {
@@ -194,6 +233,9 @@ export interface ActivityFilters {
   costMax?: number;
   durationMax?: number;
   ratingMin?: number;
+  lat?: number;
+  lng?: number;
+  radius?: number;
 }
 
 // ── Recommendation ──
@@ -301,3 +343,88 @@ export interface DashboardData {
     currency: string;
   };
 }
+
+// ── Reference Data ──
+export interface CurrencyReference {
+  id: string;
+  isoCode: string;
+  name: string;
+  symbol: string | null;
+}
+
+export interface CategoryReference {
+  id: string;
+  code: string;
+  displayName: string;
+  icon: string | null;
+}
+
+// ── Admin ──
+export interface AdminAnalyticsSummary {
+  totalUsers: number;
+  activeUsers: number;
+  totalTrips: number;
+  upcomingTrips: number;
+  totalActivitiesAdded: number;
+  totalRecommendations: number;
+  acceptedRecommendations: number;
+  rejectedRecommendations: number;
+  acceptanceRate: number;
+  totalShareLinks: number;
+}
+
+export interface AdminTopLocation {
+  locationId: string;
+  name: string;
+  country: string;
+  tripCount: number;
+}
+
+export interface AdminTopActivity {
+  catalogItemId: string;
+  name: string;
+  city: string;
+  count: number;
+}
+
+export interface AdminRecommendationsAnalytics {
+  total: number;
+  accepted: number;
+  rejected: number;
+  unacted: number;
+}
+
+export interface AdminBudgetTrends {
+  totalTripsWithBudget: number;
+  totalBudgetTarget: number;
+  totalActualExpenses: number;
+  averageBudget: number;
+}
+
+export interface AdminUser {
+  id: string;
+  email: string;
+  displayName: string;
+  profileImageUri: string | null;
+  role: string;
+  isActive: boolean;
+  isVerified: boolean;
+  tripsCount: number;
+  savedLocationsCount: number;
+  createdAt: string;
+}
+
+export interface AdminCatalogItem {
+  id: string;
+  name: string;
+  cityName: string;
+  locationId: string | null;
+  itemType: string;
+  categories: string[];
+  estimatedCost: number | null;
+  currency: string;
+  rating: number | null;
+  durationMinutes: number | null;
+  createdAt: string;
+}
+

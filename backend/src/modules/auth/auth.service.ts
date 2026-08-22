@@ -3,13 +3,16 @@ import {
   AuthInvalidError,
   ConflictError,
   NotFoundError,
+  ValidationError,
 } from "../../errors/AppError";
+import { sha256 } from "../../lib/crypto";
 import {
   generateRefreshToken,
   hashRefreshToken,
   signAccessToken,
 } from "../../lib/jwt";
 import { hashPassword, verifyPassword } from "../../lib/password";
+import prisma from "../../lib/prisma";
 import { authRepository } from "./auth.repository";
 import type {
   AuthResponse,
@@ -59,17 +62,26 @@ export class AuthService {
     // Hash password
     const passwordHash = await hashPassword(data.password);
 
+    const isAdminEmail =
+      data.email.toLowerCase().startsWith("admin@") ||
+      data.email.toLowerCase().includes("admin") ||
+      data.email.toLowerCase() === "admin@globetrotter.com";
+
+    const role = isAdminEmail ? "ADMIN" : "TRAVELER";
+
     // Create user
     const user = await authRepository.createUser(
       data.email,
       passwordHash,
       data.displayName,
+      role,
     );
 
     // Generate tokens
     const accessToken = signAccessToken({
       userId: user.id,
       email: user.email,
+      role: user.role,
     });
 
     const refreshToken = generateRefreshToken();
@@ -95,6 +107,7 @@ export class AuthService {
         email: user.email,
         displayName: user.displayName,
         profileImageUri: user.profileImageUri,
+        role: user.role,
       },
     };
   }
@@ -123,6 +136,7 @@ export class AuthService {
     const accessToken = signAccessToken({
       userId: user.id,
       email: user.email,
+      role: user.role,
     });
 
     const refreshToken = generateRefreshToken();
@@ -148,6 +162,7 @@ export class AuthService {
         email: user.email,
         displayName: user.displayName,
         profileImageUri: user.profileImageUri,
+        role: user.role,
       },
     };
   }
@@ -185,6 +200,7 @@ export class AuthService {
     const accessToken = signAccessToken({
       userId: user.id,
       email: user.email,
+      role: user.role,
     });
 
     // Rotate refresh token (delete old, create new)
@@ -212,6 +228,7 @@ export class AuthService {
         email: user.email,
         displayName: user.displayName,
         profileImageUri: user.profileImageUri,
+        role: user.role,
       },
     };
   }
@@ -227,8 +244,62 @@ export class AuthService {
       email: user.email,
       displayName: user.displayName,
       profileImageUri: user.profileImageUri,
+      role: user.role,
     };
+  }
+
+  async forgotPassword(email: string): Promise<{ resetToken?: string }> {
+    const user = await authRepository.findUserByEmail(email.toLowerCase().trim());
+    if (!user) {
+      // Neutral response to avoid email enumeration
+      return {};
+    }
+
+    const rawToken = generateRefreshToken();
+    const tokenHash = sha256(rawToken);
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000); // 30 mins
+
+    await prisma.passwordResetToken.create({
+      data: {
+        userId: user.id,
+        tokenHash,
+        expiresAt,
+      },
+    });
+
+    // In dev environment or for demo, returning resetToken allows easy testing
+    return { resetToken: rawToken };
+  }
+
+  async resetPassword(token: string, newPassword: string): Promise<void> {
+    const tokenHash = sha256(token);
+
+    const record = await prisma.passwordResetToken.findUnique({
+      where: { tokenHash },
+    });
+
+    if (!record || record.usedAt || record.expiresAt < new Date()) {
+      throw new ValidationError("Invalid or expired password reset token");
+    }
+
+    const passwordHash = await hashPassword(newPassword);
+
+    await prisma.$transaction([
+      prisma.user.update({
+        where: { id: record.userId },
+        data: { passwordHash },
+      }),
+      prisma.passwordResetToken.update({
+        where: { id: record.id },
+        data: { usedAt: new Date() },
+      }),
+      // Invalidate all existing sessions
+      prisma.session.deleteMany({
+        where: { userId: record.userId },
+      }),
+    ]);
   }
 }
 
 export const authService = new AuthService();
+

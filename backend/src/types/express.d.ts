@@ -6,6 +6,7 @@ declare namespace Express {
       userId: string;
       email: string;
       displayName?: string;
+      role?: string;
     };
   }
 }

@@ -108,3 +108,37 @@ export function useLogout() {
     },
   });
 }
+
+/**
+ * Hook to request forgot password email / reset token
+ */
+export function useForgotPassword() {
+  return useMutation<{ message: string; resetToken?: string }, ApiError, string>({
+    mutationFn: (email: string) => authService.forgotPassword(email),
+    onSuccess: () => {
+      toast.success("Password reset request submitted");
+    },
+    onError: (err: ApiError) => {
+      toast.error(err.message || "Failed to request password reset.");
+    },
+  });
+}
+
+/**
+ * Hook to reset password with token
+ */
+export function useResetPassword() {
+  const router = useRouter();
+
+  return useMutation<{ message: string }, ApiError, { token: string; password: string }>({
+    mutationFn: ({ token, password }) => authService.resetPassword(token, password),
+    onSuccess: () => {
+      toast.success("Password reset successfully! Please sign in.");
+      router.push("/login");
+    },
+    onError: (err: ApiError) => {
+      toast.error(err.message || "Failed to reset password.");
+    },
+  });
+}
+

@@ -39,7 +39,7 @@ export class ApiError extends Error {
   }
 }
 
-const DEFAULT_BASE_URL = "http://localhost:3001/api/v1";
+const DEFAULT_BASE_URL = "http://localhost:3000/api/v1";
 
 export function getApiBaseUrl(): string {
   if (typeof window !== "undefined") {

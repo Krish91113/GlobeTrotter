@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useCurrentUser, useLogout } from "@/features/auth/hooks/use-auth";
+import { useNotifications, useMarkAllNotificationsRead } from "@/hooks/queries";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -43,20 +44,20 @@ const mobileNavItems = [
   { href: "/discover/activities", label: "Explore", icon: Ticket },
 ] as const;
 
-const notifications = [
-  { id: "n1", title: "Welcome to GlobeTrotter", body: "Start planning your first adventure." },
-  { id: "n2", title: "Tip: share trips with friends", body: "Generate a share link from any trip." },
-];
+
 
 export function AppHeader() {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
-  const [hasUnread, setHasUnread] = useState(true);
+
 
   const { data: user } = useCurrentUser();
   const logout = useLogout();
+  const { data: notificationsData } = useNotifications();
+  const markAllRead = useMarkAllNotificationsRead();
+  const unreadCount = notificationsData?.filter((n) => !n.isRead).length ?? 0;
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8);
@@ -141,7 +142,7 @@ export function AppHeader() {
                   className="relative rounded-full p-2 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
                 >
                   <Bell className="size-[18px]" />
-                  {hasUnread && (
+                  {unreadCount > 0 && (
                     <span className="absolute right-1.5 top-1.5 size-2 rounded-full bg-destructive" />
                   )}
                 </button>
@@ -151,8 +152,8 @@ export function AppHeader() {
                   <DropdownMenuLabel className="p-0">Notifications</DropdownMenuLabel>
                   <button
                     type="button"
-                    onClick={() => setHasUnread(false)}
-                    disabled={!hasUnread}
+                    onClick={() => markAllRead.mutate()}
+                    disabled={unreadCount === 0 || markAllRead.isPending}
                     className="inline-flex items-center gap-1 rounded-md px-1.5 py-0.5 text-xs font-medium text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
                   >
                     <CheckCheck className="size-3.5" />
@@ -160,17 +161,23 @@ export function AppHeader() {
                   </button>
                 </div>
                 <DropdownMenuSeparator />
-                {notifications.map((n) => (
-                  <DropdownMenuItem key={n.id} className="flex-col items-start gap-0.5 py-2.5">
-                    <span className="flex w-full items-center gap-2 text-sm font-semibold text-foreground">
-                      {hasUnread && (
-                        <span className="size-1.5 shrink-0 rounded-full bg-primary" />
-                      )}
-                      {n.title}
-                    </span>
-                    <span className="pl-3.5 text-xs text-muted-foreground">{n.body}</span>
+                {(notificationsData && notificationsData.length > 0) ? (
+                  notificationsData.slice(0, 8).map((n) => (
+                    <DropdownMenuItem key={n.id} className="flex-col items-start gap-0.5 py-2.5">
+                      <span className="flex w-full items-center gap-2 text-sm font-semibold text-foreground">
+                        {!n.isRead && (
+                          <span className="size-1.5 shrink-0 rounded-full bg-primary" />
+                        )}
+                        {n.title}
+                      </span>
+                      <span className="pl-3.5 text-xs text-muted-foreground">{n.body}</span>
+                    </DropdownMenuItem>
+                  ))
+                ) : (
+                  <DropdownMenuItem className="py-4 text-center text-xs text-muted-foreground" disabled>
+                    No notifications yet
                   </DropdownMenuItem>
-                ))}
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -181,9 +188,13 @@ export function AppHeader() {
                   aria-label="Account menu"
                   className="flex items-center gap-2 rounded-full border border-border bg-card px-3 py-1.5 text-sm font-semibold text-foreground transition-colors hover:bg-secondary"
                 >
-                  <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
-                    {user?.displayName ? user.displayName.charAt(0).toUpperCase() : <User className="size-3.5" />}
-                  </span>
+                  {user?.avatarUrl ? (
+                    <img src={user.avatarUrl} alt="" className="size-6 rounded-full object-cover" />
+                  ) : (
+                    <span className="flex size-6 items-center justify-center rounded-full bg-primary/10 text-xs font-bold text-primary">
+                      {user?.displayName ? user.displayName.charAt(0).toUpperCase() : <User className="size-3.5" />}
+                    </span>
+                  )}
                   <span className="hidden max-w-[120px] truncate sm:inline">
                     {user?.displayName || "Account"}
                   </span>
@@ -205,6 +216,14 @@ export function AppHeader() {
                     Profile & Preferences
                   </Link>
                 </DropdownMenuItem>
+                {user?.role === "ADMIN" && (
+                  <DropdownMenuItem asChild>
+                    <Link href="/admin" className="flex items-center gap-2.5">
+                      <svg viewBox="0 0 20 20" fill="currentColor" className="size-4 text-muted-foreground"><path fillRule="evenodd" d="M10 1a1 1 0 01.707.293l7 7a1 1 0 010 1.414l-7 7a1 1 0 01-1.414-1.414L15.586 9 10.707 4.121a1 1 0 010-1.414zM6 11a1 1 0 100-2 1 1 0 000 2z" clipRule="evenodd" /></svg>
+                      Admin Dashboard
+                    </Link>
+                  </DropdownMenuItem>
+                )}
                 <DropdownMenuSeparator />
                 <DropdownMenuItem
                   disabled={logout.isPending}
@@ -279,6 +298,15 @@ export function AppHeader() {
                 >
                   Profile & Preferences
                 </Link>
+                {user?.role === "ADMIN" && (
+                  <Link
+                    href="/admin"
+                    onClick={() => setMobileOpen(false)}
+                    className="block rounded-xl px-4 py-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
+                  >
+                    Admin Dashboard
+                  </Link>
+                )}
                 <Link
                   href="/trips/new"
                   onClick={() => setMobileOpen(false)}

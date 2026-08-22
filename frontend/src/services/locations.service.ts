@@ -12,6 +12,7 @@ export const locationsService = {
       const qs = params.toString() ? `?${params.toString()}` : "";
 
       const res = await apiClient<any>(`/locations/search${qs}`);
+      // The API returns { locations: [...], nextCursor } in the data envelope
       const locations = Array.isArray(res) ? res : res.locations || [];
       return locations.map((loc: any) => ({
         id: loc.id,

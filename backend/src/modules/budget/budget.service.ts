@@ -50,7 +50,7 @@ export class BudgetService {
       actualTotal: actualTotal.toFixed(2),
       remaining: remaining.toFixed(2),
       currency:
-        budget?.currency.isoCode ?? trip.defaultCurrency?.isoCode ?? null,
+        budget?.currency.isoCode ?? trip.defaultCurrency?.isoCode ?? "INR",
       status: this.computeBudgetStatus(
         targetAmount,
         estimatedTotal,
@@ -64,25 +64,22 @@ export class BudgetService {
     data: UpdateBudgetRequest,
     userId: string,
   ): Promise<BudgetDto> {
-    await this.assertTripOwnership(tripId, userId);
+    const trip = await this.assertTripOwnership(tripId, userId);
 
-    const currency = await prisma.currency.findUnique({
-      where: { id: data.currencyId },
-      select: { id: true },
-    });
-    if (!currency) {
-      throw new NotFoundError("Currency not found");
-    }
+    const currencyId = await this.resolveCurrency(
+      data.currencyId || data.currency,
+      trip.defaultCurrencyId,
+    );
 
     await prisma.tripBudget.upsert({
       where: { tripId },
       create: {
         tripId,
-        currencyId: data.currencyId,
+        currencyId,
         targetAmount: new Prisma.Decimal(data.targetAmount),
       },
       update: {
-        currencyId: data.currencyId,
+        currencyId,
         targetAmount: new Prisma.Decimal(data.targetAmount),
       },
     });
@@ -171,25 +168,35 @@ export class BudgetService {
     };
   }
 
+  async getExpenses(tripId: string, userId: string): Promise<ExpenseDto[]> {
+    await this.assertTripOwnership(tripId, userId);
+
+    const expenses = await prisma.expense.findMany({
+      where: { tripId },
+      include: {
+        expenseCategory: { select: { displayName: true } },
+        currency: { select: { isoCode: true } },
+      },
+      orderBy: { expenseDate: "desc" },
+    });
+
+    return expenses.map(toExpenseDto);
+  }
+
   async addExpense(
     tripId: string,
     data: AddExpenseRequest,
     userId: string,
   ): Promise<ExpenseDto> {
-    await this.assertTripOwnership(tripId, userId);
+    const trip = await this.assertTripOwnership(tripId, userId);
 
-    const [category, currency] = await Promise.all([
-      prisma.expenseCategory.findUnique({
-        where: { id: data.expenseCategoryId },
-        select: { id: true },
-      }),
-      prisma.currency.findUnique({
-        where: { id: data.currencyId },
-        select: { id: true },
-      }),
-    ]);
-    if (!category) throw new NotFoundError("Expense category not found");
-    if (!currency) throw new NotFoundError("Currency not found");
+    const expenseCategoryId = await this.resolveExpenseCategory(
+      data.expenseCategoryId || data.category,
+    );
+    const currencyId = await this.resolveCurrency(
+      data.currencyId || data.currency,
+      trip.defaultCurrencyId,
+    );
 
     if (data.itineraryItemId) {
       await this.assertItineraryItemInTrip(data.itineraryItemId, tripId);
@@ -198,12 +205,12 @@ export class BudgetService {
     const created = await prisma.expense.create({
       data: {
         tripId,
-        expenseCategoryId: data.expenseCategoryId,
+        expenseCategoryId,
         amount: new Prisma.Decimal(data.amount),
-        currencyId: data.currencyId,
+        currencyId,
         expenseDate: new Date(`${data.expenseDate}T00:00:00.000Z`),
         description: data.description,
-        isEstimate: data.isEstimate,
+        isEstimate: data.isEstimate ?? false,
         itineraryItemId: data.itineraryItemId,
         splitCount: data.splitCount || 1,
         splitParticipants: data.splitParticipants,
@@ -223,7 +230,7 @@ export class BudgetService {
     data: UpdateExpenseRequest,
     userId: string,
   ): Promise<ExpenseDto> {
-    await this.assertTripOwnership(tripId, userId);
+    const trip = await this.assertTripOwnership(tripId, userId);
 
     const existing = await prisma.expense.findFirst({
       where: { id: expenseId, tripId },
@@ -233,20 +240,14 @@ export class BudgetService {
       throw new NotFoundError("Expense not found for this trip");
     }
 
-    if (data.expenseCategoryId) {
-      const category = await prisma.expenseCategory.findUnique({
-        where: { id: data.expenseCategoryId },
-        select: { id: true },
-      });
-      if (!category) throw new NotFoundError("Expense category not found");
-    }
-    if (data.currencyId) {
-      const currency = await prisma.currency.findUnique({
-        where: { id: data.currencyId },
-        select: { id: true },
-      });
-      if (!currency) throw new NotFoundError("Currency not found");
-    }
+    const expenseCategoryId = (data.expenseCategoryId || data.category)
+      ? await this.resolveExpenseCategory(data.expenseCategoryId || data.category)
+      : undefined;
+
+    const currencyId = (data.currencyId || data.currency)
+      ? await this.resolveCurrency(data.currencyId || data.currency, trip.defaultCurrencyId)
+      : undefined;
+
     if (data.itineraryItemId) {
       await this.assertItineraryItemInTrip(data.itineraryItemId, tripId);
     }
@@ -254,12 +255,12 @@ export class BudgetService {
     const updated = await prisma.expense.update({
       where: { id: expenseId },
       data: {
-        expenseCategoryId: data.expenseCategoryId,
+        expenseCategoryId,
         amount:
           data.amount !== undefined
             ? new Prisma.Decimal(data.amount)
             : undefined,
-        currencyId: data.currencyId,
+        currencyId,
         expenseDate:
           data.expenseDate !== undefined
             ? new Date(`${data.expenseDate}T00:00:00.000Z`)
@@ -295,6 +296,97 @@ export class BudgetService {
     }
 
     await prisma.expense.delete({ where: { id: expenseId } });
+  }
+
+  private async resolveExpenseCategory(
+    categoryIdOrName?: string,
+  ): Promise<string> {
+    if (categoryIdOrName) {
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          categoryIdOrName,
+        );
+      if (isUuid) {
+        const found = await prisma.expenseCategory.findUnique({
+          where: { id: categoryIdOrName },
+          select: { id: true },
+        });
+        if (found) return found.id;
+      }
+
+      const normalized = categoryIdOrName.trim().toLowerCase();
+      const matched = await prisma.expenseCategory.findFirst({
+        where: {
+          OR: [
+            { code: { equals: normalized, mode: "insensitive" } },
+            { displayName: { contains: categoryIdOrName, mode: "insensitive" } },
+          ],
+        },
+        select: { id: true },
+      });
+      if (matched) return matched.id;
+    }
+
+    const fallback =
+      (await prisma.expenseCategory.findFirst({
+        where: { code: "miscellaneous" },
+        select: { id: true },
+      })) ||
+      (await prisma.expenseCategory.findFirst({
+        select: { id: true },
+      }));
+
+    if (!fallback) {
+      throw new NotFoundError("Expense category not found");
+    }
+    return fallback.id;
+  }
+
+  private async resolveCurrency(
+    currencyIdOrCode?: string,
+    tripDefaultCurrencyId?: string | null,
+  ): Promise<string> {
+    if (currencyIdOrCode) {
+      const isUuid =
+        /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+          currencyIdOrCode,
+        );
+      if (isUuid) {
+        const found = await prisma.currency.findUnique({
+          where: { id: currencyIdOrCode },
+          select: { id: true },
+        });
+        if (found) return found.id;
+      }
+
+      const matched = await prisma.currency.findFirst({
+        where: { isoCode: { equals: currencyIdOrCode.toUpperCase() } },
+        select: { id: true },
+      });
+      if (matched) return matched.id;
+    }
+
+    if (tripDefaultCurrencyId) {
+      return tripDefaultCurrencyId;
+    }
+
+    const fallback =
+      (await prisma.currency.findFirst({
+        where: { isoCode: "INR" },
+        select: { id: true },
+      })) ||
+      (await prisma.currency.findFirst({
+        where: { isoCode: "USD" },
+        select: { id: true },
+      })) ||
+      (await prisma.currency.findFirst({
+        select: { id: true },
+      }));
+
+    if (!fallback) {
+      throw new NotFoundError("Currency not found");
+    }
+    return fallback.id;
   }
 
   private computeBudgetStatus(
@@ -333,6 +425,7 @@ export class BudgetService {
       select: {
         id: true,
         ownerUserId: true,
+        defaultCurrencyId: true,
         defaultCurrency: { select: { isoCode: true } },
       },
     });
@@ -347,3 +440,4 @@ export class BudgetService {
 }
 
 export const budgetService = new BudgetService();
+

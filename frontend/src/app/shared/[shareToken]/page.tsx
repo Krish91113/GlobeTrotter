@@ -4,6 +4,7 @@ import { useParams } from "next/navigation";
 import Link from "next/link";
 import { Copy, Heart, Globe2, Clock, Share2 } from "lucide-react";
 import { usePublicTrip, useCopyTrip } from "@/hooks/queries";
+import { formatMoney } from "@/lib/format";
 
 export default function SharedTripPage() {
   const { shareToken } = useParams<{ shareToken: string }>();
@@ -81,12 +82,12 @@ export default function SharedTripPage() {
           <div className="inline-flex items-center gap-6 rounded-2xl bg-[#F1F5F9] px-6 py-4">
             <div>
               <p className="text-sm text-[#64748B]">Budget</p>
-              <p className="text-lg font-bold text-[#0F172A]">₹{trip.budgetSummary.totalBudget.toLocaleString()}</p>
+              <p className="text-lg font-bold text-[#0F172A]">{formatMoney(trip.budgetSummary.totalBudget, trip.budgetSummary.currency)}</p>
             </div>
             <div className="h-10 w-px bg-[#E2E8F0]" />
             <div>
               <p className="text-sm text-[#64748B]">Estimated spend</p>
-              <p className="text-lg font-bold text-[#0F172A]">₹{trip.budgetSummary.estimatedSpend.toLocaleString()}</p>
+              <p className="text-lg font-bold text-[#0F172A]">{formatMoney(trip.budgetSummary.estimatedSpend, trip.budgetSummary.currency)}</p>
             </div>
           </div>
         </div>
@@ -114,7 +115,7 @@ export default function SharedTripPage() {
                     <p className="font-semibold text-[#0F172A]">{item.name}</p>
                     <p className="text-sm text-[#64748B]">
                       <Clock className="inline size-3.5 mr-1" />
-                      {item.durationMinutes}min • ₹{item.estimatedCost}
+                      {item.durationMinutes}min • {formatMoney(item.estimatedCost, item.currency)}
                     </p>
                   </li>
                 ))}

@@ -1,14 +1,16 @@
 "use client";
 
+import { useState } from "react";
 import Link from "next/link";
 import { useParams, usePathname } from "next/navigation";
 import { ArrowRight, MapPin, Share2, Pencil, MoreHorizontal } from "lucide-react";
-import { useTrip, useCreateShareLink } from "@/hooks/queries";
+import { useTrip, useCreateShareLink, useShareLinks, useRevokeShareLink } from "@/hooks/queries";
 import { cn } from "@/lib/utils";
 
 const tabs = [
   { href: "", label: "Overview", exact: true },
-  { href: "/builder", label: "Itinerary", exact: false },
+  { href: "/builder", label: "Builder", exact: false },
+  { href: "/itinerary", label: "Itinerary", exact: false },
   { href: "/budget", label: "Budget", exact: false },
   { href: "/timeline", label: "Timeline", exact: false },
 ];
@@ -18,6 +20,9 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
   const { data: trip, isLoading } = useTrip(tripId);
   const shareLink = useCreateShareLink(tripId);
+  const { data: shareLinks } = useShareLinks(tripId);
+  const revokeLink = useRevokeShareLink(tripId);
+  const [showShareLinks, setShowShareLinks] = useState(false);
 
   if (isLoading) return <div className="container-page py-12"><div className="h-80 animate-pulse rounded-2xl bg-[#E2E8F0]" /></div>;
   if (!trip) return <div className="container-page py-12 text-center text-[#64748B]">Trip not found</div>;
@@ -44,6 +49,13 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
             >
               <Share2 className="size-4" />
               Share
+            </button>
+            <button
+              onClick={() => setShowShareLinks(!showShareLinks)}
+              className="inline-flex items-center gap-1.5 rounded-full border border-[#E2E8F0] px-4 py-2 text-sm font-semibold text-[#0F172A] transition-colors hover:bg-[#F1F5F9]"
+            >
+              <MoreHorizontal className="size-4" />
+              Links
             </button>
             <Link
               href={`/trips/${tripId}/builder`}
@@ -85,6 +97,46 @@ export default function TripLayout({ children }: { children: React.ReactNode }) 
           />
         </div>
       </div>
+
+      {/* Share Links Panel */}
+      {showShareLinks && (
+        <div className="container-page mt-4">
+          <div className="rounded-2xl border border-[#E2E8F0]/60 bg-white p-5 shadow-sm">
+            <h3 className="text-sm font-bold text-[#0F172A]">Share Links</h3>
+            {shareLinks && shareLinks.length > 0 ? (
+              <div className="mt-3 space-y-2">
+                {shareLinks.map((link: any) => (
+                  <div key={link.id} className="flex items-center justify-between gap-3 rounded-xl border border-[#E2E8F0] p-3">
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-sm font-semibold text-[#0F172A]">{link.token || link.shareToken || "link"}</p>
+                      <p className="text-xs text-[#64748B]">Created {new Date(link.createdAt).toLocaleDateString()}</p>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <button
+                        onClick={() => {
+                          navigator.clipboard?.writeText(`${window.location.origin}/shared/${link.token || link.shareToken}`);
+                        }}
+                        className="rounded-full px-3 py-1 text-xs font-semibold text-primary hover:bg-primary/5"
+                      >
+                        Copy
+                      </button>
+                      <button
+                        onClick={() => revokeLink.mutate(link.id)}
+                        disabled={revokeLink.isPending}
+                        className="rounded-full px-3 py-1 text-xs font-semibold text-[#DC2626] hover:bg-[#FEF2F2]"
+                      >
+                        Revoke
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="mt-3 text-sm text-[#64748B]">No share links yet. Click Share to create one.</p>
+            )}
+          </div>
+        </div>
+      )}
 
       {children}
     </div>

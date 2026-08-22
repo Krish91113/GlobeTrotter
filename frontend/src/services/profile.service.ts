@@ -3,10 +3,14 @@ import type { UserProfile } from "@/types";
 
 export const profileService = {
   getProfile: async (): Promise<UserProfile> => {
-      const [prof, pref] = await Promise.all([
+      const [profData, prefData] = await Promise.all([
         apiClient<any>("/users/me/profile"),
         apiClient<any>("/users/me/preferences").catch(() => null),
       ]);
+
+      // Backend returns { profile: {...} } and { preferences: {...} } in data envelope
+      const prof = profData?.profile ?? profData ?? {};
+      const pref = prefData?.preferences ?? prefData ?? null;
 
       return {
         id: prof.id || "",
@@ -59,4 +63,23 @@ export const profileService = {
     await Promise.all(promises);
     return profileService.getProfile();
   },
+
+  uploadProfileImage: async (file: File): Promise<UserProfile> => {
+    const formData = new FormData();
+    formData.append("image", file);
+    const data = await apiClient<any>("/users/me/profile-image", {
+      method: "POST",
+      body: formData,
+    });
+    const prof = data?.profile ?? data ?? {};
+    return profileService.getProfile();
+  },
+
+  removeProfileImage: async (): Promise<UserProfile> => {
+    await apiClient<any>("/users/me/profile-image", {
+      method: "DELETE",
+    });
+    return profileService.getProfile();
+  },
 };
+

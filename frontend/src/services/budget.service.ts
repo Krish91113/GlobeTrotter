@@ -27,8 +27,10 @@ export const budgetService = {
   },
 
   getExpenses: async (tripId: string): Promise<Expense[]> => {
+    try {
       const expenses = await apiClient<any[]>(`/trips/${tripId}/expenses`);
-      return expenses.map((e: any) => ({
+      const items = Array.isArray(expenses) ? expenses : (expenses as any)?.expenses || [];
+      return items.map((e: any) => ({
         id: e.id,
         tripId: e.tripId || tripId,
         category: e.category || "Other",
@@ -39,6 +41,9 @@ export const budgetService = {
         splitCount: Number(e.splitCount ?? 1),
         splitParticipants: e.splitParticipants ?? null,
       }));
+    } catch {
+      return [];
+    }
   },
 
   addExpense: async (tripId: string, input: AddExpenseInput): Promise<Expense> => {

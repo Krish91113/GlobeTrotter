@@ -1122,8 +1122,48 @@ async function main() {
   }
   console.log(`✅ Seeded ${newYorkItems.length} New York catalog items\n`);
 
+  // ============================================================================
+  // 13. DEFAULT USERS
+  // ============================================================================
+  console.log('👤 Seeding Default Users (Admin & Traveler)...');
+  const bcrypt = await import('bcryptjs');
+  const adminPasswordHash = await bcrypt.hash('Admin@123456', 10);
+  const travelerPasswordHash = await bcrypt.hash('Traveler@123456', 10);
+
+  const adminUser = await prisma.user.upsert({
+    where: { email: 'admin@globetrotter.com' },
+    create: {
+      email: 'admin@globetrotter.com',
+      displayName: 'Admin User',
+      passwordHash: adminPasswordHash,
+      role: 'ADMIN',
+      isVerified: true,
+    },
+    update: {
+      role: 'ADMIN',
+      passwordHash: adminPasswordHash,
+    },
+  });
+
+  const travelerUser = await prisma.user.upsert({
+    where: { email: 'traveler@globetrotter.com' },
+    create: {
+      email: 'traveler@globetrotter.com',
+      displayName: 'Alex Traveler',
+      passwordHash: travelerPasswordHash,
+      role: 'TRAVELER',
+      isVerified: true,
+    },
+    update: {
+      passwordHash: travelerPasswordHash,
+    },
+  });
+
+  console.log(`✅ Seeded Admin (${adminUser.email}) and Traveler (${travelerUser.email})\n`);
+
   console.log('✅ Database seed completed successfully!\n');
 }
+
 
 main()
   .catch((e) => {

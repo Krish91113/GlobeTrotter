@@ -154,8 +154,8 @@ export const tripsService = {
 
   async createTrip(data: CreateTripInput, userId: string): Promise<TripDto> {
     const currencyId = await resolveCurrency(data.currency);
-    const statusId = await resolveStatus('PLANNING');
-    const visibilityId = await resolveVisibility('PRIVATE');
+    const statusId = await resolveStatus('draft');
+    const visibilityId = await resolveVisibility('private');
 
     const dates = dateRange(data.startDate, data.endDate);
 

@@ -37,7 +37,7 @@ export async function createTripController(
   next: NextFunction,
 ): Promise<void> {
   try {
-    const trip = await tripsService.createTrip(req.user!.id, req.body);
+    const trip = await tripsService.createTrip(req.body, req.user!.id);
     ok(res, trip, 201);
   } catch (error) {
     next(error);
@@ -52,8 +52,8 @@ export async function updateTripController(
   try {
     const trip = await tripsService.updateTrip(
       req.params.tripId as string,
-      req.user!.id,
       req.body,
+      req.user!.id,
     );
     ok(res, trip);
   } catch (error) {

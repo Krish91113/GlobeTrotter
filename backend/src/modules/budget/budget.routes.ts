@@ -18,6 +18,10 @@ router.put("/:tripId/budget", requireAuth, (req, res, next) =>
   budgetController.upsertBudget(req, res, next),
 );
 
+router.get("/:tripId/expenses", requireAuth, (req, res, next) =>
+  budgetController.getExpenses(req, res, next),
+);
+
 router.post("/:tripId/expenses", requireAuth, (req, res, next) =>
   budgetController.addExpense(req, res, next),
 );
@@ -31,3 +35,4 @@ router.delete("/:tripId/expenses/:expenseId", requireAuth, (req, res, next) =>
 );
 
 export default router;
+
