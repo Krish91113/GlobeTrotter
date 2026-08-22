@@ -238,12 +238,19 @@ export class ItineraryService {
       throw new NotFoundError('Trip day not found for this trip');
     }
 
-    const ownedCount = await prisma.itineraryItem.count({
+    const [ownedCount, totalCount] = await Promise.all([
+      prisma.itineraryItem.count({
       where: { tripDayId: dayId, id: { in: data.items.map((i) => i.itemId) } },
-    });
-    if (ownedCount !== data.items.length) {
+      }),
+      prisma.itineraryItem.count({ where: { tripDayId: dayId } }),
+    ]);
+    const requestedSequenceNumbers = new Set(data.items.map((item) => item.sequenceNo));
+    const hasCompleteSequence =
+      requestedSequenceNumbers.size === totalCount &&
+      [...requestedSequenceNumbers].every((sequenceNo) => sequenceNo >= 1 && sequenceNo <= totalCount);
+    if (ownedCount !== totalCount || data.items.length !== totalCount || !hasCompleteSequence) {
       throw new NotFoundError(
-        'One or more itinerary items do not belong to this day'
+        'All itinerary items for this day must be included exactly once when reordering'
       );
     }
 

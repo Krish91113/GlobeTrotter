@@ -9,9 +9,9 @@ const isoDateTimeWithOffset = z.string().datetime({ offset: true });
 export const addItemSchema = z
   .object({
     catalogItemId: z.string().uuid('Invalid catalog item id'),
-    plannedStartAt: isoDateTimeWithOffset.optional(),
-    plannedEndAt: isoDateTimeWithOffset.optional(),
-    estimatedCost: decimalString.optional(),
+    plannedStartAt: isoDateTimeWithOffset.nullable().optional(),
+    plannedEndAt: isoDateTimeWithOffset.nullable().optional(),
+    estimatedCost: decimalString.nullable().optional(),
     currencyId: z.string().uuid('Invalid currency id').optional(),
     durationMinutes: z.coerce.number().int().min(1).max(10080).optional(),
     notes: z.string().max(500, 'Notes must be at most 500 characters').optional(),
