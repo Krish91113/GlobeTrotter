@@ -1,13 +1,17 @@
-import { Request, Response, NextFunction } from 'express';
-import { getCurrencies, getCategories, getExpenseCategories } from './reference.service';
+import type { NextFunction, Request, Response } from "express";
+import {
+  getCategories,
+  getCurrencies,
+  getExpenseCategories,
+} from "./reference.service";
 
 /**
  * GET /reference/currencies
  */
 export async function getCurrenciesController(
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const currencies = await getCurrencies();
@@ -21,9 +25,9 @@ export async function getCurrenciesController(
  * GET /reference/categories
  */
 export async function getCategoriesController(
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const categories = await getCategories();
@@ -37,9 +41,9 @@ export async function getCategoriesController(
  * GET /reference/expense-categories
  */
 export async function getExpenseCategoriesController(
-  req: Request,
+  _req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const expenseCategories = await getExpenseCategories();

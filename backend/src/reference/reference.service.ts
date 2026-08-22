@@ -1,4 +1,4 @@
-import prisma from '../lib/prisma';
+import prisma from "../lib/prisma";
 
 // In-memory cache with TTL
 type CacheEntry<T> = {
@@ -14,7 +14,7 @@ const cache = new Map<string, CacheEntry<any>>();
  */
 async function withCache<T>(
   key: string,
-  fetcher: () => Promise<T>
+  fetcher: () => Promise<T>,
 ): Promise<T> {
   const cached = cache.get(key);
   const now = new Date();
@@ -32,7 +32,7 @@ async function withCache<T>(
  * Get all currencies
  */
 export async function getCurrencies() {
-  return withCache('currencies', async () => {
+  return withCache("currencies", async () => {
     return prisma.currency.findMany({
       select: {
         id: true,
@@ -41,7 +41,7 @@ export async function getCurrencies() {
         symbol: true,
         minorUnit: true,
       },
-      orderBy: { isoCode: 'asc' },
+      orderBy: { isoCode: "asc" },
     });
   });
 }
@@ -50,7 +50,7 @@ export async function getCurrencies() {
  * Get all activity categories
  */
 export async function getCategories() {
-  return withCache('categories', async () => {
+  return withCache("categories", async () => {
     return prisma.category.findMany({
       select: {
         id: true,
@@ -61,7 +61,7 @@ export async function getCategories() {
       where: {
         parentCategoryId: null, // Only top-level categories
       },
-      orderBy: { displayName: 'asc' },
+      orderBy: { displayName: "asc" },
     });
   });
 }
@@ -70,7 +70,7 @@ export async function getCategories() {
  * Get all expense categories
  */
 export async function getExpenseCategories() {
-  return withCache('expenseCategories', async () => {
+  return withCache("expenseCategories", async () => {
     return prisma.expenseCategory.findMany({
       select: {
         id: true,
@@ -81,7 +81,7 @@ export async function getExpenseCategories() {
       where: {
         parentCategoryId: null, // Only top-level categories
       },
-      orderBy: { displayName: 'asc' },
+      orderBy: { displayName: "asc" },
     });
   });
 }

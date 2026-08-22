@@ -1,6 +1,10 @@
-import { Request, Response, NextFunction } from 'express';
-import { getProfile, updateProfile, getPreferences, upsertPreferences } from './users.service';
-import { ok } from '../../lib/apiResponse';
+import type { NextFunction, Request, Response } from "express";
+import {
+  getPreferences,
+  getProfile,
+  updateProfile,
+  upsertPreferences,
+} from "./users.service";
 
 /**
  * GET /users/me/profile
@@ -8,16 +12,16 @@ import { ok } from '../../lib/apiResponse';
 export async function getProfileController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new Error('User not authenticated');
+      throw new Error("User not authenticated");
     }
 
     const profile = await getProfile(req.user.id);
 
-    ok(res, profile);
+    res.status(200).json({ profile });
   } catch (error) {
     next(error);
   }
@@ -29,16 +33,16 @@ export async function getProfileController(
 export async function updateProfileController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new Error('User not authenticated');
+      throw new Error("User not authenticated");
     }
 
     const profile = await updateProfile(req.user.id, req.body);
 
-    ok(res, profile);
+    res.status(200).json({ profile });
   } catch (error) {
     next(error);
   }
@@ -50,16 +54,16 @@ export async function updateProfileController(
 export async function getPreferencesController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new Error('User not authenticated');
+      throw new Error("User not authenticated");
     }
 
     const preferences = await getPreferences(req.user.id);
 
-    ok(res, preferences);
+    res.status(200).json({ preferences });
   } catch (error) {
     next(error);
   }
@@ -71,16 +75,16 @@ export async function getPreferencesController(
 export async function upsertPreferencesController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     if (!req.user) {
-      throw new Error('User not authenticated');
+      throw new Error("User not authenticated");
     }
 
     const preferences = await upsertPreferences(req.user.id, req.body);
 
-    ok(res, preferences);
+    res.status(200).json({ preferences });
   } catch (error) {
     next(error);
   }

@@ -1,6 +1,6 @@
-import type { Prisma } from '../../../generated/prisma/client';
+import type { Prisma } from "../../../generated/prisma/client";
 
-export type BudgetStatus = 'on_track' | 'at_risk' | 'over_budget';
+export type BudgetStatus = "on_track" | "at_risk" | "over_budget";
 
 export interface BudgetDto {
   tripId: string;

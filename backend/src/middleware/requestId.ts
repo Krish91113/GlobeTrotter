@@ -1,13 +1,17 @@
-import { Request, Response, NextFunction } from 'express';
-import { randomUUID } from 'crypto';
+import { randomUUID } from "node:crypto";
+import type { NextFunction, Request, Response } from "express";
 
 /**
  * Attaches a unique request ID to every request
  * Available as req.id and in X-Request-Id response header
  */
-export const requestId = (req: Request, res: Response, next: NextFunction): void => {
+export const requestId = (
+  req: Request,
+  res: Response,
+  next: NextFunction,
+): void => {
   req.id = randomUUID();
-  res.setHeader('X-Request-Id', req.id as string);
+  res.setHeader("X-Request-Id", req.id as string);
   next();
 };
 

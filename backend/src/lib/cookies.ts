@@ -1,37 +1,28 @@
-import type { Request, Response } from 'express';
-import { getEnv } from '../config/env';
+import type { Response } from "express";
+import { getEnv } from "../config/env";
 
 const env = getEnv();
-
-const ACCESS_COOKIE = 'gt_access';
-const REFRESH_COOKIE = 'gt_refresh';
 
 interface CookieOptions {
   httpOnly: boolean;
   secure: boolean;
-  sameSite: 'lax' | 'strict' | 'none';
-  maxAge?: number;
-  path: string;
+  sameSite: "lax" | "strict" | "none";
+  maxAge: number;
 }
 
-function getCookieOptions(maxAge?: number): CookieOptions {
-  const isProduction = env.NODE_ENV === 'production';
-
+function getCookieOptions(maxAge: number): CookieOptions {
   return {
     httpOnly: true,
-    secure: isProduction,
-    sameSite: isProduction ? 'none' : 'lax',
-    path: '/',
-    ...(maxAge !== undefined ? { maxAge } : {}),
+    secure: env.NODE_ENV === "production",
+    sameSite: "lax",
+    maxAge,
   };
 }
 
+// Convert duration string (e.g., "7d", "15m") to milliseconds
 function parseDurationToMs(duration: string): number {
   const match = duration.match(/^(\d+)([smhdwy])$/);
-
-  if (!match) {
-    throw new Error(`Invalid duration format: ${duration}`);
-  }
+  if (!match) throw new Error(`Invalid duration format: ${duration}`);
 
   const [, value, unit] = match;
   const num = parseInt(value, 10);
@@ -45,43 +36,30 @@ function parseDurationToMs(duration: string): number {
     y: 365 * 24 * 60 * 60 * 1000,
   };
 
-  return num * factors[unit];
+  return num * (factors[unit] || 1);
 }
 
 export function setAuthCookies(
   res: Response,
   accessToken: string,
-  refreshToken: string
+  refreshToken: string,
 ): void {
-  const accessMaxAge = parseDurationToMs('15m');
+  const accessMaxAge = parseDurationToMs("15m");
   const refreshMaxAge = parseDurationToMs(env.SESSION_MAX_AGE);
 
-  res.cookie(
-    ACCESS_COOKIE,
-    accessToken,
-    getCookieOptions(accessMaxAge)
-  );
-
-  res.cookie(
-    REFRESH_COOKIE,
-    refreshToken,
-    getCookieOptions(refreshMaxAge)
-  );
+  res.cookie("gt_access", accessToken, getCookieOptions(accessMaxAge));
+  res.cookie("gt_refresh", refreshToken, getCookieOptions(refreshMaxAge));
 }
 
 export function clearAuthCookies(res: Response): void {
-  res.clearCookie(ACCESS_COOKIE, getCookieOptions());
-  res.clearCookie(REFRESH_COOKIE, getCookieOptions());
+  res.clearCookie("gt_access");
+  res.clearCookie("gt_refresh");
 }
 
-export function getAccessTokenFromCookies(
-  req: Request
-): string | undefined {
-  return req.cookies?.[ACCESS_COOKIE];
+export function getAccessTokenFromCookies(req: any): string | undefined {
+  return req.cookies?.gt_access;
 }
 
-export function getRefreshTokenFromCookies(
-  req: Request
-): string | undefined {
-  return req.cookies?.[REFRESH_COOKIE];
+export function getRefreshTokenFromCookies(req: any): string | undefined {
+  return req.cookies?.gt_refresh;
 }

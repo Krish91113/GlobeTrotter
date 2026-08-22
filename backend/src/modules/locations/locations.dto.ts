@@ -54,8 +54,8 @@ export function toLocationDto(location: {
           displayName: location.country.displayName,
         }
       : {
-          iso2Code: 'XX',
-          displayName: 'Unknown',
+          iso2Code: "XX",
+          displayName: "Unknown",
         },
     latitude: location.latitude,
     longitude: location.longitude,

@@ -1,7 +1,7 @@
-import { Request, Response, NextFunction } from 'express';
-import { sha256 } from '../lib/crypto';
-import { createError } from '../lib/errors';
-import prisma from '../lib/prisma';
+import type { NextFunction, Request, Response } from "express";
+import { sha256 } from "../lib/crypto";
+import { createError } from "../lib/errors";
+import prisma from "../lib/prisma";
 
 /**
  * Requires valid authentication
@@ -9,14 +9,14 @@ import prisma from '../lib/prisma';
  */
 export const requireAuth = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  _res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
-    const sessionToken = req.cookies['gt_session'];
+    const sessionToken = req.cookies.gt_session;
 
     if (!sessionToken) {
-      throw createError('AUTH_REQUIRED', 'No session token provided');
+      throw createError("AUTH_REQUIRED", "No session token provided");
     }
 
     const tokenHash = sha256(sessionToken);
@@ -36,11 +36,11 @@ export const requireAuth = async (
     });
 
     if (!session || session.expiresAt < new Date()) {
-      throw createError('AUTH_REQUIRED', 'Session expired or invalid');
+      throw createError("AUTH_REQUIRED", "Session expired or invalid");
     }
 
     if (!session.user.isActive) {
-      throw createError('AUTH_REQUIRED', 'User account is inactive');
+      throw createError("AUTH_REQUIRED", "User account is inactive");
     }
 
     req.user = {
@@ -62,11 +62,11 @@ export const requireAuth = async (
  */
 export const optionalAuth = async (
   req: Request,
-  res: Response,
-  next: NextFunction
+  _res: Response,
+  next: NextFunction,
 ): Promise<void> => {
   try {
-    const sessionToken = req.cookies['gt_session'];
+    const sessionToken = req.cookies.gt_session;
 
     if (!sessionToken) {
       next();
@@ -99,7 +99,7 @@ export const optionalAuth = async (
     }
 
     next();
-  } catch (error) {
+  } catch {
     // Silently fail for optional auth
     next();
   }

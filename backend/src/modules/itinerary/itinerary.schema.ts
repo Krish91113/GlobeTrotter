@@ -1,4 +1,4 @@
-import { z } from 'zod';
+import { z } from "zod";
 
 const decimalString = z
   .string()
@@ -8,13 +8,16 @@ const isoDateTimeWithOffset = z.string().datetime({ offset: true });
 
 export const addItemSchema = z
   .object({
-    catalogItemId: z.string().uuid('Invalid catalog item id'),
-    plannedStartAt: isoDateTimeWithOffset.nullable().optional(),
-    plannedEndAt: isoDateTimeWithOffset.nullable().optional(),
-    estimatedCost: decimalString.nullable().optional(),
-    currencyId: z.string().uuid('Invalid currency id').optional(),
+    catalogItemId: z.string().uuid("Invalid catalog item id"),
+    plannedStartAt: isoDateTimeWithOffset.optional(),
+    plannedEndAt: isoDateTimeWithOffset.optional(),
+    estimatedCost: decimalString.optional(),
+    currencyId: z.string().uuid("Invalid currency id").optional(),
     durationMinutes: z.coerce.number().int().min(1).max(10080).optional(),
-    notes: z.string().max(500, 'Notes must be at most 500 characters').optional(),
+    notes: z
+      .string()
+      .max(500, "Notes must be at most 500 characters")
+      .optional(),
   })
   .refine(
     (data) => {
@@ -24,9 +27,9 @@ export const addItemSchema = z
       return true;
     },
     {
-      message: 'plannedStartAt must be before plannedEndAt',
-      path: ['plannedStartAt'],
-    }
+      message: "plannedStartAt must be before plannedEndAt",
+      path: ["plannedStartAt"],
+    },
   );
 
 export type AddItemRequest = z.infer<typeof addItemSchema>;
@@ -36,9 +39,19 @@ export const updateItemSchema = z
     plannedStartAt: isoDateTimeWithOffset.optional(),
     plannedEndAt: isoDateTimeWithOffset.optional(),
     estimatedCost: decimalString.optional(),
-    currencyId: z.string().uuid('Invalid currency id').nullable().optional(),
-    durationMinutes: z.coerce.number().int().min(1).max(10080).nullable().optional(),
-    notes: z.string().max(500, 'Notes must be at most 500 characters').nullable().optional(),
+    currencyId: z.string().uuid("Invalid currency id").nullable().optional(),
+    durationMinutes: z.coerce
+      .number()
+      .int()
+      .min(1)
+      .max(10080)
+      .nullable()
+      .optional(),
+    notes: z
+      .string()
+      .max(500, "Notes must be at most 500 characters")
+      .nullable()
+      .optional(),
   })
   .refine(
     (data) => {
@@ -48,9 +61,9 @@ export const updateItemSchema = z
       return true;
     },
     {
-      message: 'plannedStartAt must be before plannedEndAt',
-      path: ['plannedStartAt'],
-    }
+      message: "plannedStartAt must be before plannedEndAt",
+      path: ["plannedStartAt"],
+    },
   );
 
 export type UpdateItemRequest = z.infer<typeof updateItemSchema>;
@@ -60,11 +73,11 @@ export const reorderItemsSchema = z
     items: z
       .array(
         z.object({
-          itemId: z.string().uuid('Invalid itinerary item id'),
+          itemId: z.string().uuid("Invalid itinerary item id"),
           sequenceNo: z.coerce.number().int().min(1),
-        })
+        }),
       )
-      .min(1, 'At least one item is required'),
+      .min(1, "At least one item is required"),
   })
   .refine(
     (data) => {
@@ -72,9 +85,9 @@ export const reorderItemsSchema = z
       return new Set(sequenceNos).size === sequenceNos.length;
     },
     {
-      message: 'sequenceNo values must be unique',
-      path: ['items'],
-    }
+      message: "sequenceNo values must be unique",
+      path: ["items"],
+    },
   )
   .refine(
     (data) => {
@@ -82,14 +95,14 @@ export const reorderItemsSchema = z
       return new Set(itemIds).size === itemIds.length;
     },
     {
-      message: 'itemId values must be unique',
-      path: ['items'],
-    }
+      message: "itemId values must be unique",
+      path: ["items"],
+    },
   );
 
 export type ReorderItemsRequest = z.infer<typeof reorderItemsSchema>;
 
 export interface OverlapWarning {
-  code: 'ITINERARY_OVERLAP';
+  code: "ITINERARY_OVERLAP";
   message: string;
 }

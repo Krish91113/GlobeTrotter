@@ -1,7 +1,15 @@
-import { UpdateProfileInput, UpsertPreferencesInput } from './users.schema';
-import { ProfileDto, PreferencesDto, toProfileDto, toPreferencesDto } from './users.dto';
-import { createError } from '../../lib/errors';
-import prisma from '../../lib/prisma';
+import { createError } from "../../lib/errors";
+import prisma from "../../lib/prisma";
+import {
+  type PreferencesDto,
+  type ProfileDto,
+  toPreferencesDto,
+  toProfileDto,
+} from "./users.dto";
+import type {
+  UpdateProfileInput,
+  UpsertPreferencesInput,
+} from "./users.schema";
 
 /**
  * Get user profile by ID
@@ -21,7 +29,7 @@ export async function getProfile(userId: string): Promise<ProfileDto> {
   });
 
   if (!user) {
-    throw createError('NOT_FOUND', 'User not found');
+    throw createError("NOT_FOUND", "User not found");
   }
 
   return toProfileDto(user);
@@ -32,7 +40,7 @@ export async function getProfile(userId: string): Promise<ProfileDto> {
  */
 export async function updateProfile(
   userId: string,
-  data: UpdateProfileInput
+  data: UpdateProfileInput,
 ): Promise<ProfileDto> {
   // Verify user exists
   const existingUser = await prisma.user.findUnique({
@@ -40,7 +48,7 @@ export async function updateProfile(
   });
 
   if (!existingUser) {
-    throw createError('NOT_FOUND', 'User not found');
+    throw createError("NOT_FOUND", "User not found");
   }
 
   // Update user
@@ -75,7 +83,7 @@ export async function getPreferences(userId: string): Promise<PreferencesDto> {
   });
 
   if (!user) {
-    throw createError('NOT_FOUND', 'User not found');
+    throw createError("NOT_FOUND", "User not found");
   }
 
   // Upsert preferences (create if missing)
@@ -83,11 +91,9 @@ export async function getPreferences(userId: string): Promise<PreferencesDto> {
     where: { userId },
     create: {
       userId,
-      theme: 'light',
+      theme: "light",
       notificationsEnabled: true,
       emailNotifications: true,
-      cultureWeight: 80, foodWeight: 80, adventureWeight: 50,
-      natureWeight: 50, relaxationWeight: 50, travelPace: 'moderate', budgetLevel: 'moderate',
     },
     update: {},
     select: {
@@ -96,8 +102,6 @@ export async function getPreferences(userId: string): Promise<PreferencesDto> {
       theme: true,
       notificationsEnabled: true,
       emailNotifications: true,
-      cultureWeight: true, foodWeight: true, adventureWeight: true,
-      natureWeight: true, relaxationWeight: true, travelPace: true, budgetLevel: true,
     },
   });
 
@@ -109,7 +113,7 @@ export async function getPreferences(userId: string): Promise<PreferencesDto> {
  */
 export async function upsertPreferences(
   userId: string,
-  data: UpsertPreferencesInput
+  data: UpsertPreferencesInput,
 ): Promise<PreferencesDto> {
   // Verify user exists
   const user = await prisma.user.findUnique({
@@ -117,7 +121,7 @@ export async function upsertPreferences(
   });
 
   if (!user) {
-    throw createError('NOT_FOUND', 'User not found');
+    throw createError("NOT_FOUND", "User not found");
   }
 
   // If currency is provided, verify it exists
@@ -127,7 +131,10 @@ export async function upsertPreferences(
     });
 
     if (!currency) {
-      throw createError('VALIDATION_ERROR', `Currency ${data.preferredCurrency} not found`);
+      throw createError(
+        "VALIDATION_ERROR",
+        `Currency ${data.preferredCurrency} not found`,
+      );
     }
   }
 
@@ -138,30 +145,24 @@ export async function upsertPreferences(
       userId,
       preferredCurrency: data.preferredCurrency ?? null,
       preferredTimezone: data.preferredTimezone ?? null,
-      theme: data.theme ?? 'light',
+      theme: data.theme ?? "light",
       notificationsEnabled: data.notificationsEnabled ?? true,
       emailNotifications: data.emailNotifications ?? true,
-      cultureWeight: data.cultureWeight ?? 80,
-      foodWeight: data.foodWeight ?? 80,
-      adventureWeight: data.adventureWeight ?? 50,
-      natureWeight: data.natureWeight ?? 50,
-      relaxationWeight: data.relaxationWeight ?? 50,
-      travelPace: data.travelPace ?? 'moderate',
-      budgetLevel: data.budgetLevel ?? 'moderate',
     },
     update: {
-      ...(data.preferredCurrency !== undefined && { preferredCurrency: data.preferredCurrency }),
-      ...(data.preferredTimezone !== undefined && { preferredTimezone: data.preferredTimezone }),
+      ...(data.preferredCurrency !== undefined && {
+        preferredCurrency: data.preferredCurrency,
+      }),
+      ...(data.preferredTimezone !== undefined && {
+        preferredTimezone: data.preferredTimezone,
+      }),
       ...(data.theme !== undefined && { theme: data.theme }),
-      ...(data.notificationsEnabled !== undefined && { notificationsEnabled: data.notificationsEnabled }),
-      ...(data.emailNotifications !== undefined && { emailNotifications: data.emailNotifications }),
-      ...(data.cultureWeight !== undefined && { cultureWeight: data.cultureWeight }),
-      ...(data.foodWeight !== undefined && { foodWeight: data.foodWeight }),
-      ...(data.adventureWeight !== undefined && { adventureWeight: data.adventureWeight }),
-      ...(data.natureWeight !== undefined && { natureWeight: data.natureWeight }),
-      ...(data.relaxationWeight !== undefined && { relaxationWeight: data.relaxationWeight }),
-      ...(data.travelPace !== undefined && { travelPace: data.travelPace }),
-      ...(data.budgetLevel !== undefined && { budgetLevel: data.budgetLevel }),
+      ...(data.notificationsEnabled !== undefined && {
+        notificationsEnabled: data.notificationsEnabled,
+      }),
+      ...(data.emailNotifications !== undefined && {
+        emailNotifications: data.emailNotifications,
+      }),
     },
     select: {
       preferredCurrency: true,
@@ -169,8 +170,6 @@ export async function upsertPreferences(
       theme: true,
       notificationsEnabled: true,
       emailNotifications: true,
-      cultureWeight: true, foodWeight: true, adventureWeight: true,
-      natureWeight: true, relaxationWeight: true, travelPace: true, budgetLevel: true,
     },
   });
 

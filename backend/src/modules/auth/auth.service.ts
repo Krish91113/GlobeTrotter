@@ -1,21 +1,27 @@
-import { authRepository } from './auth.repository';
-import { hashPassword, verifyPassword } from '../../lib/password';
-import {
-  signAccessToken,
-  generateRefreshToken,
-  hashRefreshToken,
-} from '../../lib/jwt';
+import { getEnv } from "../../config/env";
 import {
   AuthInvalidError,
   ConflictError,
   NotFoundError,
-} from '../../errors/AppError';
-import type { RegisterRequest, LoginRequest, AuthResponse } from './auth.schema';
-import { env } from '../../config/env';
+} from "../../errors/AppError";
+import {
+  generateRefreshToken,
+  hashRefreshToken,
+  signAccessToken,
+} from "../../lib/jwt";
+import { hashPassword, verifyPassword } from "../../lib/password";
+import { authRepository } from "./auth.repository";
+import type {
+  AuthResponse,
+  LoginRequest,
+  RegisterRequest,
+} from "./auth.schema";
+
+const env = getEnv();
 
 function parseDurationToMs(duration: string): number {
   const match = duration.match(/^(\d+)([smhdwy])$/);
-  if (!match) return 7 * 24 * 60 * 60 * 1000;
+  if (!match) throw new Error(`Invalid duration format: ${duration}`);
 
   const [, value, unit] = match;
   const num = parseInt(value, 10);
@@ -39,19 +45,28 @@ export interface AuthTokens {
 }
 
 export class AuthService {
-  async register(data: RegisterRequest, ipAddress?: string, userAgent?: string): Promise<AuthTokens> {
+  async register(
+    data: RegisterRequest,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<AuthTokens> {
+    // Check if user already exists
     const existingUser = await authRepository.findUserByEmail(data.email);
     if (existingUser) {
-      throw new ConflictError('Email already registered');
+      throw new ConflictError("Email already registered", undefined);
     }
 
+    // Hash password
     const passwordHash = await hashPassword(data.password);
+
+    // Create user
     const user = await authRepository.createUser(
       data.email,
       passwordHash,
-      data.displayName
+      data.displayName,
     );
 
+    // Generate tokens
     const accessToken = signAccessToken({
       userId: user.id,
       email: user.email,
@@ -60,6 +75,7 @@ export class AuthService {
     const refreshToken = generateRefreshToken();
     const refreshTokenHash = hashRefreshToken(refreshToken);
 
+    // Create session
     const sessionMaxAgeMs = parseDurationToMs(env.SESSION_MAX_AGE);
     const expiresAt = new Date(Date.now() + sessionMaxAgeMs);
 
@@ -68,7 +84,7 @@ export class AuthService {
       refreshTokenHash,
       expiresAt,
       ipAddress,
-      userAgent
+      userAgent,
     );
 
     return {
@@ -83,19 +99,27 @@ export class AuthService {
     };
   }
 
-  async login(data: LoginRequest, ipAddress?: string, userAgent?: string): Promise<AuthTokens> {
+  async login(
+    data: LoginRequest,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<AuthTokens> {
+    // Find user
     const user = await authRepository.findUserByEmail(data.email);
-    if (!user || !user.passwordHash) {
-      throw new AuthInvalidError('Invalid email or password');
+    if (!user?.passwordHash) {
+      throw new AuthInvalidError("Invalid email or password", undefined);
     }
 
+    // Verify password
     const isValid = await verifyPassword(data.password, user.passwordHash);
     if (!isValid) {
-      throw new AuthInvalidError('Invalid email or password');
+      throw new AuthInvalidError("Invalid email or password", undefined);
     }
 
+    // Update last login
     await authRepository.updateUserLastLogin(user.id);
 
+    // Generate tokens
     const accessToken = signAccessToken({
       userId: user.id,
       email: user.email,
@@ -104,6 +128,7 @@ export class AuthService {
     const refreshToken = generateRefreshToken();
     const refreshTokenHash = hashRefreshToken(refreshToken);
 
+    // Create session
     const sessionMaxAgeMs = parseDurationToMs(env.SESSION_MAX_AGE);
     const expiresAt = new Date(Date.now() + sessionMaxAgeMs);
 
@@ -112,7 +137,7 @@ export class AuthService {
       refreshTokenHash,
       expiresAt,
       ipAddress,
-      userAgent
+      userAgent,
     );
 
     return {
@@ -132,27 +157,37 @@ export class AuthService {
     try {
       await authRepository.deleteSession(refreshTokenHash);
     } catch {
-      // Ignore if session already deleted
+      // Session already deleted or doesn't exist, ignore
     }
   }
 
-  async refresh(refreshToken: string, ipAddress?: string, userAgent?: string): Promise<AuthTokens> {
+  async refresh(
+    refreshToken: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<AuthTokens> {
     const refreshTokenHash = hashRefreshToken(refreshToken);
-    const session = await authRepository.findSessionByTokenHash(refreshTokenHash);
+
+    // Find session
+    const session =
+      await authRepository.findSessionByTokenHash(refreshTokenHash);
     if (!session || session.expiresAt < new Date()) {
-      throw new AuthInvalidError('Invalid or expired refresh token');
+      throw new AuthInvalidError("Invalid or expired refresh token", undefined);
     }
 
+    // Find user
     const user = await authRepository.findUserById(session.userId);
     if (!user) {
-      throw new NotFoundError('User not found');
+      throw new NotFoundError("User not found", undefined);
     }
 
+    // Generate new access token
     const accessToken = signAccessToken({
       userId: user.id,
       email: user.email,
     });
 
+    // Rotate refresh token (delete old, create new)
     await authRepository.deleteSession(refreshTokenHash);
 
     const newRefreshToken = generateRefreshToken();
@@ -166,7 +201,7 @@ export class AuthService {
       newRefreshTokenHash,
       expiresAt,
       ipAddress,
-      userAgent
+      userAgent,
     );
 
     return {
@@ -184,7 +219,7 @@ export class AuthService {
   async me(userId: string): Promise<AuthResponse> {
     const user = await authRepository.findUserById(userId);
     if (!user) {
-      throw new NotFoundError('User not found');
+      throw new NotFoundError("User not found", undefined);
     }
 
     return {

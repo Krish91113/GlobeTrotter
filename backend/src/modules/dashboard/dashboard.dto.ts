@@ -1,5 +1,4 @@
-import type { Prisma } from '../../../generated/prisma/client';
-import type { TripDto } from '../trips/trips.dto';
+import type { Prisma } from "../../../generated/prisma/client";
 
 export interface TripListItemDto {
   id: string;
@@ -24,7 +23,7 @@ export interface RecommendedDestinationDto {
 export interface DashboardSummaryDto {
   upcomingTripCount: number;
   totalPlannedCities: number;
-  recentTrips: TripDto[];
+  recentTrips: TripListItemDto[];
   recommendedDestinations: RecommendedDestinationDto[];
 }
 
