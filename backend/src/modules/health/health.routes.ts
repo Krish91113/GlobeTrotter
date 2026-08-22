@@ -1,15 +1,39 @@
 import { Router, Request, Response } from 'express';
-import { ok } from '../../lib/apiResponse';
+import prisma from '../../lib/prisma';
+import { logger } from '../../lib/logger';
 
 const router = Router();
 
+/**
+ * GET /health/live
+ * Liveness probe - service is running
+ */
 router.get('/live', (req: Request, res: Response) => {
-  ok(res, { status: 'ok' });
+  res.status(200).json({ status: 'ok' });
 });
 
-router.get('/ready', (req: Request, res: Response) => {
-  // TODO: check database connection, redis, etc.
-  ok(res, { status: 'ready' });
+/**
+ * GET /health/ready
+ * Readiness probe - service is ready to accept traffic
+ * Checks database connectivity
+ */
+router.get('/ready', async (req: Request, res: Response) => {
+  try {
+    // Ping database
+    await prisma.$queryRaw`SELECT 1`;
+
+    res.status(200).json({
+      status: 'ok',
+      db: 'connected',
+    });
+  } catch (error) {
+    logger.error({ error }, 'Database health check failed');
+
+    res.status(503).json({
+      status: 'error',
+      db: 'unreachable',
+    });
+  }
 });
 
 export default router;
