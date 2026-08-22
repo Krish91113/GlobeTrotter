@@ -1,4 +1,4 @@
-import type { Response } from 'express';
+import type { Response } from "express";
 
 export interface SuccessEnvelope<T = any> {
   success: true;
@@ -20,7 +20,7 @@ export function ok<T>(
   res: Response,
   data: T,
   statusCode: number = 200,
-  meta?: Record<string, any>
+  meta?: Record<string, any>,
 ): Response {
   const response: SuccessEnvelope<T> = {
     success: true,
@@ -36,7 +36,7 @@ export function errorResponse(
   message: string,
   statusCode: number,
   fieldErrors?: Record<string, string[]>,
-  requestId?: string
+  requestId?: string,
 ): Response {
   const response: ErrorEnvelope = {
     success: false,

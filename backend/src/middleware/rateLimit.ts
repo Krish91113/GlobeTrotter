@@ -1,5 +1,5 @@
-import type { Request, Response, NextFunction } from 'express';
-import { RateLimitedError } from '../errors/AppError';
+import type { NextFunction, Request, Response } from "express";
+import { RateLimitedError } from "../errors/AppError";
 
 interface RateLimitStore {
   [key: string]: { attempts: number; resetAt: number };
@@ -9,7 +9,7 @@ const store: RateLimitStore = {};
 
 export function createRateLimiter(maxAttempts: number, windowMs: number) {
   return (req: Request, _res: Response, next: NextFunction): void => {
-    const key = req.ip || 'unknown';
+    const key = req.ip || "unknown";
     const now = Date.now();
 
     // Clean up old entries
@@ -28,7 +28,7 @@ export function createRateLimiter(maxAttempts: number, windowMs: number) {
       const resetInSeconds = Math.ceil((store[key].resetAt - now) / 1000);
       throw new RateLimitedError(
         `Too many attempts. Please try again in ${resetInSeconds} seconds.`,
-        String(req.id)
+        String(req.id),
       );
     }
   };

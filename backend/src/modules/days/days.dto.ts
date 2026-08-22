@@ -1,5 +1,5 @@
-import { formatDate } from '../../utils/date';
-import { toDecimalString } from '../../utils/money';
+import { formatDate } from "../../utils/date";
+import { toDecimalString } from "../../utils/money";
 
 export interface ItineraryItemDto {
   id: string;
@@ -51,7 +51,7 @@ interface ItineraryItemLike {
   plannedStartAt: Date | null;
   plannedEndAt: Date | null;
   durationMinutes: number | null;
-  estimatedCost: import('decimal.js').Decimal | null;
+  estimatedCost: import("decimal.js").Decimal | null;
   currency?: { isoCode: string } | null;
   notes: string | null;
 }
@@ -64,10 +64,14 @@ export function toItineraryItemDto(item: ItineraryItemLike): ItineraryItemDto {
     catalogItem: {
       id: item.catalogItem.id,
       name: item.catalogItem.name,
-      categories: (item.catalogItem.categories ?? []).map((c) => c.category.displayName),
+      categories: (item.catalogItem.categories ?? []).map(
+        (c) => c.category.displayName,
+      ),
       thumbnailUri: item.catalogItem.media?.[0]?.thumbnailUri ?? null,
     },
-    plannedStartAt: item.plannedStartAt ? item.plannedStartAt.toISOString() : null,
+    plannedStartAt: item.plannedStartAt
+      ? item.plannedStartAt.toISOString()
+      : null,
     plannedEndAt: item.plannedEndAt ? item.plannedEndAt.toISOString() : null,
     durationMinutes: item.durationMinutes,
     estimatedCost: toDecimalString(item.estimatedCost),
@@ -83,15 +87,13 @@ export function toTripDayDto(day: {
   serviceDate: Date;
   timezoneName: string;
   notes: string | null;
-  tripStop?:
-    | ({
-        id: string;
-        locationId: string;
-        arrivalDate: Date | null;
-        departureDate: Date | null;
-        location: { name: string };
-      })
-    | null;
+  tripStop?: {
+    id: string;
+    locationId: string;
+    arrivalDate: Date | null;
+    departureDate: Date | null;
+    location: { name: string };
+  } | null;
   itineraryItems?: ItineraryItemLike[];
 }): TripDayDto {
   return {
@@ -106,7 +108,9 @@ export function toTripDayDto(day: {
           id: day.tripStop.id,
           locationId: day.tripStop.locationId,
           locationName: day.tripStop.location.name,
-          arrivalDate: day.tripStop.arrivalDate ? formatDate(day.tripStop.arrivalDate) : null,
+          arrivalDate: day.tripStop.arrivalDate
+            ? formatDate(day.tripStop.arrivalDate)
+            : null,
           departureDate: day.tripStop.departureDate
             ? formatDate(day.tripStop.departureDate)
             : null,

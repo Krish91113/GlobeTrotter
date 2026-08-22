@@ -1,20 +1,20 @@
-import type { Response } from 'express';
-import { getEnv } from '../config/env';
+import type { Response } from "express";
+import { getEnv } from "../config/env";
 
 const env = getEnv();
 
 interface CookieOptions {
   httpOnly: boolean;
   secure: boolean;
-  sameSite: 'lax' | 'strict' | 'none';
+  sameSite: "lax" | "strict" | "none";
   maxAge: number;
 }
 
 function getCookieOptions(maxAge: number): CookieOptions {
   return {
     httpOnly: true,
-    secure: env.NODE_ENV === 'production',
-    sameSite: 'lax',
+    secure: env.NODE_ENV === "production",
+    sameSite: "lax",
     maxAge,
   };
 }
@@ -42,18 +42,18 @@ function parseDurationToMs(duration: string): number {
 export function setAuthCookies(
   res: Response,
   accessToken: string,
-  refreshToken: string
+  refreshToken: string,
 ): void {
-  const accessMaxAge = parseDurationToMs('15m');
+  const accessMaxAge = parseDurationToMs("15m");
   const refreshMaxAge = parseDurationToMs(env.SESSION_MAX_AGE);
 
-  res.cookie('gt_access', accessToken, getCookieOptions(accessMaxAge));
-  res.cookie('gt_refresh', refreshToken, getCookieOptions(refreshMaxAge));
+  res.cookie("gt_access", accessToken, getCookieOptions(accessMaxAge));
+  res.cookie("gt_refresh", refreshToken, getCookieOptions(refreshMaxAge));
 }
 
 export function clearAuthCookies(res: Response): void {
-  res.clearCookie('gt_access');
-  res.clearCookie('gt_refresh');
+  res.clearCookie("gt_access");
+  res.clearCookie("gt_refresh");
 }
 
 export function getAccessTokenFromCookies(req: any): string | undefined {

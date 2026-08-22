@@ -1,6 +1,6 @@
-import { Request, Response, NextFunction } from 'express';
-import { AppError } from '../lib/errors';
-import { logger } from '../lib/logger';
+import type { NextFunction, Request, Response } from "express";
+import { AppError } from "../lib/errors";
+import { logger } from "../lib/logger";
 
 /**
  * Global error handler - must be registered last in middleware chain
@@ -9,7 +9,7 @@ export const errorHandler = (
   err: Error,
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): void => {
   // If headers already sent, delegate to default Express error handler
   if (res.headersSent) {
@@ -26,11 +26,11 @@ export const errorHandler = (
         path: req.path,
         method: req.method,
       },
-      err.message
+      err.message,
     );
 
     const details =
-      err.details && typeof err.details === 'object' ? err.details : undefined;
+      err.details && typeof err.details === "object" ? err.details : undefined;
 
     res.status(err.httpStatus).json({
       error: {
@@ -55,13 +55,13 @@ export const errorHandler = (
         stack: err.stack,
       },
     },
-    'Unhandled error'
+    "Unhandled error",
   );
 
   res.status(500).json({
     error: {
-      code: 'INTERNAL_ERROR',
-      message: 'An unexpected error occurred.',
+      code: "INTERNAL_ERROR",
+      message: "An unexpected error occurred.",
       requestId: String(req.id),
     },
   });

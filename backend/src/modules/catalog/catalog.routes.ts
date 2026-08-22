@@ -1,11 +1,11 @@
-import { Router } from 'express';
+import { Router } from "express";
+import { z } from "zod";
+import { validateParams, validateQuery } from "../../middleware/validate";
 import {
-  searchCatalogItemsController,
   getCatalogItemByIdController,
-} from './catalog.controller';
-import { validateQuery, validateParams } from '../../middleware/validate';
-import { CatalogSearchQuerySchema } from './catalog.schema';
-import { z } from 'zod';
+  searchCatalogItemsController,
+} from "./catalog.controller";
+import { CatalogSearchQuerySchema } from "./catalog.schema";
 
 const router = Router();
 
@@ -16,9 +16,9 @@ const router = Router();
  * Search catalog items with filters
  */
 router.get(
-  '/items',
+  "/items",
   validateQuery(CatalogSearchQuerySchema),
-  searchCatalogItemsController
+  searchCatalogItemsController,
 );
 
 /**
@@ -26,9 +26,9 @@ router.get(
  * Get detailed catalog item information
  */
 router.get(
-  '/items/:id',
+  "/items/:id",
   validateParams(z.object({ id: z.string().uuid() })),
-  getCatalogItemByIdController
+  getCatalogItemByIdController,
 );
 
 export default router;

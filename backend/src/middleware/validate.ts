@@ -1,19 +1,19 @@
-import { Request, Response, NextFunction } from 'express';
-import { ZodSchema, ZodError } from 'zod';
-import { createError } from '../lib/errors';
+import type { NextFunction, Request, Response } from "express";
+import type { ZodSchema } from "zod";
+import { createError } from "../lib/errors";
 
 /**
  * Validates request body against a Zod schema
  */
 export const validate = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.body);
 
     if (!result.success) {
       const error = createError(
-        'VALIDATION_ERROR',
-        'Request validation failed',
-        result.error.flatten()
+        "VALIDATION_ERROR",
+        "Request validation failed",
+        result.error.flatten(),
       );
       next(error);
       return;
@@ -28,14 +28,14 @@ export const validate = (schema: ZodSchema) => {
  * Validates request query parameters against a Zod schema
  */
 export const validateQuery = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.query);
 
     if (!result.success) {
       const error = createError(
-        'VALIDATION_ERROR',
-        'Query parameter validation failed',
-        result.error.flatten()
+        "VALIDATION_ERROR",
+        "Query parameter validation failed",
+        result.error.flatten(),
       );
       next(error);
       return;
@@ -50,14 +50,14 @@ export const validateQuery = (schema: ZodSchema) => {
  * Validates request URL parameters against a Zod schema
  */
 export const validateParams = (schema: ZodSchema) => {
-  return (req: Request, res: Response, next: NextFunction): void => {
+  return (req: Request, _res: Response, next: NextFunction): void => {
     const result = schema.safeParse(req.params);
 
     if (!result.success) {
       const error = createError(
-        'VALIDATION_ERROR',
-        'URL parameter validation failed',
-        result.error.flatten()
+        "VALIDATION_ERROR",
+        "URL parameter validation failed",
+        result.error.flatten(),
       );
       next(error);
       return;

@@ -1,315 +1,116 @@
-import { prisma } from '../../database/prisma';
-import {
-  NotFoundError,
-  ForbiddenError,
-} from '../../errors/AppError';
-import type { Prisma } from '../../../generated/prisma/client';
-import type {
-  AddItemRequest,
-  UpdateItemRequest,
-  ReorderItemsRequest,
-} from './itinerary.schema';
-import { toItineraryItemDto, ItineraryItemDto } from './itinerary.dto';
+import { createError } from "../../lib/errors";
+import prisma from "../../lib/prisma";
+import { dateRange, parseDate } from "../../utils/date";
+import type { CreateTripInput, UpdateTripInput } from "./trips.schema";
 
-const ITEM_INCLUDE = {
-  catalogItem: {
-    include: {
-      categories: { include: { category: true } },
-      media: { take: 1, orderBy: { createdAt: 'asc' } },
-    },
-  },
-  currency: { select: { isoCode: true } },
-} satisfies Prisma.ItineraryItemInclude;
-
-interface OverlapWarningPayload {
-  code: 'ITINERARY_OVERLAP';
-  message: string;
+export async function getOwnedTripOrThrow(tripId: string, userId: string) {
+  const trip = await prisma.trip.findUnique({
+    where: { id: tripId },
+  });
+  if (!trip) {
+    throw createError("NOT_FOUND", "Trip not found");
+  }
+  if (trip.ownerUserId !== userId) {
+    throw createError("FORBIDDEN", "You do not have access to this trip");
+  }
+  return trip;
 }
 
-export class ItineraryService {
-  async addItem(
-    tripId: string,
-    dayId: string,
-    data: AddItemRequest,
-    userId: string
-  ): Promise<{ item: ItineraryItemDto; warning?: OverlapWarningPayload }> {
-    await this.assertTripOwnership(tripId, userId);
+export async function getTrips(userId: string) {
+  return prisma.trip.findMany({
+    where: { ownerUserId: userId },
+    orderBy: { createdAt: "desc" },
+  });
+}
 
-    const tripDay = await prisma.tripDay.findFirst({
-      where: { id: dayId, tripId },
-      select: { id: true },
-    });
-    if (!tripDay) {
-      throw new NotFoundError('Trip day not found for this trip');
-    }
+export async function getTripById(tripId: string, userId: string) {
+  return getOwnedTripOrThrow(tripId, userId);
+}
 
-    const catalogItem = await prisma.catalogItem.findUnique({
-      where: { id: data.catalogItemId },
-      select: { id: true, experience: { select: { durationMinutes: true } } },
-    });
-    if (!catalogItem) {
-      throw new NotFoundError('Catalog item not found');
-    }
+export async function createTrip(userId: string, input: CreateTripInput) {
+  const defaultVisibility = await prisma.tripVisibility.findFirst({
+    where: { code: "PRIVATE" },
+  });
+  const defaultStatus = await prisma.tripStatus.findFirst({
+    where: { code: "PLANNING" },
+  });
 
-    if (data.currencyId) {
-      const currency = await prisma.currency.findUnique({
-        where: { id: data.currencyId },
-        select: { id: true },
-      });
-      if (!currency) {
-        throw new NotFoundError('Currency not found');
-      }
-    }
+  const startDate = parseDate(input.startDate);
+  const endDate = parseDate(input.endDate);
 
-    let warning: OverlapWarningPayload | undefined;
-    if (data.plannedStartAt && data.plannedEndAt) {
-      const hasOverlap = await this.overlapCheck(
-        dayId,
-        new Date(data.plannedStartAt),
-        new Date(data.plannedEndAt)
-      );
-      if (hasOverlap) {
-        warning = {
-          code: 'ITINERARY_OVERLAP',
-          message:
-            'This item overlaps with another scheduled item on the same day.',
-        };
-      }
-    }
-
-    const durationMinutes =
-      data.durationMinutes ??
-      catalogItem.experience?.durationMinutes ??
-      null;
-
-    const created = await prisma.$transaction(async (tx) => {
-      const maxSequence = await tx.itineraryItem.aggregate({
-        where: { tripDayId: dayId },
-        _max: { sequenceNo: true },
-      });
-
-      const created = await tx.itineraryItem.create({
-        data: {
-          tripDayId: dayId,
-          catalogItemId: data.catalogItemId,
-          sequenceNo: (maxSequence._max.sequenceNo ?? 0) + 1,
-          plannedStartAt: data.plannedStartAt ? new Date(data.plannedStartAt) : null,
-          plannedEndAt: data.plannedEndAt ? new Date(data.plannedEndAt) : null,
-          durationMinutes,
-          estimatedCost: data.estimatedCost,
-          currencyId: data.currencyId,
-          notes: data.notes,
-        },
-        include: ITEM_INCLUDE,
-      });
-
-      await tx.trip.update({
-        where: { id: tripId },
-        data: { revisionNo: { increment: 1 } },
-      });
-
-      return created;
-    });
-
-    return { item: toItineraryItemDto(created), warning };
+  if (startDate > endDate) {
+    throw createError(
+      "TRIP_DATE_INVALID",
+      "Start date must be before end date",
+    );
   }
 
-  async updateItem(
-    tripId: string,
-    dayId: string,
-    itemId: string,
-    data: UpdateItemRequest,
-    userId: string
-  ): Promise<{ item: ItineraryItemDto; warning?: OverlapWarningPayload }> {
-    await this.assertTripOwnership(tripId, userId);
-
-    const existing = await prisma.itineraryItem.findFirst({
-      where: { id: itemId, tripDayId: dayId, tripDay: { tripId } },
-      include: ITEM_INCLUDE,
-    });
-    if (!existing) {
-      throw new NotFoundError('Itinerary item not found on this day');
-    }
-
-    if (data.currencyId) {
-      const currency = await prisma.currency.findUnique({
-        where: { id: data.currencyId },
-        select: { id: true },
-      });
-      if (!currency) {
-        throw new NotFoundError('Currency not found');
-      }
-    }
-
-    const plannedStartAt =
-      data.plannedStartAt === undefined
-        ? existing.plannedStartAt
-        : data.plannedStartAt === null
-          ? null
-          : new Date(data.plannedStartAt);
-    const plannedEndAt =
-      data.plannedEndAt === undefined
-        ? existing.plannedEndAt
-        : data.plannedEndAt === null
-          ? null
-          : new Date(data.plannedEndAt);
-
-    let warning: OverlapWarningPayload | undefined;
-    if (plannedStartAt && plannedEndAt) {
-      const hasOverlap = await this.overlapCheck(
-        dayId,
-        plannedStartAt,
-        plannedEndAt,
-        itemId
-      );
-      if (hasOverlap) {
-        warning = {
-          code: 'ITINERARY_OVERLAP',
-          message:
-            'This item now overlaps with another scheduled item on the same day.',
-        };
-      }
-    }
-
-    const updated = await prisma.$transaction(async (tx) => {
-      const result = await tx.itineraryItem.update({
-        where: { id: itemId },
-        data: {
-          plannedStartAt,
-          plannedEndAt,
-          estimatedCost: data.estimatedCost,
-          currencyId: data.currencyId !== undefined ? data.currencyId : undefined,
-          durationMinutes:
-            data.durationMinutes !== undefined ? data.durationMinutes : undefined,
-          notes: data.notes !== undefined ? data.notes : undefined,
-        },
-        include: ITEM_INCLUDE,
-      });
-
-      await tx.trip.update({
-        where: { id: tripId },
-        data: { revisionNo: { increment: 1 } },
-      });
-
-      return result;
-    });
-
-    return { item: toItineraryItemDto(updated), warning };
-  }
-
-  async removeItem(
-    tripId: string,
-    dayId: string,
-    itemId: string,
-    userId: string
-  ): Promise<void> {
-    await this.assertTripOwnership(tripId, userId);
-
-    const existing = await prisma.itineraryItem.findFirst({
-      where: { id: itemId, tripDayId: dayId, tripDay: { tripId } },
-      select: { id: true },
-    });
-    if (!existing) {
-      throw new NotFoundError('Itinerary item not found on this day');
-    }
-
-    await prisma.$transaction([
-      prisma.itineraryItem.delete({ where: { id: itemId } }),
-      prisma.trip.update({
-        where: { id: tripId },
-        data: { revisionNo: { increment: 1 } },
-      }),
-    ]);
-  }
-
-  async reorderItems(
-    tripId: string,
-    dayId: string,
-    data: ReorderItemsRequest,
-    userId: string
-  ): Promise<void> {
-    await this.assertTripOwnership(tripId, userId);
-
-    const dayExists = await prisma.tripDay.findFirst({
-      where: { id: dayId, tripId },
-      select: { id: true },
-    });
-    if (!dayExists) {
-      throw new NotFoundError('Trip day not found for this trip');
-    }
-
-    const ownedCount = await prisma.itineraryItem.count({
-      where: { tripDayId: dayId, id: { in: data.items.map((i) => i.itemId) } },
-    });
-    if (ownedCount !== data.items.length) {
-      throw new NotFoundError(
-        'One or more itinerary items do not belong to this day'
-      );
-    }
-
-    // Two-phase update inside one transaction so intermediate states never
-    // violate the unique [tripDayId, sequenceNo] constraint.
-    const OFFSET = 1_000_000;
-    await prisma.$transaction(async (tx) => {
-      await Promise.all(
-        data.items.map((entry, index) =>
-          tx.itineraryItem.update({
-            where: { id: entry.itemId },
-            data: { sequenceNo: OFFSET + index },
-          })
-        )
-      );
-
-      await Promise.all(
-        data.items.map((entry) =>
-          tx.itineraryItem.update({
-            where: { id: entry.itemId },
-            data: { sequenceNo: entry.sequenceNo },
-          })
-        )
-      );
-
-      await tx.trip.update({
-        where: { id: tripId },
-        data: { revisionNo: { increment: 1 } },
-      });
-    });
-  }
-
-  /**
-   * Standard interval overlap test: an existing item overlaps when its
-   * plannedStartAt < newEnd AND plannedEndAt > newStart.
-   */
-  private async overlapCheck(
-    dayId: string,
-    start: Date,
-    end: Date,
-    excludeItemId?: string
-  ): Promise<boolean> {
-    const conflicting = await prisma.itineraryItem.findFirst({
-      where: {
-        tripDayId: dayId,
-        ...(excludeItemId ? { id: { not: excludeItemId } } : {}),
-        plannedStartAt: { not: null, lt: end },
-        plannedEndAt: { not: null, gt: start },
+  const trip = await prisma.$transaction(async (tx) => {
+    const createdTrip = await tx.trip.create({
+      data: {
+        ownerUserId: userId,
+        name: input.name,
+        description: input.description,
+        startDate,
+        endDate,
+        visibilityId: input.visibilityId ?? defaultVisibility?.id ?? "",
+        statusId: input.statusId ?? defaultStatus?.id ?? "",
+        defaultCurrencyId: input.defaultCurrencyId,
       },
-      select: { id: true },
     });
-    return conflicting !== null;
-  }
 
-  private async assertTripOwnership(tripId: string, userId: string): Promise<void> {
-    const trip = await prisma.trip.findUnique({
-      where: { id: tripId },
-      select: { id: true, ownerUserId: true },
-    });
-    if (!trip) {
-      throw new NotFoundError('Trip not found');
+    const dates = dateRange(input.startDate, input.endDate);
+    for (let i = 0; i < dates.length; i++) {
+      await tx.tripDay.create({
+        data: {
+          tripId: createdTrip.id,
+          dayNumber: i + 1,
+          serviceDate: parseDate(dates[i]),
+          timezoneName: "UTC",
+        },
+      });
     }
-    if (trip.ownerUserId !== userId) {
-      throw new ForbiddenError('You do not have access to this trip');
-    }
-  }
+
+    return createdTrip;
+  });
+
+  return trip;
 }
 
-export const itineraryService = new ItineraryService();
+export async function updateTrip(
+  tripId: string,
+  userId: string,
+  input: UpdateTripInput,
+) {
+  await getOwnedTripOrThrow(tripId, userId);
+
+  return prisma.trip.update({
+    where: { id: tripId },
+    data: {
+      ...(input.name !== undefined && { name: input.name }),
+      ...(input.description !== undefined && {
+        description: input.description,
+      }),
+      ...(input.startDate !== undefined && {
+        startDate: parseDate(input.startDate),
+      }),
+      ...(input.endDate !== undefined && { endDate: parseDate(input.endDate) }),
+      ...(input.visibilityId !== undefined && {
+        visibilityId: input.visibilityId,
+      }),
+      ...(input.statusId !== undefined && { statusId: input.statusId }),
+      ...(input.defaultCurrencyId !== undefined && {
+        defaultCurrencyId: input.defaultCurrencyId,
+      }),
+      revisionNo: { increment: 1 },
+    },
+  });
+}
+
+export async function deleteTrip(tripId: string, userId: string) {
+  await getOwnedTripOrThrow(tripId, userId);
+
+  await prisma.trip.delete({
+    where: { id: tripId },
+  });
+}

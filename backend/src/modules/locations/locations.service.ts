@@ -1,27 +1,26 @@
-import { LocationSearchQuery } from './locations.schema';
+import { createError } from "../../lib/errors";
+import prisma from "../../lib/prisma";
+import { buildCursorWhere, extractNextCursor } from "../../utils/pagination";
 import {
-  LocationDto,
-  LocationDetailDto,
-  LocationSearchResponse,
-  toLocationDto,
+  type LocationDetailDto,
+  type LocationSearchResponse,
   toLocationDetailDto,
-} from './locations.dto';
-import { createError } from '../../lib/errors';
-import { buildCursorWhere, extractNextCursor } from '../../utils/pagination';
-import prisma from '../../lib/prisma';
+  toLocationDto,
+} from "./locations.dto";
+import type { LocationSearchQuery } from "./locations.schema";
 
 /**
  * Search locations with filters and pagination
  */
 export async function searchLocations(
-  query: LocationSearchQuery
+  query: LocationSearchQuery,
 ): Promise<LocationSearchResponse> {
   const { q, country, cursor, limit } = query;
 
   // Build where clause
   const where: any = {
     status: {
-      code: 'active',
+      code: "active",
     },
   };
 
@@ -30,7 +29,7 @@ export async function searchLocations(
     const normalized = q.trim().toLowerCase();
     where.normalizedName = {
       contains: normalized,
-      mode: 'insensitive',
+      mode: "insensitive",
     };
   }
 
@@ -53,7 +52,7 @@ export async function searchLocations(
       },
     },
     orderBy: {
-      name: 'asc',
+      name: "asc",
     },
     take: limit + 1,
     cursor: buildCursorWhere(cursor),
@@ -99,7 +98,7 @@ export async function getLocationById(id: string): Promise<LocationDetailDto> {
   });
 
   if (!location) {
-    throw createError('NOT_FOUND', 'Location not found');
+    throw createError("NOT_FOUND", "Location not found");
   }
 
   return toLocationDetailDto(location);

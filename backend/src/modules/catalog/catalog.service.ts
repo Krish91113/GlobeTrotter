@@ -1,28 +1,36 @@
-import { Decimal } from 'decimal.js';
-import { CatalogSearchQuery } from './catalog.schema';
+import { Decimal } from "decimal.js";
+import { createError } from "../../lib/errors";
+import prisma from "../../lib/prisma";
+import { buildCursorWhere, extractNextCursor } from "../../utils/pagination";
 import {
-  CatalogItemDto,
-  CatalogItemDetailDto,
-  CatalogSearchResponse,
-  toCatalogItemDto,
+  type CatalogItemDetailDto,
+  type CatalogSearchResponse,
   toCatalogItemDetailDto,
-} from './catalog.dto';
-import { createError } from '../../lib/errors';
-import { buildCursorWhere, extractNextCursor } from '../../utils/pagination';
-import prisma from '../../lib/prisma';
+  toCatalogItemDto,
+} from "./catalog.dto";
+import type { CatalogSearchQuery } from "./catalog.schema";
 
 /**
  * Search catalog items with filters and pagination
  */
 export async function searchCatalogItems(
-  query: CatalogSearchQuery
+  query: CatalogSearchQuery,
 ): Promise<CatalogSearchResponse> {
-  const { locationId, categoryId, minCost, maxCost, ratingMin, durationMax, cursor, limit } = query;
+  const {
+    locationId,
+    categoryId,
+    minCost,
+    maxCost,
+    ratingMin,
+    durationMax,
+    cursor,
+    limit,
+  } = query;
 
   // Build where clause
   const where: any = {
     status: {
-      code: 'active',
+      code: "active",
     },
   };
 
@@ -105,7 +113,7 @@ export async function searchCatalogItems(
           },
         },
         orderBy: {
-          observedAt: 'desc',
+          observedAt: "desc",
         },
         take: 1,
       },
@@ -116,7 +124,7 @@ export async function searchCatalogItems(
       },
     },
     orderBy: {
-      name: 'asc',
+      name: "asc",
     },
     take: limit + 1,
     cursor: buildCursorWhere(cursor),
@@ -138,7 +146,9 @@ export async function searchCatalogItems(
 /**
  * Get catalog item by ID with full details
  */
-export async function getCatalogItemById(id: string): Promise<CatalogItemDetailDto> {
+export async function getCatalogItemById(
+  id: string,
+): Promise<CatalogItemDetailDto> {
   const item = await prisma.catalogItem.findUnique({
     where: { id },
     include: {
@@ -154,7 +164,7 @@ export async function getCatalogItemById(id: string): Promise<CatalogItemDetailD
               isClosed: true,
             },
             orderBy: {
-              weekday: 'asc',
+              weekday: "asc",
             },
           },
         },
@@ -193,14 +203,14 @@ export async function getCatalogItemById(id: string): Promise<CatalogItemDetailD
           observedAt: true,
         },
         orderBy: {
-          observedAt: 'desc',
+          observedAt: "desc",
         },
       },
     },
   });
 
   if (!item) {
-    throw createError('NOT_FOUND', 'Catalog item not found');
+    throw createError("NOT_FOUND", "Catalog item not found");
   }
 
   return toCatalogItemDetailDto(item);

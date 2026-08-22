@@ -2,14 +2,14 @@
  * Encodes a cursor for pagination (base64 encoding of ID)
  */
 export function encodeCursor(id: string): string {
-  return Buffer.from(id).toString('base64');
+  return Buffer.from(id).toString("base64");
 }
 
 /**
  * Decodes a cursor back to ID
  */
 export function decodeCursor(cursor: string): string {
-  return Buffer.from(cursor, 'base64').toString('utf-8');
+  return Buffer.from(cursor, "base64").toString("utf-8");
 }
 
 /**
@@ -34,7 +34,7 @@ export function buildCursorWhere(cursor?: string) {
  */
 export function extractNextCursor<T extends { id: string }>(
   results: T[],
-  limit: number
+  limit: number,
 ): string | null {
   if (results.length <= limit) {
     return null;

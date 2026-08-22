@@ -170,7 +170,7 @@ export function toCatalogItemDetailDto(item: {
   const allPrices: PriceDto[] = item.prices.map((p) => ({
     priceType: p.priceType,
     amount: p.amount.toString(),
-    currency: p.currency?.isoCode ?? 'USD',
+    currency: p.currency?.isoCode ?? "USD",
     observedAt: p.observedAt.toISOString(),
   }));
 

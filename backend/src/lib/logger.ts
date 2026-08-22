@@ -1,29 +1,29 @@
-import pino from 'pino';
-import { env } from '../config/env';
+import pino from "pino";
+import { env } from "../config/env";
 
-const isDevelopment = env.NODE_ENV === 'development';
+const isDevelopment = env.NODE_ENV === "development";
 
 export const logger = pino({
-  level: isDevelopment ? 'debug' : 'info',
+  level: isDevelopment ? "debug" : "info",
   transport: isDevelopment
     ? {
-        target: 'pino-pretty',
+        target: "pino-pretty",
         options: {
           colorize: true,
-          translateTime: 'HH:MM:ss',
-          ignore: 'pid,hostname',
+          translateTime: "HH:MM:ss",
+          ignore: "pid,hostname",
         },
       }
     : undefined,
   redact: {
     paths: [
-      'req.headers.authorization',
-      'req.headers.cookie',
-      'password',
-      'passwordHash',
-      'tokenHash',
-      'rawToken',
-      'shareTokenHash',
+      "req.headers.authorization",
+      "req.headers.cookie",
+      "password",
+      "passwordHash",
+      "tokenHash",
+      "rawToken",
+      "shareTokenHash",
     ],
     remove: true,
   },

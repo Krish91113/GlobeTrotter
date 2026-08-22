@@ -1,4 +1,4 @@
-import type { Prisma } from '../../../generated/prisma/client';
+import type { Prisma } from "../../../generated/prisma/client";
 
 export interface CatalogItemSummaryDto {
   id: string;
@@ -25,7 +25,7 @@ type ItineraryItemWithRelations = Prisma.ItineraryItemGetPayload<{
     catalogItem: {
       include: {
         categories: { include: { category: true } };
-        media: { take: 1; orderBy: { createdAt: 'asc' } };
+        media: { take: 1; orderBy: { createdAt: "asc" } };
       };
     };
     currency: { select: { isoCode: true } };
@@ -38,7 +38,9 @@ function diffMinutes(startAt: Date | null, endAt: Date | null): number | null {
   return minutes > 0 ? minutes : null;
 }
 
-export function toItineraryItemDto(item: ItineraryItemWithRelations): ItineraryItemDto {
+export function toItineraryItemDto(
+  item: ItineraryItemWithRelations,
+): ItineraryItemDto {
   return {
     id: item.id,
     tripDayId: item.tripDayId,
@@ -46,14 +48,20 @@ export function toItineraryItemDto(item: ItineraryItemWithRelations): ItineraryI
     catalogItem: {
       id: item.catalogItem.id,
       name: item.catalogItem.name,
-      categories: item.catalogItem.categories.map((c) => c.category.displayName),
+      categories: item.catalogItem.categories.map(
+        (c) => c.category.displayName,
+      ),
       thumbnailUri:
-        item.catalogItem.media.find((m) => m.thumbnailUri)?.thumbnailUri ?? null,
+        item.catalogItem.media.find((m) => m.thumbnailUri)?.thumbnailUri ??
+        null,
     },
-    plannedStartAt: item.plannedStartAt ? item.plannedStartAt.toISOString() : null,
+    plannedStartAt: item.plannedStartAt
+      ? item.plannedStartAt.toISOString()
+      : null,
     plannedEndAt: item.plannedEndAt ? item.plannedEndAt.toISOString() : null,
     durationMinutes:
-      item.durationMinutes ?? diffMinutes(item.plannedStartAt, item.plannedEndAt),
+      item.durationMinutes ??
+      diffMinutes(item.plannedStartAt, item.plannedEndAt),
     estimatedCost: item.estimatedCost ? item.estimatedCost.toFixed(2) : null,
     currency: item.currency?.isoCode ?? null,
     notes: item.notes,

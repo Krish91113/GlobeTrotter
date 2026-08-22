@@ -1,20 +1,20 @@
-import type { Request, Response, NextFunction } from 'express';
-import { z } from 'zod';
-import { budgetService } from './budget.service';
+import type { NextFunction, Request, Response } from "express";
+import { z } from "zod";
+import { ValidationError } from "../../errors/AppError";
+import { ok } from "../../lib/apiResponse";
 import {
-  updateBudgetSchema,
   addExpenseSchema,
+  updateBudgetSchema,
   updateExpenseSchema,
-} from './budget.schema';
-import { ok } from '../../lib/apiResponse';
-import { ValidationError } from '../../errors/AppError';
+} from "./budget.schema";
+import { budgetService } from "./budget.service";
 
 const uuidSchema = z.string().uuid();
 
 function buildFieldErrors(error: z.ZodError): Record<string, string[]> {
   const fieldErrors: Record<string, string[]> = {};
   for (const issue of error.issues) {
-    const path = issue.path.map((segment) => String(segment)).join('.');
+    const path = issue.path.map((segment) => String(segment)).join(".");
     if (!fieldErrors[path]) fieldErrors[path] = [];
     fieldErrors[path].push(issue.message);
   }
@@ -23,18 +23,22 @@ function buildFieldErrors(error: z.ZodError): Record<string, string[]> {
 
 function uuidParam(req: Request, name: string): string {
   const value = req.params[name];
-  if (typeof value !== 'string' || !uuidSchema.safeParse(value).success) {
+  if (typeof value !== "string" || !uuidSchema.safeParse(value).success) {
     throw new ValidationError(`Invalid ${name} parameter`);
   }
   return value;
 }
 
 export class BudgetController {
-  async getBudget(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getBudget(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
       const budget = await budgetService.getBudget(
-        uuidParam(req, 'tripId'),
-        req.user!.userId
+        uuidParam(req, "tripId"),
+        req.user!.id,
       );
       ok(res, budget);
     } catch (error) {
@@ -42,20 +46,24 @@ export class BudgetController {
     }
   }
 
-  async upsertBudget(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async upsertBudget(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
       const parsed = updateBudgetSchema.safeParse(req.body);
       if (!parsed.success) {
         throw new ValidationError(
-          'Budget validation failed',
-          buildFieldErrors(parsed.error)
+          "Budget validation failed",
+          buildFieldErrors(parsed.error),
         );
       }
 
       const budget = await budgetService.upsertBudget(
-        uuidParam(req, 'tripId'),
+        uuidParam(req, "tripId"),
         parsed.data,
-        req.user!.userId
+        req.user!.id,
       );
       ok(res, budget, 201);
     } catch (error) {
@@ -63,11 +71,15 @@ export class BudgetController {
     }
   }
 
-  async getBudgetSummary(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async getBudgetSummary(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
       const summary = await budgetService.getBudgetSummary(
-        uuidParam(req, 'tripId'),
-        req.user!.userId
+        uuidParam(req, "tripId"),
+        req.user!.id,
       );
       ok(res, summary);
     } catch (error) {
@@ -75,20 +87,24 @@ export class BudgetController {
     }
   }
 
-  async addExpense(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async addExpense(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
       const parsed = addExpenseSchema.safeParse(req.body);
       if (!parsed.success) {
         throw new ValidationError(
-          'Expense validation failed',
-          buildFieldErrors(parsed.error)
+          "Expense validation failed",
+          buildFieldErrors(parsed.error),
         );
       }
 
       const expense = await budgetService.addExpense(
-        uuidParam(req, 'tripId'),
+        uuidParam(req, "tripId"),
         parsed.data,
-        req.user!.userId
+        req.user!.id,
       );
       ok(res, expense, 201);
     } catch (error) {
@@ -96,21 +112,25 @@ export class BudgetController {
     }
   }
 
-  async updateExpense(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async updateExpense(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
       const parsed = updateExpenseSchema.safeParse(req.body);
       if (!parsed.success) {
         throw new ValidationError(
-          'Expense validation failed',
-          buildFieldErrors(parsed.error)
+          "Expense validation failed",
+          buildFieldErrors(parsed.error),
         );
       }
 
       const expense = await budgetService.updateExpense(
-        uuidParam(req, 'tripId'),
-        uuidParam(req, 'expenseId'),
+        uuidParam(req, "tripId"),
+        uuidParam(req, "expenseId"),
         parsed.data,
-        req.user!.userId
+        req.user!.id,
       );
       ok(res, expense);
     } catch (error) {
@@ -118,12 +138,16 @@ export class BudgetController {
     }
   }
 
-  async deleteExpense(req: Request, res: Response, next: NextFunction): Promise<void> {
+  async deleteExpense(
+    req: Request,
+    res: Response,
+    next: NextFunction,
+  ): Promise<void> {
     try {
       await budgetService.deleteExpense(
-        uuidParam(req, 'tripId'),
-        uuidParam(req, 'expenseId'),
-        req.user!.userId
+        uuidParam(req, "tripId"),
+        uuidParam(req, "expenseId"),
+        req.user!.id,
       );
       ok(res, {}, 204);
     } catch (error) {

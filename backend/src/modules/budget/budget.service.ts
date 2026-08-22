@@ -1,18 +1,18 @@
-import { Prisma } from '../../../generated/prisma/client';
-import { prisma } from '../../database/prisma';
-import { ForbiddenError, NotFoundError } from '../../errors/AppError';
+import { Prisma } from "../../../generated/prisma/client";
+import { prisma } from "../../database/prisma";
+import { ForbiddenError, NotFoundError } from "../../errors/AppError";
+import {
+  type BudgetDto,
+  type BudgetStatus,
+  type BudgetSummaryDto,
+  type ExpenseDto,
+  toExpenseDto,
+} from "./budget.dto";
 import type {
   AddExpenseRequest,
   UpdateBudgetRequest,
   UpdateExpenseRequest,
-} from './budget.schema';
-import {
-  BudgetDto,
-  BudgetStatus,
-  BudgetSummaryDto,
-  ExpenseDto,
-  toExpenseDto,
-} from './budget.dto';
+} from "./budget.schema";
 
 const ZERO = new Prisma.Decimal(0);
 
@@ -38,7 +38,7 @@ export class BudgetService {
     const targetAmount =
       budget !== null ? new Prisma.Decimal(budget.targetAmount) : ZERO;
     const estimatedTotal = new Prisma.Decimal(
-      estimatedAggregate._sum.estimatedCost ?? ZERO
+      estimatedAggregate._sum.estimatedCost ?? ZERO,
     );
     const actualTotal = new Prisma.Decimal(actualAggregate._sum.amount ?? ZERO);
     const remaining = targetAmount.minus(estimatedTotal);
@@ -51,14 +51,18 @@ export class BudgetService {
       remaining: remaining.toFixed(2),
       currency:
         budget?.currency.isoCode ?? trip.defaultCurrency?.isoCode ?? null,
-      status: this.computeBudgetStatus(targetAmount, estimatedTotal, budget !== null),
+      status: this.computeBudgetStatus(
+        targetAmount,
+        estimatedTotal,
+        budget !== null,
+      ),
     };
   }
 
   async upsertBudget(
     tripId: string,
     data: UpdateBudgetRequest,
-    userId: string
+    userId: string,
   ): Promise<BudgetDto> {
     await this.assertTripOwnership(tripId, userId);
 
@@ -67,7 +71,7 @@ export class BudgetService {
       select: { id: true },
     });
     if (!currency) {
-      throw new NotFoundError('Currency not found');
+      throw new NotFoundError("Currency not found");
     }
 
     await prisma.tripBudget.upsert({
@@ -86,34 +90,38 @@ export class BudgetService {
     return this.getBudget(tripId, userId);
   }
 
-  async getBudgetSummary(tripId: string, userId: string): Promise<BudgetSummaryDto> {
+  async getBudgetSummary(
+    tripId: string,
+    userId: string,
+  ): Promise<BudgetSummaryDto> {
     await this.assertTripOwnership(tripId, userId);
 
-    const [days, estimateByDay, actualByDate, actualByCategory] = await Promise.all([
-      prisma.tripDay.findMany({
-        where: { tripId },
-        orderBy: { dayNumber: 'asc' },
-        select: { id: true, serviceDate: true },
-      }),
-      prisma.itineraryItem.groupBy({
-        by: ['tripDayId'],
-        where: { tripDay: { tripId }, estimatedCost: { not: null } },
-        _sum: { estimatedCost: true },
-      }),
-      prisma.expense.groupBy({
-        by: ['expenseDate'],
-        where: { tripId, isEstimate: false },
-        _sum: { amount: true },
-      }),
-      prisma.expense.groupBy({
-        by: ['expenseCategoryId'],
-        where: { tripId, isEstimate: false },
-        _sum: { amount: true },
-      }),
-    ]);
+    const [days, estimateByDay, actualByDate, actualByCategory] =
+      await Promise.all([
+        prisma.tripDay.findMany({
+          where: { tripId },
+          orderBy: { dayNumber: "asc" },
+          select: { id: true, serviceDate: true },
+        }),
+        prisma.itineraryItem.groupBy({
+          by: ["tripDayId"],
+          where: { tripDay: { tripId }, estimatedCost: { not: null } },
+          _sum: { estimatedCost: true },
+        }),
+        prisma.expense.groupBy({
+          by: ["expenseDate"],
+          where: { tripId, isEstimate: false },
+          _sum: { amount: true },
+        }),
+        prisma.expense.groupBy({
+          by: ["expenseCategoryId"],
+          where: { tripId, isEstimate: false },
+          _sum: { amount: true },
+        }),
+      ]);
 
     const dayIdToDate = new Map(
-      days.map((day) => [day.id, day.serviceDate.toISOString().slice(0, 10)])
+      days.map((day) => [day.id, day.serviceDate.toISOString().slice(0, 10)]),
     );
     const dateSet = new Set(dayIdToDate.values());
 
@@ -130,7 +138,10 @@ export class BudgetService {
       const key = row.expenseDate.toISOString().slice(0, 10);
       if (!dateSet.has(key)) continue;
       const sum = actualPerDay.get(key) ?? ZERO;
-      actualPerDay.set(key, sum.plus(new Prisma.Decimal(row._sum.amount ?? ZERO)));
+      actualPerDay.set(
+        key,
+        sum.plus(new Prisma.Decimal(row._sum.amount ?? ZERO)),
+      );
     }
 
     const categoryIds = actualByCategory.map((row) => row.expenseCategoryId);
@@ -138,7 +149,9 @@ export class BudgetService {
       where: { id: { in: categoryIds } },
       select: { id: true, displayName: true },
     });
-    const categoryNameById = new Map(categories.map((c) => [c.id, c.displayName]));
+    const categoryNameById = new Map(
+      categories.map((c) => [c.id, c.displayName]),
+    );
 
     return {
       byDay: days.map((day) => {
@@ -152,7 +165,7 @@ export class BudgetService {
         };
       }),
       byCategory: actualByCategory.map((row) => ({
-        category: categoryNameById.get(row.expenseCategoryId) ?? 'Unknown',
+        category: categoryNameById.get(row.expenseCategoryId) ?? "Unknown",
         amount: new Prisma.Decimal(row._sum.amount ?? ZERO).toFixed(2),
       })),
     };
@@ -161,7 +174,7 @@ export class BudgetService {
   async addExpense(
     tripId: string,
     data: AddExpenseRequest,
-    userId: string
+    userId: string,
   ): Promise<ExpenseDto> {
     await this.assertTripOwnership(tripId, userId);
 
@@ -175,8 +188,8 @@ export class BudgetService {
         select: { id: true },
       }),
     ]);
-    if (!category) throw new NotFoundError('Expense category not found');
-    if (!currency) throw new NotFoundError('Currency not found');
+    if (!category) throw new NotFoundError("Expense category not found");
+    if (!currency) throw new NotFoundError("Currency not found");
 
     if (data.itineraryItemId) {
       await this.assertItineraryItemInTrip(data.itineraryItemId, tripId);
@@ -206,7 +219,7 @@ export class BudgetService {
     tripId: string,
     expenseId: string,
     data: UpdateExpenseRequest,
-    userId: string
+    userId: string,
   ): Promise<ExpenseDto> {
     await this.assertTripOwnership(tripId, userId);
 
@@ -215,7 +228,7 @@ export class BudgetService {
       select: { id: true },
     });
     if (!existing) {
-      throw new NotFoundError('Expense not found for this trip');
+      throw new NotFoundError("Expense not found for this trip");
     }
 
     if (data.expenseCategoryId) {
@@ -223,14 +236,14 @@ export class BudgetService {
         where: { id: data.expenseCategoryId },
         select: { id: true },
       });
-      if (!category) throw new NotFoundError('Expense category not found');
+      if (!category) throw new NotFoundError("Expense category not found");
     }
     if (data.currencyId) {
       const currency = await prisma.currency.findUnique({
         where: { id: data.currencyId },
         select: { id: true },
       });
-      if (!currency) throw new NotFoundError('Currency not found');
+      if (!currency) throw new NotFoundError("Currency not found");
     }
     if (data.itineraryItemId) {
       await this.assertItineraryItemInTrip(data.itineraryItemId, tripId);
@@ -240,7 +253,10 @@ export class BudgetService {
       where: { id: expenseId },
       data: {
         expenseCategoryId: data.expenseCategoryId,
-        amount: data.amount !== undefined ? new Prisma.Decimal(data.amount) : undefined,
+        amount:
+          data.amount !== undefined
+            ? new Prisma.Decimal(data.amount)
+            : undefined,
         currencyId: data.currencyId,
         expenseDate:
           data.expenseDate !== undefined
@@ -259,7 +275,11 @@ export class BudgetService {
     return toExpenseDto(updated);
   }
 
-  async deleteExpense(tripId: string, expenseId: string, userId: string): Promise<void> {
+  async deleteExpense(
+    tripId: string,
+    expenseId: string,
+    userId: string,
+  ): Promise<void> {
     await this.assertTripOwnership(tripId, userId);
 
     const existing = await prisma.expense.findFirst({
@@ -267,7 +287,7 @@ export class BudgetService {
       select: { id: true },
     });
     if (!existing) {
-      throw new NotFoundError('Expense not found for this trip');
+      throw new NotFoundError("Expense not found for this trip");
     }
 
     await prisma.expense.delete({ where: { id: expenseId } });
@@ -276,40 +296,47 @@ export class BudgetService {
   private computeBudgetStatus(
     targetAmount: Prisma.Decimal,
     estimatedTotal: Prisma.Decimal,
-    hasBudget: boolean
+    hasBudget: boolean,
   ): BudgetStatus {
     if (!hasBudget || targetAmount.isZero()) {
-      return 'on_track';
+      return "on_track";
     }
     if (estimatedTotal.gt(targetAmount)) {
-      return 'over_budget';
+      return "over_budget";
     }
     if (estimatedTotal.gt(targetAmount.mul(0.9))) {
-      return 'at_risk';
+      return "at_risk";
     }
-    return 'on_track';
+    return "on_track";
   }
 
-  private async assertItineraryItemInTrip(itemId: string, tripId: string): Promise<void> {
+  private async assertItineraryItemInTrip(
+    itemId: string,
+    tripId: string,
+  ): Promise<void> {
     const item = await prisma.itineraryItem.findFirst({
       where: { id: itemId, tripDay: { tripId } },
       select: { id: true },
     });
     if (!item) {
-      throw new NotFoundError('Itinerary item not found for this trip');
+      throw new NotFoundError("Itinerary item not found for this trip");
     }
   }
 
   private async assertTripOwnership(tripId: string, userId: string) {
     const trip = await prisma.trip.findUnique({
       where: { id: tripId },
-      select: { id: true, ownerUserId: true, defaultCurrency: { select: { isoCode: true } } },
+      select: {
+        id: true,
+        ownerUserId: true,
+        defaultCurrency: { select: { isoCode: true } },
+      },
     });
     if (!trip) {
-      throw new NotFoundError('Trip not found');
+      throw new NotFoundError("Trip not found");
     }
     if (trip.ownerUserId !== userId) {
-      throw new ForbiddenError('You do not have access to this trip');
+      throw new ForbiddenError("You do not have access to this trip");
     }
     return trip;
   }

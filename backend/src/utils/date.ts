@@ -1,7 +1,7 @@
 const DATE_STRING_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 export function isDateString(value: unknown): value is string {
-  return typeof value === 'string' && DATE_STRING_REGEX.test(value);
+  return typeof value === "string" && DATE_STRING_REGEX.test(value);
 }
 
 export function isValidDateString(value: string): boolean {

@@ -1,1 +1,1 @@
-export { default as prisma } from '../lib/prisma';
+export { default as prisma } from "../lib/prisma";

@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { searchLocations, getLocationById } from './locations.service';
+import type { NextFunction, Request, Response } from "express";
+import { getLocationById, searchLocations } from "./locations.service";
 
 /**
  * GET /locations/search
@@ -7,7 +7,7 @@ import { searchLocations, getLocationById } from './locations.service';
 export async function searchLocationsController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const result = await searchLocations(req.query as any);
@@ -23,7 +23,7 @@ export async function searchLocationsController(
 export async function getLocationByIdController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const location = await getLocationById(req.params.id as string);

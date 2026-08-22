@@ -1,19 +1,21 @@
-import { authRepository } from './auth.repository';
-import { hashPassword, verifyPassword } from '../../lib/password';
+import { getEnv } from "../../config/env";
 import {
-  signAccessToken,
-  generateRefreshToken,
-  hashRefreshToken,
-  verifyAccessToken,
-} from '../../lib/jwt';
-import {
-  ValidationError,
   AuthInvalidError,
   ConflictError,
   NotFoundError,
-} from '../../errors/AppError';
-import { RegisterRequest, LoginRequest, AuthResponse } from './auth.schema';
-import { getEnv } from '../../config/env';
+} from "../../errors/AppError";
+import {
+  generateRefreshToken,
+  hashRefreshToken,
+  signAccessToken,
+} from "../../lib/jwt";
+import { hashPassword, verifyPassword } from "../../lib/password";
+import { authRepository } from "./auth.repository";
+import type {
+  AuthResponse,
+  LoginRequest,
+  RegisterRequest,
+} from "./auth.schema";
 
 const env = getEnv();
 
@@ -43,11 +45,15 @@ export interface AuthTokens {
 }
 
 export class AuthService {
-  async register(data: RegisterRequest, ipAddress?: string, userAgent?: string): Promise<AuthTokens> {
+  async register(
+    data: RegisterRequest,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<AuthTokens> {
     // Check if user already exists
     const existingUser = await authRepository.findUserByEmail(data.email);
     if (existingUser) {
-      throw new ConflictError('Email already registered', undefined);
+      throw new ConflictError("Email already registered", undefined);
     }
 
     // Hash password
@@ -57,7 +63,7 @@ export class AuthService {
     const user = await authRepository.createUser(
       data.email,
       passwordHash,
-      data.displayName
+      data.displayName,
     );
 
     // Generate tokens
@@ -78,7 +84,7 @@ export class AuthService {
       refreshTokenHash,
       expiresAt,
       ipAddress,
-      userAgent
+      userAgent,
     );
 
     return {
@@ -93,17 +99,21 @@ export class AuthService {
     };
   }
 
-  async login(data: LoginRequest, ipAddress?: string, userAgent?: string): Promise<AuthTokens> {
+  async login(
+    data: LoginRequest,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<AuthTokens> {
     // Find user
     const user = await authRepository.findUserByEmail(data.email);
-    if (!user || !user.passwordHash) {
-      throw new AuthInvalidError('Invalid email or password', undefined);
+    if (!user?.passwordHash) {
+      throw new AuthInvalidError("Invalid email or password", undefined);
     }
 
     // Verify password
     const isValid = await verifyPassword(data.password, user.passwordHash);
     if (!isValid) {
-      throw new AuthInvalidError('Invalid email or password', undefined);
+      throw new AuthInvalidError("Invalid email or password", undefined);
     }
 
     // Update last login
@@ -127,7 +137,7 @@ export class AuthService {
       refreshTokenHash,
       expiresAt,
       ipAddress,
-      userAgent
+      userAgent,
     );
 
     return {
@@ -151,19 +161,24 @@ export class AuthService {
     }
   }
 
-  async refresh(refreshToken: string, ipAddress?: string, userAgent?: string): Promise<AuthTokens> {
+  async refresh(
+    refreshToken: string,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<AuthTokens> {
     const refreshTokenHash = hashRefreshToken(refreshToken);
 
     // Find session
-    const session = await authRepository.findSessionByTokenHash(refreshTokenHash);
+    const session =
+      await authRepository.findSessionByTokenHash(refreshTokenHash);
     if (!session || session.expiresAt < new Date()) {
-      throw new AuthInvalidError('Invalid or expired refresh token', undefined);
+      throw new AuthInvalidError("Invalid or expired refresh token", undefined);
     }
 
     // Find user
     const user = await authRepository.findUserById(session.userId);
     if (!user) {
-      throw new NotFoundError('User not found', undefined);
+      throw new NotFoundError("User not found", undefined);
     }
 
     // Generate new access token
@@ -186,7 +201,7 @@ export class AuthService {
       newRefreshTokenHash,
       expiresAt,
       ipAddress,
-      userAgent
+      userAgent,
     );
 
     return {
@@ -204,7 +219,7 @@ export class AuthService {
   async me(userId: string): Promise<AuthResponse> {
     const user = await authRepository.findUserById(userId);
     if (!user) {
-      throw new NotFoundError('User not found', undefined);
+      throw new NotFoundError("User not found", undefined);
     }
 
     return {

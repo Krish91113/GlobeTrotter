@@ -1,21 +1,27 @@
-import { Prisma } from '../../../generated/prisma/client';
-import { createError, AppError } from '../../lib/errors';
-import prisma from '../../lib/prisma';
-import { getOwnedTripOrThrow } from '../trips/trips.service';
-import { dateRange, formatDate, parseDate } from '../../utils/date';
-import { toStopDto, type StopDto } from '../trips/trips.dto';
+import { Prisma } from "../../../generated/prisma/client";
+import { AppError, createError } from "../../lib/errors";
+import prisma from "../../lib/prisma";
+import { dateRange, formatDate, parseDate } from "../../utils/date";
+import { getOwnedTripOrThrow } from "../trips/trips.service";
+import { type StopDto, toStopDto } from "./stops.dto";
 import type {
   AddStopInput,
   ReorderStopsInput,
   UpdateStopInput,
-} from './stops.schema';
+} from "./stops.schema";
 
 function mapStopWriteError(error: unknown): never {
   if (error instanceof AppError) {
     throw error;
   }
-  if (error instanceof Prisma.PrismaClientKnownRequestError && error.code === 'P2025') {
-    throw createError('TRIP_DATE_INVALID', 'One or more trip days are missing for this stop range');
+  if (
+    error instanceof Prisma.PrismaClientKnownRequestError &&
+    error.code === "P2025"
+  ) {
+    throw createError(
+      "TRIP_DATE_INVALID",
+      "One or more trip days are missing for this stop range",
+    );
   }
   throw error;
 }
@@ -25,12 +31,15 @@ async function getStopOrThrow(tripId: string, stopId: string) {
     where: { id: stopId, tripId },
     include: {
       location: {
-        select: { name: true, country: { select: { iso2Code: true, displayName: true } } },
+        select: {
+          name: true,
+          country: { select: { iso2Code: true, displayName: true } },
+        },
       },
     },
   });
   if (!stop) {
-    throw createError('NOT_FOUND', 'Stop not found');
+    throw createError("NOT_FOUND", "Stop not found");
   }
   return stop;
 }
@@ -39,7 +48,7 @@ function assertDatesWithinTrip(
   tripStart: Date,
   tripEnd: Date,
   arrivalDate: string,
-  departureDate: string
+  departureDate: string,
 ): void {
   const tripStartStr = formatDate(tripStart);
   const tripEndStr = formatDate(tripEnd);
@@ -50,8 +59,8 @@ function assertDatesWithinTrip(
     arrivalDate > departureDate
   ) {
     throw createError(
-      'TRIP_DATE_INVALID',
-      `Stop dates must fall within the trip range ${tripStartStr} to ${tripEndStr}`
+      "TRIP_DATE_INVALID",
+      `Stop dates must fall within the trip range ${tripStartStr} to ${tripEndStr}`,
     );
   }
 }
@@ -59,14 +68,21 @@ function assertDatesWithinTrip(
 export async function addStop(
   tripId: string,
   userId: string,
-  input: AddStopInput
+  input: AddStopInput,
 ): Promise<StopDto> {
   const trip = await getOwnedTripOrThrow(tripId, userId);
-  assertDatesWithinTrip(trip.startDate, trip.endDate, input.arrivalDate, input.departureDate);
+  assertDatesWithinTrip(
+    trip.startDate,
+    trip.endDate,
+    input.arrivalDate,
+    input.departureDate,
+  );
 
-  const location = await prisma.location.findUnique({ where: { id: input.locationId } });
+  const location = await prisma.location.findUnique({
+    where: { id: input.locationId },
+  });
   if (!location) {
-    throw createError('NOT_FOUND', 'Location not found');
+    throw createError("NOT_FOUND", "Location not found");
   }
 
   let stopId: string;
@@ -116,21 +132,29 @@ export async function updateStop(
   tripId: string,
   stopId: string,
   userId: string,
-  input: UpdateStopInput
+  input: UpdateStopInput,
 ): Promise<StopDto> {
   const trip = await getOwnedTripOrThrow(tripId, userId);
   const existing = await getStopOrThrow(tripId, stopId);
 
-  const arrivalDate = input.arrivalDate ?? formatDate(existing.arrivalDate ?? trip.startDate);
+  const arrivalDate =
+    input.arrivalDate ?? formatDate(existing.arrivalDate ?? trip.startDate);
   const departureDate =
     input.departureDate ?? formatDate(existing.departureDate ?? trip.startDate);
-  assertDatesWithinTrip(trip.startDate, trip.endDate, arrivalDate, departureDate);
+  assertDatesWithinTrip(
+    trip.startDate,
+    trip.endDate,
+    arrivalDate,
+    departureDate,
+  );
 
   let relocatingTo: string | undefined;
   if (input.locationId && input.locationId !== existing.locationId) {
-    const location = await prisma.location.findUnique({ where: { id: input.locationId } });
+    const location = await prisma.location.findUnique({
+      where: { id: input.locationId },
+    });
     if (!location) {
-      throw createError('NOT_FOUND', 'Location not found');
+      throw createError("NOT_FOUND", "Location not found");
     }
     relocatingTo = input.locationId;
   }
@@ -181,7 +205,7 @@ export async function updateStop(
 export async function removeStop(
   tripId: string,
   stopId: string,
-  userId: string
+  userId: string,
 ): Promise<void> {
   await getOwnedTripOrThrow(tripId, userId);
   await getStopOrThrow(tripId, stopId);
@@ -198,7 +222,7 @@ export async function removeStop(
 export async function reorderStops(
   tripId: string,
   userId: string,
-  input: ReorderStopsInput
+  input: ReorderStopsInput,
 ): Promise<StopDto[]> {
   await getOwnedTripOrThrow(tripId, userId);
 
@@ -207,7 +231,10 @@ export async function reorderStops(
     where: { tripId, id: { in: stopIds } },
   });
   if (ownedCount !== stopIds.length) {
-    throw createError('NOT_FOUND', 'One or more stops do not belong to this trip');
+    throw createError(
+      "NOT_FOUND",
+      "One or more stops do not belong to this trip",
+    );
   }
 
   try {
@@ -219,16 +246,16 @@ export async function reorderStops(
           tx.tripStop.update({
             where: { id: s.stopId },
             data: { sequenceNo: -(index + 1) },
-          })
-        )
+          }),
+        ),
       );
       await Promise.all(
         input.stops.map((s) =>
           tx.tripStop.update({
             where: { id: s.stopId },
             data: { sequenceNo: s.sequenceNo },
-          })
-        )
+          }),
+        ),
       );
       await tx.trip.update({
         where: { id: tripId },
@@ -243,10 +270,13 @@ export async function reorderStops(
     where: { tripId },
     include: {
       location: {
-        select: { name: true, country: { select: { iso2Code: true, displayName: true } } },
+        select: {
+          name: true,
+          country: { select: { iso2Code: true, displayName: true } },
+        },
       },
     },
-    orderBy: { sequenceNo: 'asc' },
+    orderBy: { sequenceNo: "asc" },
   });
   return stops.map(toStopDto);
 }

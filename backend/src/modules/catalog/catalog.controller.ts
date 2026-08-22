@@ -1,5 +1,5 @@
-import { Request, Response, NextFunction } from 'express';
-import { searchCatalogItems, getCatalogItemById } from './catalog.service';
+import type { NextFunction, Request, Response } from "express";
+import { getCatalogItemById, searchCatalogItems } from "./catalog.service";
 
 /**
  * GET /catalog/items
@@ -7,7 +7,7 @@ import { searchCatalogItems, getCatalogItemById } from './catalog.service';
 export async function searchCatalogItemsController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const result = await searchCatalogItems(req.query as any);
@@ -23,7 +23,7 @@ export async function searchCatalogItemsController(
 export async function getCatalogItemByIdController(
   req: Request,
   res: Response,
-  next: NextFunction
+  next: NextFunction,
 ): Promise<void> {
   try {
     const item = await getCatalogItemById(req.params.id as string);
