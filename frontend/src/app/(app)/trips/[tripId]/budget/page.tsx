@@ -150,26 +150,39 @@ export default function BudgetPage() {
                   <th className="px-4 py-3 text-left font-semibold text-[#64748B]">Category</th>
                   <th className="px-4 py-3 text-left font-semibold text-[#64748B]">Description</th>
                   <th className="px-4 py-3 text-right font-semibold text-[#64748B]">Amount</th>
+                  <th className="px-4 py-3 text-right font-semibold text-[#64748B]">Split</th>
                   <th className="px-4 py-3 w-10"></th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-[#E2E8F0]">
-                {expenses.map((exp) => (
-                  <tr key={exp.id} className="hover:bg-[#F8FAFC]">
-                    <td className="px-4 py-3 text-[#0F172A]">{exp.date}</td>
-                    <td className="px-4 py-3"><span className="rounded-full bg-[#F1F5F9] px-2.5 py-0.5 text-xs font-semibold text-[#334155]">{exp.category}</span></td>
-                    <td className="px-4 py-3 text-[#0F172A]">{exp.description}</td>
-                    <td className="px-4 py-3 text-right font-semibold text-[#0F172A]">€{exp.amount}</td>
-                    <td className="px-4 py-3">
-                      <button
-                        onClick={() => deleteExpense.mutate(exp.id)}
-                        className="rounded-full p-1 text-[#94A3B8] hover:text-[#DC2626]"
-                      >
-                        <Trash2 className="size-4" />
-                      </button>
-                    </td>
-                  </tr>
-                ))}
+                {expenses.map((exp) => {
+                  const perPersonAmount = exp.splitCount > 1 ? (Number(exp.amount) / exp.splitCount).toFixed(2) : exp.amount;
+                  return (
+                    <tr key={exp.id} className="hover:bg-[#F8FAFC]">
+                      <td className="px-4 py-3 text-[#0F172A]">{exp.date}</td>
+                      <td className="px-4 py-3"><span className="rounded-full bg-[#F1F5F9] px-2.5 py-0.5 text-xs font-semibold text-[#334155]">{exp.category}</span></td>
+                      <td className="px-4 py-3 text-[#0F172A]">{exp.description}</td>
+                      <td className="px-4 py-3 text-right font-semibold text-[#0F172A]">€{exp.amount}</td>
+                      <td className="px-4 py-3 text-right">
+                        {exp.splitCount > 1 ? (
+                          <span className="inline-block rounded-full bg-[#E0F2FE] px-2.5 py-0.5 text-xs font-semibold text-[#0369A1]">
+                            {exp.splitCount} × €{perPersonAmount}
+                          </span>
+                        ) : (
+                          <span className="text-[#94A3B8] text-xs">—</span>
+                        )}
+                      </td>
+                      <td className="px-4 py-3">
+                        <button
+                          onClick={() => deleteExpense.mutate(exp.id)}
+                          className="rounded-full p-1 text-[#94A3B8] hover:text-[#DC2626]"
+                        >
+                          <Trash2 className="size-4" />
+                        </button>
+                      </td>
+                    </tr>
+                  );
+                })}
               </tbody>
             </table>
           </div>
@@ -186,16 +199,24 @@ export default function BudgetPage() {
 
 function ExpenseForm({ tripId, onClose }: { tripId: string; onClose: () => void }) {
   const addExpense = useAddExpense(tripId);
-  const [form, setForm] = useState({ category: "Food", description: "", amount: "", date: "" });
+  const [form, setForm] = useState({ category: "Food", description: "", amount: "", date: "", splitCount: 1 });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!form.description || !form.amount || !form.date) return;
     addExpense.mutate(
-      { category: form.category, description: form.description, amount: Number(form.amount), date: form.date },
-      { onSuccess: () => { setForm({ category: "Food", description: "", amount: "", date: "" }); onClose(); } }
+      {
+        category: form.category,
+        description: form.description,
+        amount: Number(form.amount),
+        date: form.date,
+        splitCount: form.splitCount,
+      },
+      { onSuccess: () => { setForm({ category: "Food", description: "", amount: "", date: "", splitCount: 1 }); onClose(); } }
     );
   };
+
+  const perPersonAmount = form.amount ? (Number(form.amount) / form.splitCount).toFixed(2) : "0.00";
 
   return (
     <form onSubmit={handleSubmit} className="mb-6 rounded-2xl border border-[#E2E8F0] p-5 space-y-4">
@@ -215,10 +236,23 @@ function ExpenseForm({ tripId, onClose }: { tripId: string; onClose: () => void 
         <label className="mb-1 block text-sm font-medium">Description</label>
         <input value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="What was this for?" className="h-10 w-full rounded-lg border border-[#E2E8F0] px-3 text-sm" />
       </div>
-      <div>
-        <label className="mb-1 block text-sm font-medium">Amount (€)</label>
-        <input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" className="h-10 w-full rounded-lg border border-[#E2E8F0] px-3 text-sm" />
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <label className="mb-1 block text-sm font-medium">Amount (€)</label>
+          <input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" className="h-10 w-full rounded-lg border border-[#E2E8F0] px-3 text-sm" />
+        </div>
+        <div>
+          <label className="mb-1 block text-sm font-medium">Split between # of people</label>
+          <input type="number" min="1" value={form.splitCount} onChange={(e) => setForm({ ...form, splitCount: Math.max(1, Number(e.target.value)) })} className="h-10 w-full rounded-lg border border-[#E2E8F0] px-3 text-sm" />
+        </div>
       </div>
+      {form.splitCount > 1 && form.amount && (
+        <div className="rounded-lg bg-[#E0F2FE] p-3">
+          <p className="text-sm text-[#0369A1]">
+            <span className="font-semibold">Per person:</span> €{perPersonAmount} ({form.splitCount} × €{perPersonAmount})
+          </p>
+        </div>
+      )}
       <div className="flex gap-3">
         <button type="submit" disabled={addExpense.isPending} className="rounded-full bg-primary px-5 py-2 text-sm font-semibold text-white">
           {addExpense.isPending ? "Adding..." : "Add"}

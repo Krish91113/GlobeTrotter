@@ -48,6 +48,8 @@ export const updateExpenseSchema = z.object({
     .uuid("Invalid itinerary item id")
     .nullable()
     .optional(),
+  splitCount: z.number().int().min(1).optional(),
+  splitParticipants: z.string().nullable().optional(),
 });
 
 export type UpdateExpenseRequest = z.infer<typeof updateExpenseSchema>;

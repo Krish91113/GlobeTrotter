@@ -710,6 +710,8 @@ model Expense {
   description       String?
   isEstimate        Boolean  @default(true)
   sourceType        String?
+  splitCount        Int      @default(1)
+  splitParticipants String?
   createdAt         DateTime @default(now())
   updatedAt         DateTime @updatedAt
 
