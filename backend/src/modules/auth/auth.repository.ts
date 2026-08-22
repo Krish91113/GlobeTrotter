@@ -1,5 +1,5 @@
 import { prisma } from '../../database/prisma';
-import type { User, Session } from '../../generated/prisma/client';
+import type { User, Session } from '../../../generated/prisma/client';
 
 export class AuthRepository {
   async createUser(

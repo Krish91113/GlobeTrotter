@@ -8,6 +8,7 @@ import { errorHandler } from './middleware/errorHandler';
 import { notFoundHandler } from './middleware/notFoundHandler';
 import healthRoutes from './modules/health/health.routes';
 import authRoutes from './modules/auth/auth.routes';
+import itineraryRoutes from './modules/itinerary/itinerary.routes';
 
 const env = getEnv();
 const app = express();
@@ -32,6 +33,8 @@ app.use(requestIdMiddleware);
 // Routes
 app.use('/health', healthRoutes);
 app.use('/api/v1/auth', authRoutes);
+// Itinerary items are scoped to a trip: /api/v1/trips/:tripId/days/:dayId/items
+app.use('/api/v1/trips/:tripId', itineraryRoutes);
 
 // 404 handler
 app.use(notFoundHandler);
