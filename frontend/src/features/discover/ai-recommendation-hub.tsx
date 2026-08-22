@@ -21,6 +21,7 @@ import { useRecommendationOptions, useRecommendations } from "@/hooks/queries";
 import { cn } from "@/lib/utils";
 import { recommendationsService } from "@/services/recommendations.service";
 import type { Recommendation, RecommendationFilters } from "@/types";
+import { useRegionalCurrency } from "@/features/preferences/currency-provider";
 import { AddToTripDialog } from "./add-to-trip-dialog";
 
 interface AiRecommendationHubProps {
@@ -50,6 +51,7 @@ export function AiRecommendationHub({
   className,
 }: AiRecommendationHubProps) {
   const { data: options } = useRecommendationOptions();
+  const { symbol } = useRegionalCurrency();
 
   const [selectedCity, setSelectedCity] = useState<string>(
     initialCity || "Rome",
@@ -212,7 +214,7 @@ export function AiRecommendationHub({
                     Max Activity Budget
                   </span>
                   <span className="text-sm font-bold text-foreground">
-                    €{budget}
+                    {symbol}{budget}
                   </span>
                 </div>
                 <input
@@ -225,9 +227,9 @@ export function AiRecommendationHub({
                   className="h-2 w-full cursor-pointer appearance-none rounded-lg bg-secondary accent-primary"
                 />
                 <div className="flex justify-between text-[10px] text-muted-foreground">
-                  <span>Free (€0)</span>
-                  <span>Moderate (€80)</span>
-                  <span>Luxury (€250+)</span>
+                  <span>Free ({symbol}0)</span>
+                  <span>Moderate ({symbol}80)</span>
+                  <span>Luxury ({symbol}250+)</span>
                 </div>
               </div>
 
@@ -450,7 +452,7 @@ export function AiRecommendationHub({
                         </span>
                         <span>•</span>
                         <span className="font-semibold text-foreground">
-                          €{rec.estimatedCost}
+                          {symbol}{rec.estimatedCost}
                         </span>
                         <span>•</span>
                         <span className="flex items-center gap-1">

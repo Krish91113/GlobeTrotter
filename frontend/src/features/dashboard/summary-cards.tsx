@@ -2,6 +2,7 @@
 
 import { CalendarDays, Map, MapPin, Wallet } from "lucide-react";
 import { formatDate, formatMoney, StatCard } from "@/components/shared";
+import { useRegionalCurrency } from "@/features/preferences/currency-provider";
 import type { DashboardData } from "@/types";
 
 interface SummaryCardsProps {
@@ -10,6 +11,7 @@ interface SummaryCardsProps {
 }
 
 export function SummaryCards({ stats, upcomingTrip }: SummaryCardsProps) {
+  const { currency } = useRegionalCurrency();
   return (
     <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
       <StatCard
@@ -27,7 +29,7 @@ export function SummaryCards({ stats, upcomingTrip }: SummaryCardsProps) {
       />
       <StatCard
         label="Remaining budget"
-        value={formatMoney(stats.totalRemainingBudget, stats.currency)}
+        value={formatMoney(stats.totalRemainingBudget, currency)}
         icon={Wallet}
         href={upcomingTrip ? `/trips/${upcomingTrip.id}/budget` : "/trips"}
         tone="success"

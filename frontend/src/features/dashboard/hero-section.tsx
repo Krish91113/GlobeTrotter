@@ -4,22 +4,39 @@ import { motion } from "framer-motion";
 import { Plus, Search } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 interface HeroSectionProps {
   userName?: string;
 }
 
-function greeting(): string {
-  const hour = new Date().getHours();
-  if (hour < 12) return "Good morning";
-  if (hour < 18) return "Good afternoon";
-  return "Good evening";
+/**
+ * The greeting depends on the user's clock, which is unknown during SSR.
+ * Render a stable placeholder on the server and update after hydration.
+ */
+function useTimeBasedGreeting(): string {
+  const [greeting, setGreeting] = useState("Welcome back");
+
+  useEffect(() => {
+    const update = () => {
+      const hour = new Date().getHours();
+      if (hour < 12) setGreeting("Good morning");
+      else if (hour < 18) setGreeting("Good afternoon");
+      else setGreeting("Good evening");
+    };
+    update();
+    // Keep it accurate if the tab stays open across a time-of-day boundary.
+    const interval = setInterval(update, 60 * 1000);
+    return () => clearInterval(interval);
+  }, []);
+
+  return greeting;
 }
 
 export function HeroSection({ userName }: HeroSectionProps) {
   const router = useRouter();
   const [term, setTerm] = useState("");
+  const greeting = useTimeBasedGreeting();
 
   function submit() {
     const q = term.trim();
@@ -43,7 +60,7 @@ export function HeroSection({ userName }: HeroSectionProps) {
 
       <div className="relative flex h-full flex-col items-center justify-center px-5 text-center text-white">
         <h1 className="max-w-2xl text-3xl font-bold sm:text-5xl">
-          {greeting()}, {userName?.split(" ")[0] || "Traveler"}
+          {greeting}, {userName?.split(" ")[0] || "Traveler"}
         </h1>
         <p className="mt-3 max-w-xl text-sm opacity-90 sm:text-base">
           Where to next? Pick up a plan, or start a brand new adventure.
