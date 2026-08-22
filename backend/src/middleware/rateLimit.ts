@@ -37,3 +37,4 @@ export function createRateLimiter(maxAttempts: number, windowMs: number) {
 // Specific limiters
 export const loginLimiter = createRateLimiter(10, 15 * 60 * 1000); // 10 attempts per 15 minutes
 export const registerLimiter = createRateLimiter(5, 60 * 60 * 1000); // 5 attempts per hour
+export const publicLimiter = createRateLimiter(60, 60 * 1000); // 60 requests per minute

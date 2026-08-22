@@ -10,7 +10,10 @@ const envSchema = z.object({
   JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
   JWT_EXPIRES_IN: z.string().default('15m'),
   SESSION_MAX_AGE: z.string().default('7d'),
-  BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
+  SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters'),
+  CORS_ORIGIN: z.string().default('http://localhost:3001'),
+  APP_BASE_URL: z.string().url().default('http://localhost:3001'),
+  BCRYPT_ROUNDS: z.string().default('12').pipe(z.coerce.number()),
 });
 
 type Env = z.infer<typeof envSchema>;
