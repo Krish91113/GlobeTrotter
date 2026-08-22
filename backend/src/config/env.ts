@@ -1,36 +1,34 @@
 import { z } from 'zod';
 
 const envSchema = z.object({
-  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
-  PORT: z.string().default('3000').pipe(z.coerce.number()),
   DATABASE_URL: z.string().url(),
-  LOG_LEVEL: z.enum(['debug', 'info', 'warn', 'error']).default('info'),
-  JWT_SECRET: z.string().min(32, 'JWT_SECRET must be at least 32 characters'),
+  COOKIE_SECRET: z.string().min(32, 'COOKIE_SECRET must be at least 32 characters'),
+  PORT: z.coerce.number().int().positive().default(3001),
+  NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
+  CORS_ORIGIN: z.string().url(),
+  APP_BASE_URL: z.string().url(),
+  JWT_SECRET: z.string().min(16, 'JWT_SECRET must be at least 16 characters'),
   JWT_EXPIRES_IN: z.string().default('15m'),
   SESSION_MAX_AGE: z.string().default('7d'),
-  SESSION_SECRET: z.string().min(32, 'SESSION_SECRET must be at least 32 characters'),
-  CORS_ORIGIN: z.string().default('http://localhost:3001'),
-  BCRYPT_ROUNDS: z.string().default('12').pipe(z.coerce.number()),
+  BCRYPT_ROUNDS: z.coerce.number().int().min(4).max(15).default(12),
 });
 
 type Env = z.infer<typeof envSchema>;
 
-let cachedEnv: Env | null = null;
+function loadEnv(): Env {
+  const result = envSchema.safeParse(process.env);
+
+  if (!result.success) {
+    console.error('❌ Environment validation failed:');
+    console.error(result.error.flatten().fieldErrors);
+    process.exit(1);
+  }
+
+  return result.data;
+}
+
+export const env = loadEnv();
 
 export function getEnv(): Env {
-  if (cachedEnv) return cachedEnv;
-
-  try {
-    cachedEnv = envSchema.parse(process.env);
-    return cachedEnv;
-  } catch (error) {
-    if (error instanceof z.ZodError) {
-      const formatted = error.issues
-        .map((e) => `${e.path.join('.')}: ${e.message}`)
-        .join('\n');
-      console.error('Environment validation failed:\n', formatted);
-      process.exit(1);
-    }
-    throw error;
-  }
+  return env;
 }
