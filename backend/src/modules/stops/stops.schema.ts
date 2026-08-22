@@ -47,6 +47,7 @@ export const ReorderStopsSchema = z
   })
   .superRefine((data, ctx) => {
     const seen = new Set<number>();
+    const seenStopIds = new Set<string>();
     for (const [index, stop] of data.stops.entries()) {
       if (seen.has(stop.sequenceNo)) {
         ctx.addIssue({
@@ -56,6 +57,14 @@ export const ReorderStopsSchema = z
         });
       }
       seen.add(stop.sequenceNo);
+      if (seenStopIds.has(stop.stopId)) {
+        ctx.addIssue({
+          code: 'custom',
+          path: ['stops', index, 'stopId'],
+          message: 'Duplicate stopId values are not allowed',
+        });
+      }
+      seenStopIds.add(stop.stopId);
     }
   });
 

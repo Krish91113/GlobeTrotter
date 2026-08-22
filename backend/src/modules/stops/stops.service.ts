@@ -203,11 +203,21 @@ export async function reorderStops(
   await getOwnedTripOrThrow(tripId, userId);
 
   const stopIds = input.stops.map((s) => s.stopId);
-  const ownedCount = await prisma.tripStop.count({
+  const [ownedCount, totalCount] = await Promise.all([
+    prisma.tripStop.count({
     where: { tripId, id: { in: stopIds } },
-  });
-  if (ownedCount !== stopIds.length) {
-    throw createError('NOT_FOUND', 'One or more stops do not belong to this trip');
+    }),
+    prisma.tripStop.count({ where: { tripId } }),
+  ]);
+  const requestedSequenceNumbers = new Set(input.stops.map((stop) => stop.sequenceNo));
+  const hasCompleteSequence =
+    requestedSequenceNumbers.size === totalCount &&
+    [...requestedSequenceNumbers].every((sequenceNo) => sequenceNo >= 1 && sequenceNo <= totalCount);
+  if (ownedCount !== totalCount || stopIds.length !== totalCount || !hasCompleteSequence) {
+    throw createError(
+      'VALIDATION_ERROR',
+      'Reordering must include every trip stop exactly once with sequence numbers from 1 to the stop count'
+    );
   }
 
   try {
