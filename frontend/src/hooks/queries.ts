@@ -68,10 +68,11 @@ export function useDashboard() {
 }
 
 /* ── Trips ── */
-export function useTrips(status?: string) {
+export function useTrips(status?: string, enabled = true) {
   return useQuery({
     queryKey: queryKeys.trips.all(status),
     queryFn: () => tripsService.getTrips(status),
+    enabled,
   });
 }
 
@@ -196,10 +197,11 @@ export function useDeleteActivity(dayId: string, tripId: string) {
 }
 
 /* ── Locations ── */
-export function useLocations(filters?: LocationFilters) {
+export function useLocations(filters?: LocationFilters, enabled = true) {
   return useQuery({
     queryKey: queryKeys.locations.search(filters),
     queryFn: () => locationsService.search(filters),
+    enabled,
   });
 }
 

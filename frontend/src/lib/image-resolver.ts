@@ -1,14 +1,14 @@
-const FALLBACK_IMAGE = "/images/hero.jpg";
+import { unsplashCityImage } from "@/lib/city-images";
 
 /**
- * Resolves a city to an image stored under public/images. The API route scans
- * the real filenames, so casing, spaces and punctuation are handled and new
- * city images work without updating a hardcoded frontend map.
+ * Resolves a place name to a distinct Unsplash image. An explicit URL always
+ * wins; otherwise the curated city map (or the deterministic travel pool)
+ * provides an image, so every destination gets its own photo.
  */
-export function cityImageUrl(cityName?: string | null, explicitUrl?: string | null): string {
+export function cityImageUrl(
+  cityName?: string | null,
+  explicitUrl?: string | null,
+): string {
   if (explicitUrl) return explicitUrl;
-  const name = cityName?.trim();
-  return name ? `/api/city-image/${encodeURIComponent(name)}` : FALLBACK_IMAGE;
+  return unsplashCityImage(cityName);
 }
-
-export { FALLBACK_IMAGE };
