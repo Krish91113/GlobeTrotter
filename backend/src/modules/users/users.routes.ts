@@ -6,7 +6,7 @@ import {
   upsertPreferencesController,
 } from './users.controller';
 import { validate } from '../../middleware/validate';
-import { requireAuth } from '../../middleware/auth';
+import { requireAuth } from '../../middleware/requireAuth';
 import { UpdateProfileSchema, UpsertPreferencesSchema } from './users.schema';
 
 const router = Router();

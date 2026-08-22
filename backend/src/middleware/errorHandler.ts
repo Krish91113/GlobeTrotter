@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
-import { AppError } from '../lib/errors';
+import { AppError as ServiceAppError } from '../lib/errors';
+import { AppError as DomainAppError } from '../errors/AppError';
 import { logger } from '../lib/logger';
 
 /**
@@ -17,11 +18,13 @@ export const errorHandler = (
     return;
   }
 
-  // Handle known AppError instances
-  if (err instanceof AppError) {
+  const requestId = String(req.id ?? '');
+
+  // Handle known AppError instances thrown by services/middleware
+  if (err instanceof ServiceAppError) {
     logger.warn(
       {
-        requestId: req.id,
+        requestId,
         code: err.code,
         path: req.path,
         method: req.method,
@@ -29,16 +32,38 @@ export const errorHandler = (
       err.message
     );
 
-    const details =
-      err.details && typeof err.details === 'object' ? err.details : undefined;
-
     res.status(err.httpStatus).json({
+      success: false,
       error: {
         code: err.code,
         message: err.message,
-        requestId: String(req.id),
-        ...(details && { details }),
       },
+      requestId,
+    });
+    return;
+  }
+
+  if (err instanceof DomainAppError) {
+    logger.warn(
+      {
+        requestId,
+        code: err.code,
+        path: req.path,
+        method: req.method,
+      },
+      err.message
+    );
+
+    res.status(err.statusCode).json({
+      success: false,
+      error: {
+        code: err.code,
+        message: err.message,
+        ...(err.fieldErrors && Object.keys(err.fieldErrors).length > 0
+          ? { fieldErrors: err.fieldErrors }
+          : {}),
+      },
+      requestId: err.requestId ?? requestId,
     });
     return;
   }
@@ -46,7 +71,7 @@ export const errorHandler = (
   // Handle unknown errors
   logger.error(
     {
-      requestId: req.id,
+      requestId,
       path: req.path,
       method: req.method,
       error: {
@@ -59,10 +84,11 @@ export const errorHandler = (
   );
 
   res.status(500).json({
+    success: false,
     error: {
       code: 'INTERNAL_ERROR',
       message: 'An unexpected error occurred.',
-      requestId: String(req.id),
     },
+    requestId,
   });
 };

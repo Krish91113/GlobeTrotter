@@ -1,25 +1,54 @@
 import { Router } from 'express';
-import { itineraryController } from './itinerary.controller';
+import { z } from 'zod';
 import { requireAuth } from '../../middleware/requireAuth';
+import { validate, validateQuery, validateParams } from '../../middleware/validate';
+import {
+  CreateTripSchema,
+  ListTripsQuerySchema,
+  UpdateTripSchema,
+} from './trips.schema';
+import {
+  createTripController,
+  deleteTripController,
+  getTripController,
+  listTripsController,
+  updateTripController,
+} from './trips.controller';
 
 const router = Router();
 
-// Mounted under /api/v1/trips
+router.use(requireAuth);
 
-router.post('/:tripId/days/:dayId/items', requireAuth, (req, res, next) =>
-  itineraryController.addItem(req, res, next)
-);
+const tripIdParams = z.object({ tripId: z.string().uuid('tripId must be a valid UUID') });
 
-router.put('/:tripId/days/:dayId/items/reorder', requireAuth, (req, res, next) =>
-  itineraryController.reorderItems(req, res, next)
-);
+/**
+ * POST /api/v1/trips
+ * Create a new trip (creates Trip + optional budget + one TripDay per date)
+ */
+router.post('/', validate(CreateTripSchema), createTripController);
 
-router.patch('/:tripId/days/:dayId/items/:itemId', requireAuth, (req, res, next) =>
-  itineraryController.updateItem(req, res, next)
-);
+/**
+ * GET /api/v1/trips
+ * List the authenticated user's trips with filtering, sorting, cursor pagination
+ */
+router.get('/', validateQuery(ListTripsQuerySchema), listTripsController);
 
-router.delete('/:tripId/days/:dayId/items/:itemId', requireAuth, (req, res, next) =>
-  itineraryController.removeItem(req, res, next)
-);
+/**
+ * GET /api/v1/trips/:tripId
+ * Full trip detail including stops and days
+ */
+router.get('/:tripId', validateParams(tripIdParams), getTripController);
+
+/**
+ * PATCH /api/v1/trips/:tripId
+ * Update trip fields; regenerates days when the date range changes
+ */
+router.patch('/:tripId', validateParams(tripIdParams), validate(UpdateTripSchema), updateTripController);
+
+/**
+ * DELETE /api/v1/trips/:tripId
+ * Soft-delete: marks the trip as cancelled
+ */
+router.delete('/:tripId', validateParams(tripIdParams), deleteTripController);
 
 export default router;

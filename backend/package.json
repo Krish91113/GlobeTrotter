@@ -3,19 +3,24 @@
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
+  "type": "module",
   "scripts": {
     "dev": "tsx watch src/server.ts",
     "build": "tsc",
     "start": "node dist/server.js",
     "migrate": "prisma migrate dev",
+    "db:push": "prisma db push",
     "seed": "tsx --env-file=.env prisma/seed.ts",
     "studio": "prisma studio",
-    "test": "vitest"
+    "test": "vitest",
+    "postinstall": "prisma generate"
+  },
+  "prisma": {
+    "seed": "tsx prisma/seed.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "type": "module",
   "dependencies": {
     "@prisma/adapter-pg": "^7.9.1",
     "@prisma/client": "^7.9.1",

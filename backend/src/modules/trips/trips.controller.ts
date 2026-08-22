@@ -1,119 +1,93 @@
 import type { Request, Response, NextFunction } from 'express';
-import { z } from 'zod';
-import { itineraryService } from './itinerary.service';
 import {
-  addItemSchema,
-  updateItemSchema,
-  reorderItemsSchema,
-} from './itinerary.schema';
-import { ok } from '../../lib/apiResponse';
-import { ValidationError } from '../../errors/AppError';
+  createTrip,
+  deleteTrip,
+  getTrip,
+  listTrips,
+  updateTrip,
+} from './trips.service';
+import type { CreateTripInput, ListTripsQuery, UpdateTripInput } from './trips.schema';
 
-const uuidSchema = z.string().uuid();
-
-function buildFieldErrors(error: z.ZodError): Record<string, string[]> {
-  const fieldErrors: Record<string, string[]> = {};
-  for (const issue of error.issues) {
-    const path = issue.path.map((segment) => String(segment)).join('.');
-    if (!fieldErrors[path]) fieldErrors[path] = [];
-    fieldErrors[path].push(issue.message);
-  }
-  return fieldErrors;
-}
-
-function uuidParam(req: Request, name: string): string {
-  const value = req.params[name];
-  if (typeof value !== 'string' || !uuidSchema.safeParse(value).success) {
-    throw new ValidationError(`Invalid ${name} parameter`);
-  }
-  return value;
-}
-
-export class ItineraryController {
-  async addItem(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const parsed = addItemSchema.safeParse(req.body);
-      if (!parsed.success) {
-        throw new ValidationError(
-          'Itinerary item validation failed',
-          buildFieldErrors(parsed.error)
-        );
-      }
-
-      const { item, warning } = await itineraryService.addItem(
-        uuidParam(req, 'tripId'),
-        uuidParam(req, 'dayId'),
-        parsed.data,
-        req.user!.userId
-      );
-
-      ok(res, item, 201, warning ? { warning } : undefined);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async updateItem(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const parsed = updateItemSchema.safeParse(req.body);
-      if (!parsed.success) {
-        throw new ValidationError(
-          'Itinerary item validation failed',
-          buildFieldErrors(parsed.error)
-        );
-      }
-
-      const { item, warning } = await itineraryService.updateItem(
-        uuidParam(req, 'tripId'),
-        uuidParam(req, 'dayId'),
-        uuidParam(req, 'itemId'),
-        parsed.data,
-        req.user!.userId
-      );
-
-      ok(res, item, 200, warning ? { warning } : undefined);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async removeItem(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      await itineraryService.removeItem(
-        uuidParam(req, 'tripId'),
-        uuidParam(req, 'dayId'),
-        uuidParam(req, 'itemId'),
-        req.user!.userId
-      );
-
-      ok(res, {}, 204);
-    } catch (error) {
-      next(error);
-    }
-  }
-
-  async reorderItems(req: Request, res: Response, next: NextFunction): Promise<void> {
-    try {
-      const parsed = reorderItemsSchema.safeParse(req.body);
-      if (!parsed.success) {
-        throw new ValidationError(
-          'Reorder validation failed',
-          buildFieldErrors(parsed.error)
-        );
-      }
-
-      await itineraryService.reorderItems(
-        uuidParam(req, 'tripId'),
-        uuidParam(req, 'dayId'),
-        parsed.data,
-        req.user!.userId
-      );
-
-      ok(res, {});
-    } catch (error) {
-      next(error);
-    }
+/**
+ * POST /api/v1/trips
+ */
+export async function createTripController(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const trip = await createTrip(req.user!.id, req.body as CreateTripInput);
+    res.status(201).json({ trip });
+  } catch (error) {
+    next(error);
   }
 }
 
-export const itineraryController = new ItineraryController();
+/**
+ * GET /api/v1/trips
+ */
+export async function listTripsController(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const result = await listTrips(req.user!.id, req.query as unknown as ListTripsQuery);
+    res.status(200).json(result);
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * GET /api/v1/trips/:tripId
+ */
+export async function getTripController(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const trip = await getTrip(req.params.tripId as string, req.user!.id);
+    res.status(200).json({ trip });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * PATCH /api/v1/trips/:tripId
+ */
+export async function updateTripController(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const trip = await updateTrip(
+      req.params.tripId as string,
+      req.user!.id,
+      req.body as UpdateTripInput
+    );
+    res.status(200).json({ trip });
+  } catch (error) {
+    next(error);
+  }
+}
+
+/**
+ * DELETE /api/v1/trips/:tripId
+ */
+export async function deleteTripController(
+  req: Request,
+  res: Response,
+  next: NextFunction
+): Promise<void> {
+  try {
+    const result = await deleteTrip(req.params.tripId as string, req.user!.id);
+    res.status(200).json({ message: 'Trip cancelled successfully', ...result });
+  } catch (error) {
+    next(error);
+  }
+}
