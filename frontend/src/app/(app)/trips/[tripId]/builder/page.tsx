@@ -126,7 +126,7 @@ export default function ItineraryBuilderPage() {
                       <p className="text-sm font-semibold text-[#0F172A]">{rec.activityName}</p>
                       <div className="flex items-center gap-1 text-xs text-[#64748B]">
                         <Star className="size-3 fill-[#F59E0B] text-[#F59E0B]" />
-                        {rec.rating} • {rec.city} • €{rec.estimatedCost}
+                        {rec.rating} • {rec.city} • ₹{rec.estimatedCost}
                       </div>
                       {rec.fitsBudget && (
                         <span className="inline-block rounded-full bg-[#14B8A6]/10 px-2 py-0.5 text-xs font-semibold text-[#14B8A6]">
@@ -154,7 +154,7 @@ export default function ItineraryBuilderPage() {
                     <img src={act.image} alt={act.name} loading="lazy" className="size-12 rounded-lg object-cover" />
                     <div className="min-w-0 flex-1">
                       <p className="truncate text-sm font-semibold text-[#0F172A]">{act.name}</p>
-                      <p className="text-xs text-[#64748B]">{act.city} • €{act.estimatedCost} • {act.durationMinutes}min</p>
+                      <p className="text-xs text-[#64748B]">{act.city} • ₹{act.estimatedCost} • {act.durationMinutes}min</p>
                     </div>
                     <button onClick={() => addCatalogActivity(act.id, act.durationMinutes, act.estimatedCost)} disabled={addActivity.isPending} className="shrink-0 rounded-full p-1.5 text-[#64748B] hover:bg-[#F1F5F9] hover:text-primary disabled:opacity-50" aria-label={`Add ${act.name} to ${activeDay?.city ?? "trip"}`}>
                       <Plus className="size-4" />
@@ -219,7 +219,7 @@ function DayItinerary({ day, tripId }: { day: TripDay; tripId: string }) {
                   <div className="flex flex-wrap items-center gap-2 text-sm text-[#64748B]">
                     <span className="flex items-center gap-1"><Clock className="size-3.5" /> {item.durationMinutes}min</span>
                     <span>•</span>
-                    <span>€{item.estimatedCost}</span>
+                    <span>₹{item.estimatedCost}</span>
                     <span>•</span>
                     <span className="flex items-center gap-1"><Star className="size-3 fill-[#F59E0B] text-[#F59E0B]" /> {item.rating}</span>
                     <span>•</span>

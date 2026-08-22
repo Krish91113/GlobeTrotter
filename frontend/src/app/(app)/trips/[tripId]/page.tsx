@@ -18,7 +18,7 @@ export default function TripOverviewPage() {
     { label: "Days", value: `${trip.daysCount}` },
     { label: "Cities", value: `${trip.cities.length}` },
     { label: "Activities", value: `${trip.activitiesCount}` },
-    { label: "Remaining", value: `€${remaining.toLocaleString()}` },
+    { label: "Remaining", value: `₹${remaining.toLocaleString()}` },
   ];
 
   return (
@@ -71,7 +71,7 @@ export default function TripOverviewPage() {
                       <img src={item.image} alt={item.name} className="size-10 rounded-lg object-cover" />
                       <div>
                         <p className="text-sm font-semibold text-[#0F172A]">{item.name}</p>
-                        <p className="text-xs text-[#64748B]">{item.durationMinutes}min • €{item.estimatedCost}</p>
+                        <p className="text-xs text-[#64748B]">{item.durationMinutes}min • ₹{item.estimatedCost}</p>
                       </div>
                     </div>
                   ))}
@@ -104,7 +104,7 @@ export default function TripOverviewPage() {
                     <span className="font-semibold">{rec.rating}</span>
                     <span className="text-[#64748B]">• {rec.category} • {rec.city}</span>
                   </div>
-                  <p className="text-sm text-[#64748B]">€{rec.estimatedCost} • {rec.durationMinutes}min</p>
+                  <p className="text-sm text-[#64748B]">₹{rec.estimatedCost} • {rec.durationMinutes}min</p>
                   <p className="text-sm text-[#64748B] italic">&ldquo;{rec.reason}&rdquo;</p>
                   <button className="mt-2 flex items-center gap-1.5 rounded-full bg-primary px-4 py-2 text-sm font-semibold text-white transition-colors hover:bg-[#1D4ED8]">
                     <Plus className="size-4" /> Add to itinerary

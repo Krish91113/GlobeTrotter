@@ -1,15 +1,24 @@
 import { cn } from "@/lib/utils";
 
-export function formatMoney(amount: number, currency = "EUR"): string {
-  const safeCurrency = currency || "EUR";
+export function formatMoney(amount: number, currency = "INR"): string {
+  const normalized = currency?.trim().toUpperCase() || "INR";
+  const currencyAliases: Record<string, string> = {
+    "€": "INR",
+    EUR: "INR",
+    "₹": "INR",
+    "$": "USD",
+    "£": "GBP",
+    "¥": "JPY",
+  };
+  const displayCurrency = currencyAliases[normalized] || normalized;
   try {
-    return new Intl.NumberFormat("en-US", {
+    return new Intl.NumberFormat(displayCurrency === "INR" ? "en-IN" : "en-US", {
       style: "currency",
-      currency: safeCurrency,
+      currency: displayCurrency,
       maximumFractionDigits: amount % 1 === 0 ? 0 : 2,
     }).format(amount);
   } catch {
-    return `${amount} ${safeCurrency}`;
+    return `${amount} ${displayCurrency}`;
   }
 }
 
@@ -19,9 +28,8 @@ interface MoneyProps {
   className?: string;
 }
 
-export function Money({ amount, currency = "EUR", className }: MoneyProps) {
-  const safeCurrency = currency || "EUR";
-  return <span className={cn("tabular-nums", className)}>{formatMoney(amount, safeCurrency)}</span>;
+export function Money({ amount, currency = "INR", className }: MoneyProps) {
+  return <span className={cn("tabular-nums", className)}>{formatMoney(amount, currency)}</span>;
 }
 
 export function RatingBadge({ rating, reviewCount, className }: { rating: number; reviewCount?: number; className?: string }) {

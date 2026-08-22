@@ -1,9 +1,11 @@
 import { apiClient } from "@/lib/api-client";
 import type { Trip, CreateTripInput, UpdateTripInput } from "@/types";
 import { cityImageUrl } from "@/lib/image-resolver";
+import { normalizeCurrency } from "@/lib/currency";
 
 const normalizeTrip = (trip: Trip): Trip => ({
   ...trip,
+  currency: normalizeCurrency(trip.currency),
   coverImage: cityImageUrl(trip.cities?.[0], trip.coverImage),
   cities: trip.cities || [],
 });

@@ -82,7 +82,7 @@ export default function ActivityDiscoveryPage() {
                   </div>
                   <p className="text-sm text-[#64748B]">{act.category} • {act.city}</p>
                   <div className="flex items-center gap-3 text-sm">
-                    <span className="font-semibold text-[#0F172A]">€{act.estimatedCost}</span>
+                    <span className="font-semibold text-[#0F172A]">₹{act.estimatedCost}</span>
                     <span className="flex items-center gap-1 text-[#64748B]"><Clock className="size-3.5" /> {act.durationMinutes}min</span>
                   </div>
                   <p className="text-sm text-[#64748B] line-clamp-2">{act.description}</p>

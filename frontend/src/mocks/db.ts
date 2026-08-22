@@ -48,7 +48,7 @@ let currentUser: UserProfile | null = {
   name: "Krish Patel",
   email: "krish@globetrotter.dev",
   avatarUrl: "",
-  currency: "EUR",
+  currency: "INR",
   locale: "en",
   preferences: {
     culture: 80,
@@ -63,30 +63,30 @@ let currentUser: UserProfile | null = {
 
 // ── Locations (Cities) ──
 const locations: Location[] = [
-  { id: "loc-rome", name: "Rome", country: "Italy", region: "Europe", description: "Ancient wonders & long dinners in the Eternal City.", image: IMAGES.rome, rating: 4.8, averageDailyCost: 120, currency: "EUR", travelStyles: ["culture", "food", "history"] },
-  { id: "loc-florence", name: "Florence", country: "Italy", region: "Europe", description: "Renaissance art, rooftop views and Tuscan cuisine.", image: IMAGES.florence, rating: 4.7, averageDailyCost: 110, currency: "EUR", travelStyles: ["culture", "food", "art"] },
-  { id: "loc-venice", name: "Venice", country: "Italy", region: "Europe", description: "Canals, gondolas and hidden squares.", image: IMAGES.venice, rating: 4.6, averageDailyCost: 140, currency: "EUR", travelStyles: ["romantic", "culture"] },
+  { id: "loc-rome", name: "Rome", country: "Italy", region: "Europe", description: "Ancient wonders & long dinners in the Eternal City.", image: IMAGES.rome, rating: 4.8, averageDailyCost: 120, currency: "INR", travelStyles: ["culture", "food", "history"] },
+  { id: "loc-florence", name: "Florence", country: "Italy", region: "Europe", description: "Renaissance art, rooftop views and Tuscan cuisine.", image: IMAGES.florence, rating: 4.7, averageDailyCost: 110, currency: "INR", travelStyles: ["culture", "food", "art"] },
+  { id: "loc-venice", name: "Venice", country: "Italy", region: "Europe", description: "Canals, gondolas and hidden squares.", image: IMAGES.venice, rating: 4.6, averageDailyCost: 140, currency: "INR", travelStyles: ["romantic", "culture"] },
   { id: "loc-kyoto", name: "Kyoto", country: "Japan", region: "Asia", description: "Temples, gardens and quiet bamboo lanes.", image: IMAGES.kyoto, rating: 4.9, averageDailyCost: 100, currency: "JPY", travelStyles: ["culture", "nature", "relaxation"] },
-  { id: "loc-lisbon", name: "Lisbon", country: "Portugal", region: "Europe", description: "Tiles, trams, tascas and sunsets over the Tagus.", image: IMAGES.lisbon, rating: 4.6, averageDailyCost: 85, currency: "EUR", travelStyles: ["food", "culture", "budget"] },
-  { id: "loc-barcelona", name: "Barcelona", country: "Spain", region: "Europe", description: "Gaudí, beaches, tapas and late nights.", image: IMAGES.barcelona, rating: 4.7, averageDailyCost: 105, currency: "EUR", travelStyles: ["food", "adventure", "culture"] },
-  { id: "loc-santorini", name: "Santorini", country: "Greece", region: "Europe", description: "Caldera views, sunsets and blue-domed churches.", image: IMAGES.santorini, rating: 4.8, averageDailyCost: 150, currency: "EUR", travelStyles: ["romantic", "relaxation", "luxury"] },
+  { id: "loc-lisbon", name: "Lisbon", country: "Portugal", region: "Europe", description: "Tiles, trams, tascas and sunsets over the Tagus.", image: IMAGES.lisbon, rating: 4.6, averageDailyCost: 85, currency: "INR", travelStyles: ["food", "culture", "budget"] },
+  { id: "loc-barcelona", name: "Barcelona", country: "Spain", region: "Europe", description: "Gaudí, beaches, tapas and late nights.", image: IMAGES.barcelona, rating: 4.7, averageDailyCost: 105, currency: "INR", travelStyles: ["food", "adventure", "culture"] },
+  { id: "loc-santorini", name: "Santorini", country: "Greece", region: "Europe", description: "Caldera views, sunsets and blue-domed churches.", image: IMAGES.santorini, rating: 4.8, averageDailyCost: 150, currency: "INR", travelStyles: ["romantic", "relaxation", "luxury"] },
   { id: "loc-bali", name: "Bali", country: "Indonesia", region: "Asia", description: "Rice terraces, temples and surf breaks.", image: IMAGES.santorini, rating: 4.5, averageDailyCost: 50, currency: "USD", travelStyles: ["nature", "adventure", "budget"] },
 ];
 
 // ── Activities ──
 const activities: Activity[] = [
-  { id: "act-colosseum", name: "Colosseum Guided Tour", city: "Rome", cityId: "loc-rome", country: "Italy", category: "Attractions", description: "Explore the iconic amphitheatre with an expert guide.", image: IMAGES.rome, rating: 4.8, reviewCount: 54120, estimatedCost: 50, currency: "EUR", durationMinutes: 120, bestTime: "morning" },
-  { id: "act-vatican", name: "Vatican Museums", city: "Rome", cityId: "loc-rome", country: "Italy", category: "Attractions", description: "Discover Michelangelo's Sistine Chapel and priceless art collections.", image: IMAGES.vatican, rating: 4.8, reviewCount: 32410, estimatedCost: 32, currency: "EUR", durationMinutes: 180, bestTime: "morning" },
-  { id: "act-trastevere", name: "Dinner in Trastevere", city: "Rome", cityId: "loc-rome", country: "Italy", category: "Food", description: "Enjoy authentic Roman cuisine in the charming Trastevere neighbourhood.", image: IMAGES.trastevere, rating: 4.6, reviewCount: 8120, estimatedCost: 30, currency: "EUR", durationMinutes: 90, bestTime: "evening" },
-  { id: "act-cooking", name: "Italian Cooking Class", city: "Rome", cityId: "loc-rome", country: "Italy", category: "Experiences", description: "Learn to make fresh pasta and tiramisu with a local chef.", image: IMAGES.cooking, rating: 4.9, reviewCount: 2140, estimatedCost: 70, currency: "EUR", durationMinutes: 150, bestTime: "afternoon" },
-  { id: "act-trastevere-walk", name: "Trastevere Food Walk", city: "Rome", cityId: "loc-rome", country: "Italy", category: "Food", description: "Guided food tour through Trastevere's best-kept culinary secrets.", image: IMAGES.trastevere, rating: 4.7, reviewCount: 3390, estimatedCost: 45, currency: "EUR", durationMinutes: 180, bestTime: "evening" },
-  { id: "act-duomo", name: "Florence Duomo Climb", city: "Florence", cityId: "loc-florence", country: "Italy", category: "Attractions", description: "Climb 463 steps for a panoramic view of Florence.", image: IMAGES.florence, rating: 4.7, reviewCount: 19870, estimatedCost: 20, currency: "EUR", durationMinutes: 60, bestTime: "morning" },
-  { id: "act-uffizi", name: "Uffizi Gallery Skip-the-Line", city: "Florence", cityId: "loc-florence", country: "Italy", category: "Attractions", description: "See Botticelli's Birth of Venus and Renaissance masterpieces.", image: IMAGES.florence, rating: 4.8, reviewCount: 12980, estimatedCost: 28, currency: "EUR", durationMinutes: 120, bestTime: "morning" },
-  { id: "act-gondola", name: "Grand Canal Gondola Ride", city: "Venice", cityId: "loc-venice", country: "Italy", category: "Experiences", description: "Glide through Venice's canals on a classic gondola.", image: IMAGES.venice, rating: 4.5, reviewCount: 11230, estimatedCost: 80, currency: "EUR", durationMinutes: 40, bestTime: "afternoon" },
+  { id: "act-colosseum", name: "Colosseum Guided Tour", city: "Rome", cityId: "loc-rome", country: "Italy", category: "Attractions", description: "Explore the iconic amphitheatre with an expert guide.", image: IMAGES.rome, rating: 4.8, reviewCount: 54120, estimatedCost: 50, currency: "INR", durationMinutes: 120, bestTime: "morning" },
+  { id: "act-vatican", name: "Vatican Museums", city: "Rome", cityId: "loc-rome", country: "Italy", category: "Attractions", description: "Discover Michelangelo's Sistine Chapel and priceless art collections.", image: IMAGES.vatican, rating: 4.8, reviewCount: 32410, estimatedCost: 32, currency: "INR", durationMinutes: 180, bestTime: "morning" },
+  { id: "act-trastevere", name: "Dinner in Trastevere", city: "Rome", cityId: "loc-rome", country: "Italy", category: "Food", description: "Enjoy authentic Roman cuisine in the charming Trastevere neighbourhood.", image: IMAGES.trastevere, rating: 4.6, reviewCount: 8120, estimatedCost: 30, currency: "INR", durationMinutes: 90, bestTime: "evening" },
+  { id: "act-cooking", name: "Italian Cooking Class", city: "Rome", cityId: "loc-rome", country: "Italy", category: "Experiences", description: "Learn to make fresh pasta and tiramisu with a local chef.", image: IMAGES.cooking, rating: 4.9, reviewCount: 2140, estimatedCost: 70, currency: "INR", durationMinutes: 150, bestTime: "afternoon" },
+  { id: "act-trastevere-walk", name: "Trastevere Food Walk", city: "Rome", cityId: "loc-rome", country: "Italy", category: "Food", description: "Guided food tour through Trastevere's best-kept culinary secrets.", image: IMAGES.trastevere, rating: 4.7, reviewCount: 3390, estimatedCost: 45, currency: "INR", durationMinutes: 180, bestTime: "evening" },
+  { id: "act-duomo", name: "Florence Duomo Climb", city: "Florence", cityId: "loc-florence", country: "Italy", category: "Attractions", description: "Climb 463 steps for a panoramic view of Florence.", image: IMAGES.florence, rating: 4.7, reviewCount: 19870, estimatedCost: 20, currency: "INR", durationMinutes: 60, bestTime: "morning" },
+  { id: "act-uffizi", name: "Uffizi Gallery Skip-the-Line", city: "Florence", cityId: "loc-florence", country: "Italy", category: "Attractions", description: "See Botticelli's Birth of Venus and Renaissance masterpieces.", image: IMAGES.florence, rating: 4.8, reviewCount: 12980, estimatedCost: 28, currency: "INR", durationMinutes: 120, bestTime: "morning" },
+  { id: "act-gondola", name: "Grand Canal Gondola Ride", city: "Venice", cityId: "loc-venice", country: "Italy", category: "Experiences", description: "Glide through Venice's canals on a classic gondola.", image: IMAGES.venice, rating: 4.5, reviewCount: 11230, estimatedCost: 80, currency: "INR", durationMinutes: 40, bestTime: "afternoon" },
   { id: "act-fushimi", name: "Fushimi Inari Shrine", city: "Kyoto", cityId: "loc-kyoto", country: "Japan", category: "Attractions", description: "Walk through thousands of vermillion torii gates.", image: IMAGES.kyoto, rating: 4.9, reviewCount: 45000, estimatedCost: 0, currency: "JPY", durationMinutes: 120, bestTime: "morning" },
-  { id: "act-belem", name: "Belém Tower & Pastéis", city: "Lisbon", cityId: "loc-lisbon", country: "Portugal", category: "Attractions", description: "Visit the iconic tower, then grab the world's best custard tarts.", image: IMAGES.lisbon, rating: 4.6, reviewCount: 22000, estimatedCost: 15, currency: "EUR", durationMinutes: 90, bestTime: "morning" },
-  { id: "act-sagrada", name: "Sagrada Família", city: "Barcelona", cityId: "loc-barcelona", country: "Spain", category: "Attractions", description: "Gaudí's unfinished masterpiece — a must-see basilica.", image: IMAGES.barcelona, rating: 4.9, reviewCount: 68000, estimatedCost: 26, currency: "EUR", durationMinutes: 90, bestTime: "morning" },
-  { id: "act-sunset", name: "Oia Sunset Cruise", city: "Santorini", cityId: "loc-santorini", country: "Greece", category: "Experiences", description: "Sail along the caldera as the sun sets over the Aegean.", image: IMAGES.santorini, rating: 4.8, reviewCount: 9800, estimatedCost: 95, currency: "EUR", durationMinutes: 180, bestTime: "evening" },
+  { id: "act-belem", name: "Belém Tower & Pastéis", city: "Lisbon", cityId: "loc-lisbon", country: "Portugal", category: "Attractions", description: "Visit the iconic tower, then grab the world's best custard tarts.", image: IMAGES.lisbon, rating: 4.6, reviewCount: 22000, estimatedCost: 15, currency: "INR", durationMinutes: 90, bestTime: "morning" },
+  { id: "act-sagrada", name: "Sagrada Família", city: "Barcelona", cityId: "loc-barcelona", country: "Spain", category: "Attractions", description: "Gaudí's unfinished masterpiece — a must-see basilica.", image: IMAGES.barcelona, rating: 4.9, reviewCount: 68000, estimatedCost: 26, currency: "INR", durationMinutes: 90, bestTime: "morning" },
+  { id: "act-sunset", name: "Oia Sunset Cruise", city: "Santorini", cityId: "loc-santorini", country: "Greece", category: "Experiences", description: "Sail along the caldera as the sun sets over the Aegean.", image: IMAGES.santorini, rating: 4.8, reviewCount: 9800, estimatedCost: 95, currency: "INR", durationMinutes: 180, bestTime: "evening" },
 ];
 
 // ── Trips ──
@@ -98,7 +98,7 @@ let trips: Trip[] = [
     coverImage: IMAGES.rome,
     startDate: "2026-10-12",
     endDate: "2026-10-20",
-    currency: "EUR",
+    currency: "INR",
     totalBudget: 2400,
     cities: ["Rome", "Florence", "Venice"],
     status: "upcoming",
@@ -113,7 +113,7 @@ let trips: Trip[] = [
     coverImage: IMAGES.kyoto,
     startDate: "2026-11-03",
     endDate: "2026-11-11",
-    currency: "EUR",
+    currency: "INR",
     totalBudget: 3200,
     cities: ["Kyoto", "Osaka"],
     status: "upcoming",
@@ -128,7 +128,7 @@ let trips: Trip[] = [
     coverImage: IMAGES.lisbon,
     startDate: "2026-08-20",
     endDate: "2026-08-24",
-    currency: "EUR",
+    currency: "INR",
     totalBudget: 900,
     cities: ["Lisbon", "Sintra"],
     status: "ongoing",
@@ -143,7 +143,7 @@ let trips: Trip[] = [
     coverImage: IMAGES.santorini,
     startDate: "2026-06-02",
     endDate: "2026-06-10",
-    currency: "EUR",
+    currency: "INR",
     totalBudget: 2000,
     cities: ["Santorini", "Naxos"],
     status: "completed",
@@ -165,41 +165,41 @@ const tripDays: TripDay[] = [
   {
     id: "day-1", tripId: "italy-escape", date: "2026-10-12", dayNumber: 1, city: "Rome",
     items: [
-      { id: "item-1", dayId: "day-1", activityId: "act-colosseum", name: "Colosseum Guided Tour", category: "Attractions", location: "Rome", startTime: "09:00", endTime: "11:00", durationMinutes: 120, estimatedCost: 50, currency: "EUR", rating: 4.8, image: IMAGES.rome, order: 1 },
-      { id: "item-2", dayId: "day-1", activityId: "act-trastevere", name: "Lunch in Trastevere", category: "Food", location: "Rome", startTime: "12:00", endTime: "13:30", durationMinutes: 90, estimatedCost: 30, currency: "EUR", rating: 4.6, image: IMAGES.trastevere, order: 2 },
-      { id: "item-3", dayId: "day-1", activityId: "act-colosseum", name: "Roman Forum walk", category: "Attractions", location: "Rome", startTime: "15:30", endTime: "17:30", durationMinutes: 120, estimatedCost: 18, currency: "EUR", rating: 4.5, image: IMAGES.rome, order: 3 },
+      { id: "item-1", dayId: "day-1", activityId: "act-colosseum", name: "Colosseum Guided Tour", category: "Attractions", location: "Rome", startTime: "09:00", endTime: "11:00", durationMinutes: 120, estimatedCost: 50, currency: "INR", rating: 4.8, image: IMAGES.rome, order: 1 },
+      { id: "item-2", dayId: "day-1", activityId: "act-trastevere", name: "Lunch in Trastevere", category: "Food", location: "Rome", startTime: "12:00", endTime: "13:30", durationMinutes: 90, estimatedCost: 30, currency: "INR", rating: 4.6, image: IMAGES.trastevere, order: 2 },
+      { id: "item-3", dayId: "day-1", activityId: "act-colosseum", name: "Roman Forum walk", category: "Attractions", location: "Rome", startTime: "15:30", endTime: "17:30", durationMinutes: 120, estimatedCost: 18, currency: "INR", rating: 4.5, image: IMAGES.rome, order: 3 },
     ],
   },
   {
     id: "day-2", tripId: "italy-escape", date: "2026-10-13", dayNumber: 2, city: "Rome",
     items: [
-      { id: "item-4", dayId: "day-2", activityId: "act-vatican", name: "Vatican Museums", category: "Attractions", location: "Rome", startTime: "09:30", endTime: "12:30", durationMinutes: 180, estimatedCost: 32, currency: "EUR", rating: 4.8, image: IMAGES.vatican, order: 1 },
-      { id: "item-5", dayId: "day-2", activityId: "act-trastevere", name: "Pizza al taglio stop", category: "Food", location: "Rome", startTime: "13:30", endTime: "14:15", durationMinutes: 45, estimatedCost: 12, currency: "EUR", rating: 4.3, image: IMAGES.trastevere, order: 2 },
-      { id: "item-6", dayId: "day-2", activityId: "act-cooking", name: "Italian Cooking Class", category: "Experiences", location: "Rome", startTime: "18:00", endTime: "20:30", durationMinutes: 150, estimatedCost: 70, currency: "EUR", rating: 4.9, image: IMAGES.cooking, order: 3 },
+      { id: "item-4", dayId: "day-2", activityId: "act-vatican", name: "Vatican Museums", category: "Attractions", location: "Rome", startTime: "09:30", endTime: "12:30", durationMinutes: 180, estimatedCost: 32, currency: "INR", rating: 4.8, image: IMAGES.vatican, order: 1 },
+      { id: "item-5", dayId: "day-2", activityId: "act-trastevere", name: "Pizza al taglio stop", category: "Food", location: "Rome", startTime: "13:30", endTime: "14:15", durationMinutes: 45, estimatedCost: 12, currency: "INR", rating: 4.3, image: IMAGES.trastevere, order: 2 },
+      { id: "item-6", dayId: "day-2", activityId: "act-cooking", name: "Italian Cooking Class", category: "Experiences", location: "Rome", startTime: "18:00", endTime: "20:30", durationMinutes: 150, estimatedCost: 70, currency: "INR", rating: 4.9, image: IMAGES.cooking, order: 3 },
     ],
   },
   {
     id: "day-3", tripId: "italy-escape", date: "2026-10-14", dayNumber: 3, city: "Florence",
     items: [
-      { id: "item-7", dayId: "day-3", activityId: "act-duomo", name: "Train Rome → Florence", category: "Transport", location: "Florence", startTime: "08:10", endTime: "09:40", durationMinutes: 90, estimatedCost: 39, currency: "EUR", rating: 4.0, image: IMAGES.florence, order: 1 },
-      { id: "item-8", dayId: "day-3", activityId: "act-duomo", name: "Duomo climb", category: "Attractions", location: "Florence", startTime: "11:00", endTime: "12:00", durationMinutes: 60, estimatedCost: 20, currency: "EUR", rating: 4.7, image: IMAGES.florence, order: 2 },
-      { id: "item-9", dayId: "day-3", activityId: "act-duomo", name: "Sunset at Piazzale Michelangelo", category: "Attractions", location: "Florence", startTime: "16:00", endTime: "17:00", durationMinutes: 60, estimatedCost: 0, currency: "EUR", rating: 4.8, image: IMAGES.florence, order: 3 },
+      { id: "item-7", dayId: "day-3", activityId: "act-duomo", name: "Train Rome → Florence", category: "Transport", location: "Florence", startTime: "08:10", endTime: "09:40", durationMinutes: 90, estimatedCost: 39, currency: "INR", rating: 4.0, image: IMAGES.florence, order: 1 },
+      { id: "item-8", dayId: "day-3", activityId: "act-duomo", name: "Duomo climb", category: "Attractions", location: "Florence", startTime: "11:00", endTime: "12:00", durationMinutes: 60, estimatedCost: 20, currency: "INR", rating: 4.7, image: IMAGES.florence, order: 2 },
+      { id: "item-9", dayId: "day-3", activityId: "act-duomo", name: "Sunset at Piazzale Michelangelo", category: "Attractions", location: "Florence", startTime: "16:00", endTime: "17:00", durationMinutes: 60, estimatedCost: 0, currency: "INR", rating: 4.8, image: IMAGES.florence, order: 3 },
     ],
   },
   {
     id: "day-4", tripId: "italy-escape", date: "2026-10-15", dayNumber: 4, city: "Venice",
     items: [
-      { id: "item-10", dayId: "day-4", activityId: "act-gondola", name: "Grand Canal Gondola Ride", category: "Experiences", location: "Venice", startTime: "10:00", endTime: "10:40", durationMinutes: 40, estimatedCost: 80, currency: "EUR", rating: 4.5, image: IMAGES.venice, order: 1 },
-      { id: "item-11", dayId: "day-4", activityId: "act-gondola", name: "Cicchetti crawl", category: "Food", location: "Venice", startTime: "13:00", endTime: "15:00", durationMinutes: 120, estimatedCost: 35, currency: "EUR", rating: 4.4, image: IMAGES.venice, order: 2 },
+      { id: "item-10", dayId: "day-4", activityId: "act-gondola", name: "Grand Canal Gondola Ride", category: "Experiences", location: "Venice", startTime: "10:00", endTime: "10:40", durationMinutes: 40, estimatedCost: 80, currency: "INR", rating: 4.5, image: IMAGES.venice, order: 1 },
+      { id: "item-11", dayId: "day-4", activityId: "act-gondola", name: "Cicchetti crawl", category: "Food", location: "Venice", startTime: "13:00", endTime: "15:00", durationMinutes: 120, estimatedCost: 35, currency: "INR", rating: 4.4, image: IMAGES.venice, order: 2 },
     ],
   },
 ];
 
 // ── Expenses ──
 let expenses: Expense[] = [
-  { id: "exp-1", tripId: "italy-escape", category: "Transport", description: "Train Rome → Florence", amount: 39, currency: "EUR", date: "2026-10-14" },
-  { id: "exp-2", tripId: "italy-escape", category: "Food", description: "Dinner in Trastevere", amount: 45, currency: "EUR", date: "2026-10-12" },
-  { id: "exp-3", tripId: "italy-escape", category: "Activities", description: "Colosseum tickets", amount: 50, currency: "EUR", date: "2026-10-12" },
+  { id: "exp-1", tripId: "italy-escape", category: "Transport", description: "Train Rome → Florence", amount: 39, currency: "INR", date: "2026-10-14" },
+  { id: "exp-2", tripId: "italy-escape", category: "Food", description: "Dinner in Trastevere", amount: 45, currency: "INR", date: "2026-10-12" },
+  { id: "exp-3", tripId: "italy-escape", category: "Activities", description: "Colosseum tickets", amount: 50, currency: "INR", date: "2026-10-12" },
 ];
 
 // ── Share Links ──
@@ -217,7 +217,7 @@ export async function mockLogin(email: string, _password: string): Promise<User>
   await delay(600);
   if (email === "fail@test.com") throw new Error("Invalid credentials");
   currentUser = currentUser ?? {
-    id: "user-1", name: "Krish Patel", email, avatarUrl: "", currency: "EUR", locale: "en",
+    id: "user-1", name: "Krish Patel", email, avatarUrl: "", currency: "INR", locale: "en",
     preferences: { culture: 80, food: 90, adventure: 60, nature: 50, relaxation: 40, travelPace: "moderate", budgetLevel: "moderate" },
   };
   return currentUser;
@@ -227,7 +227,7 @@ export async function mockSignup(name: string, email: string, _password: string)
   await delay(800);
   if (email === "exists@test.com") throw new Error("An account with this email already exists");
   currentUser = {
-    id: uid(), name, email, avatarUrl: "", currency: "EUR", locale: "en",
+    id: uid(), name, email, avatarUrl: "", currency: "INR", locale: "en",
     preferences: { culture: 50, food: 50, adventure: 50, nature: 50, relaxation: 50, travelPace: "moderate", budgetLevel: "moderate" },
   };
   return currentUser;
@@ -255,7 +255,7 @@ export async function mockGetDashboard(): Promise<DashboardData> {
       upcomingTripsCount: upcoming.length,
       plannedCities: upcoming.reduce((acc, t) => acc + t.cities.length, 0),
       totalRemainingBudget: upcoming.reduce((acc, t) => acc + (t.totalBudget - t.estimatedSpend), 0),
-      currency: "EUR",
+      currency: "INR",
     },
   };
 }
@@ -353,7 +353,7 @@ export async function mockAddActivity(dayId: string, input: { activityId: string
     name: act?.name ?? "Activity", category: act?.category ?? "Other",
     location: act?.city ?? "", startTime: input.startTime, endTime: input.endTime,
     durationMinutes: act?.durationMinutes ?? 60, estimatedCost: input.estimatedCost ?? act?.estimatedCost ?? 0,
-    currency: act?.currency ?? "EUR", rating: act?.rating ?? 0, image: act?.image ?? "",
+    currency: act?.currency ?? "INR", rating: act?.rating ?? 0, image: act?.image ?? "",
     order: day.items.length + 1,
   };
   day.items.push(item);
@@ -474,7 +474,7 @@ export async function mockGetTripBudget(tripId: string): Promise<BudgetSummary> 
 
 export async function mockAddExpense(tripId: string, input: { category: string; description: string; amount: number; date: string }): Promise<Expense> {
   await delay(400);
-  const exp: Expense = { id: uid(), tripId, currency: "EUR", ...input };
+  const exp: Expense = { id: uid(), tripId, currency: "INR", ...input };
   expenses.push(exp);
   return exp;
 }
@@ -527,7 +527,7 @@ export async function mockCopyTrip(token: string): Promise<Trip> {
     status: "upcoming",
     activitiesCount: publicTrip.days.reduce((acc, d) => acc + d.items.length, 0),
     estimatedSpend: 0,
-    currency: publicTrip.budgetSummary?.currency || "EUR",
+    currency: publicTrip.budgetSummary?.currency || "INR",
     totalBudget: 0,
   };
   trips = [newTrip, ...trips];

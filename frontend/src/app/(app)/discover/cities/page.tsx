@@ -85,7 +85,7 @@ export default function CityDiscoveryPage() {
                   <div className="flex items-center gap-2 text-sm">
                     <span className="flex items-center gap-1 font-semibold"><Star className="size-3.5 fill-[#F59E0B] text-[#F59E0B]" /> {loc.rating}</span>
                     <span className="text-[#64748B]">•</span>
-                    <span className="text-[#64748B]">~€{loc.averageDailyCost}/day</span>
+                    <span className="text-[#64748B]">~₹{loc.averageDailyCost}/day</span>
                   </div>
                   <div className="flex gap-2 pt-1">
                     <button className="flex-1 rounded-full border border-[#E2E8F0] py-2 text-sm font-semibold text-[#0F172A] transition-colors hover:bg-[#F1F5F9]">

@@ -81,12 +81,12 @@ export default function SharedTripPage() {
           <div className="inline-flex items-center gap-6 rounded-2xl bg-[#F1F5F9] px-6 py-4">
             <div>
               <p className="text-sm text-[#64748B]">Budget</p>
-              <p className="text-lg font-bold text-[#0F172A]">€{trip.budgetSummary.totalBudget.toLocaleString()}</p>
+              <p className="text-lg font-bold text-[#0F172A]">₹{trip.budgetSummary.totalBudget.toLocaleString()}</p>
             </div>
             <div className="h-10 w-px bg-[#E2E8F0]" />
             <div>
               <p className="text-sm text-[#64748B]">Estimated spend</p>
-              <p className="text-lg font-bold text-[#0F172A]">€{trip.budgetSummary.estimatedSpend.toLocaleString()}</p>
+              <p className="text-lg font-bold text-[#0F172A]">₹{trip.budgetSummary.estimatedSpend.toLocaleString()}</p>
             </div>
           </div>
         </div>
@@ -114,7 +114,7 @@ export default function SharedTripPage() {
                     <p className="font-semibold text-[#0F172A]">{item.name}</p>
                     <p className="text-sm text-[#64748B]">
                       <Clock className="inline size-3.5 mr-1" />
-                      {item.durationMinutes}min • €{item.estimatedCost}
+                      {item.durationMinutes}min • ₹{item.estimatedCost}
                     </p>
                   </li>
                 ))}

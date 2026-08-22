@@ -75,7 +75,7 @@ export default function TimelinePage() {
                     <p className="text-sm text-[#64748B]">{item.startTime} — {item.endTime}</p>
                     <p className="font-semibold text-[#0F172A]">{item.name}</p>
                     <p className="text-sm text-[#64748B]">
-                      {item.durationMinutes}min • €{item.estimatedCost} • {item.category}
+                      {item.durationMinutes}min • ₹{item.estimatedCost} • {item.category}
                     </p>
                   </li>
                 ))}
@@ -98,7 +98,7 @@ export default function TimelinePage() {
                     <img src={item.image} alt={item.name} className="size-10 rounded-lg object-cover" />
                     <div className="flex-1">
                       <p className="font-semibold text-[#0F172A]">{item.name}</p>
-                      <p className="text-xs text-[#64748B]">{item.durationMinutes}min • €{item.estimatedCost}</p>
+                      <p className="text-xs text-[#64748B]">{item.durationMinutes}min • ₹{item.estimatedCost}</p>
                     </div>
                   </div>
                 ))}

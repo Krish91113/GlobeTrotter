@@ -2,6 +2,7 @@
 
 import { motion } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { formatMoney } from "./money";
 
 interface BudgetProgressProps {
   spent: number;
@@ -11,18 +12,16 @@ interface BudgetProgressProps {
   showLabel?: boolean;
 }
 
-export function BudgetProgress({ spent, total, currency = "EUR", className, showLabel = true }: BudgetProgressProps) {
+export function BudgetProgress({ spent, total, currency = "INR", className, showLabel = true }: BudgetProgressProps) {
   const pct = total > 0 ? Math.min(100, Math.round((spent / total) * 100)) : 0;
   const over = spent > total;
-  const safeCurrency = currency || "EUR";
 
   if (showLabel) {
-    const formatted = new Intl.NumberFormat("en-US", { style: "currency", currency: safeCurrency, maximumFractionDigits: 0 });
     return (
       <div className={className}>
         <div className="flex items-baseline justify-between text-xs">
           <span className="text-muted-foreground">
-            {formatted.format(spent)} of {formatted.format(total)}
+            {formatMoney(spent, currency)} of {formatMoney(total, currency)}
           </span>
           <span className={cn("font-semibold tabular-nums", over ? "text-destructive" : "text-muted-foreground")}>{pct}%</span>
         </div>

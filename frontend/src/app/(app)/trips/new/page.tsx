@@ -31,7 +31,7 @@ import {
 import { cn } from "@/lib/utils";
 
 const currencies = [
-  { value: "EUR", label: "EUR — Euro €" },
+  { value: "INR", label: "INR — Indian Rupee ₹" },
   { value: "USD", label: "USD — US Dollar $" },
   { value: "GBP", label: "GBP — British Pound £" },
   { value: "JPY", label: "JPY — Japanese Yen ¥" },
@@ -63,7 +63,7 @@ export default function CreateTripPage() {
       description: "",
       startDate: "",
       endDate: "",
-      currency: "EUR",
+      currency: "INR",
       totalBudget: 0,
       coverImage: coverPresets[0],
       firstDestination: "",

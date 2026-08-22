@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/api-client";
 import type { Location, LocationFilters } from "@/types";
 import { cityImageUrl } from "@/lib/image-resolver";
+import { normalizeCurrency } from "@/lib/currency";
 
 export const locationsService = {
   search: async (filters?: LocationFilters): Promise<Location[]> => {
@@ -21,7 +22,7 @@ export const locationsService = {
         image: cityImageUrl(loc.name, loc.image || loc.thumbnailUri),
         rating: loc.rating ? parseFloat(loc.rating) : 4.8,
         averageDailyCost: loc.averageDailyCost ? parseFloat(loc.averageDailyCost) : 120,
-        currency: loc.currency?.isoCode || "EUR",
+        currency: normalizeCurrency(loc.currency?.isoCode),
         travelStyles: loc.travelStyles || ["Culture", "Food"],
       }));
   },
@@ -37,7 +38,7 @@ export const locationsService = {
       image: cityImageUrl(loc.name, loc.image || loc.thumbnailUri),
       rating: loc.rating ? parseFloat(loc.rating) : 4.8,
       averageDailyCost: loc.averageDailyCost ? parseFloat(loc.averageDailyCost) : 120,
-      currency: loc.currency?.isoCode || "EUR",
+      currency: normalizeCurrency(loc.currency?.isoCode),
       travelStyles: loc.travelStyles || ["Culture", "Food"],
     };
   },

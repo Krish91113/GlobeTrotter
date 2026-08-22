@@ -21,7 +21,7 @@ export const itineraryService = {
           startTime: i.plannedStartAt ? new Date(i.plannedStartAt).toTimeString().slice(0, 5) : i.startTime || "09:00",
           endTime: i.plannedEndAt ? new Date(i.plannedEndAt).toTimeString().slice(0, 5) : i.endTime || "11:00",
           estimatedCost: i.estimatedCost ? parseFloat(i.estimatedCost) : 0,
-          currency: i.currency || "EUR",
+          currency: i.currency || "INR",
           durationMinutes: i.durationMinutes || 60,
           rating: i.rating || 4.8,
           image: cityImageUrl(d.stop?.locationName, i.catalogItem?.thumbnailUri || i.image),

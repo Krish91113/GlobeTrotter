@@ -1,5 +1,6 @@
 import { apiClient } from "@/lib/api-client";
 import type { BudgetSummary, Expense, AddExpenseInput } from "@/types";
+import { normalizeCurrency } from "@/lib/currency";
 
 export const budgetService = {
   getTripBudget: async (tripId: string): Promise<BudgetSummary> => {
@@ -19,7 +20,7 @@ export const budgetService = {
         actualSpend: actual,
         remaining: Math.max(0, remaining),
         averagePerDay: summary.byDay?.length ? target / summary.byDay.length : target,
-        currency: b.currency || "EUR",
+        currency: normalizeCurrency(b.currency),
         categories: (summary.byCategory || []).map((c: any, index: number) => ({ name: c.category, estimated: parseFloat(c.amount), actual: parseFloat(c.amount), color: ["#2563EB", "#14B8A6", "#F59E0B", "#8B5CF6"][index % 4] })),
         dailySpend: (summary.byDay || []).map((d: any, index: number) => ({ date: d.date, label: `Day ${index + 1}`, estimated: parseFloat(d.estimatedCost), actual: parseFloat(d.actualCost) })),
       };
@@ -33,8 +34,10 @@ export const budgetService = {
         category: e.category || "Other",
         description: e.description || e.notes || "Expense",
         amount: e.amount ? parseFloat(e.amount) : 0,
-        currency: e.currency || "EUR",
+        currency: normalizeCurrency(e.currency),
         date: e.expenseDate ? new Date(e.expenseDate).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+        splitCount: Number(e.splitCount ?? 1),
+        splitParticipants: e.splitParticipants ?? null,
       }));
   },
 
@@ -47,6 +50,8 @@ export const budgetService = {
         amount: input.amount.toString(),
         expenseDate: input.date,
         isEstimate: false,
+        splitCount: input.splitCount ?? 1,
+        ...(input.splitParticipants && { splitParticipants: input.splitParticipants }),
       }),
     });
   },

@@ -250,6 +250,8 @@ export interface Expense {
   amount: number;
   currency: string;
   date: string;
+  splitCount?: number;
+  splitParticipants?: string | null;
 }
 
 export interface AddExpenseInput {
@@ -257,6 +259,8 @@ export interface AddExpenseInput {
   description: string;
   amount: number;
   date: string;
+  splitCount?: number;
+  splitParticipants?: string;
 }
 
 // ── Sharing ──

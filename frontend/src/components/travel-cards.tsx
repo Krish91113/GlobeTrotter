@@ -152,7 +152,7 @@ export function TripCard({ trip }: { trip: Trip }) {
         </p>
         <div className="flex items-center justify-between gap-3">
           <span className="rounded-full bg-secondary px-3 py-1 text-xs font-semibold text-secondary-foreground">
-            €{remaining.toLocaleString()} left of €{trip.budgetTotal.toLocaleString()}
+            ₹{remaining.toLocaleString()} left of ₹{trip.budgetTotal.toLocaleString()}
           </span>
           <AvatarGroup people={trip.collaborators} />
         </div>

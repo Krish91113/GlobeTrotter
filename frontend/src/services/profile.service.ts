@@ -13,7 +13,7 @@ export const profileService = {
         name: prof.displayName || "Traveler",
         email: prof.email || "",
         avatarUrl: prof.profileImageUri || "",
-        currency: pref?.preferredCurrency || "EUR",
+        currency: pref?.preferredCurrency || "INR",
         locale: prof.preferredLocale || "en-US",
         preferences: {
           culture: pref?.cultureWeight ?? 80,

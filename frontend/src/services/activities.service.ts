@@ -1,6 +1,7 @@
 import { apiClient } from "@/lib/api-client";
 import type { Activity, ActivityFilters } from "@/types";
 import { cityImageUrl } from "@/lib/image-resolver";
+import { normalizeCurrency } from "@/lib/currency";
 
 export const activitiesService = {
   search: async (filters?: ActivityFilters): Promise<Activity[]> => {
@@ -23,7 +24,7 @@ export const activitiesService = {
         city: item.location?.name || item.city || "Rome",
         cityId: item.locationId || item.cityId || "",
         estimatedCost: item.estimatedCost ? parseFloat(item.estimatedCost) : 35,
-        currency: item.currency || "EUR",
+        currency: normalizeCurrency(item.currency),
         durationMinutes: item.durationMinutes || 90,
         rating: item.rating ? parseFloat(item.rating) : 4.8,
         reviewCount: item.reviewCount || 1250,

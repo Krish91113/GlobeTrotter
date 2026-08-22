@@ -35,7 +35,7 @@ export default function ProfilePage() {
   });
 
   const [displayName, setDisplayName] = useState(authUser?.displayName || "Traveler");
-  const [currency, setCurrency] = useState("EUR");
+  const [currency, setCurrency] = useState("INR");
 
   useEffect(() => {
     if (!profile) return;
@@ -110,10 +110,9 @@ export default function ProfilePage() {
                 onChange={(e) => setCurrency(e.target.value)}
                 className="h-12 w-full rounded-xl border border-[#E2E8F0] bg-[#F8FAFC] px-4 text-sm outline-none focus:border-primary focus:bg-white"
               >
-                <option value="EUR">EUR (€) Euro</option>
+                <option value="INR">INR (₹) Indian Rupee</option>
                 <option value="USD">USD ($) US Dollar</option>
                 <option value="GBP">GBP (£) British Pound</option>
-                <option value="INR">INR (₹) Indian Rupee</option>
                 <option value="JPY">JPY (¥) Japanese Yen</option>
               </select>
             </div>

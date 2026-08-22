@@ -29,7 +29,7 @@ export default function BudgetPage() {
           <AlertTriangle className="size-5 text-[#DC2626]" />
           <div>
             <p className="font-semibold text-[#DC2626]">Over budget</p>
-            <p className="text-sm text-[#DC2626]/80">Your estimated spend exceeds the total budget by €{(budget.estimatedSpend - budget.totalBudget).toLocaleString()}.</p>
+            <p className="text-sm text-[#DC2626]/80">Your estimated spend exceeds the total budget by ₹{(budget.estimatedSpend - budget.totalBudget).toLocaleString()}.</p>
           </div>
         </div>
       )}
@@ -38,9 +38,9 @@ export default function BudgetPage() {
       <section>
         <h2 className="text-2xl font-bold text-[#0F172A]">Trip budget</h2>
         <p className="mt-2 text-3xl font-bold text-[#0F172A]">
-          €{budget.estimatedSpend.toLocaleString()}{" "}
+          ₹{budget.estimatedSpend.toLocaleString()}{" "}
           <span className="text-base font-normal text-[#64748B]">
-            planned of €{budget.totalBudget.toLocaleString()}
+            planned of ₹{budget.totalBudget.toLocaleString()}
           </span>
         </p>
 
@@ -54,7 +54,7 @@ export default function BudgetPage() {
           </div>
           <div className="mt-2 flex justify-between text-sm text-[#64748B]">
             <span>{pct}% used</span>
-            <span>€{budget.remaining.toLocaleString()} remaining</span>
+            <span>₹{budget.remaining.toLocaleString()} remaining</span>
           </div>
         </div>
       </section>
@@ -62,11 +62,11 @@ export default function BudgetPage() {
       {/* Stat cards */}
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-5">
         {[
-          { label: "Total budget", value: `€${budget.totalBudget.toLocaleString()}`, color: "text-[#0F172A]" },
-          { label: "Estimated spend", value: `€${budget.estimatedSpend.toLocaleString()}`, color: "text-primary" },
-          { label: "Actual spend", value: `€${budget.actualSpend.toLocaleString()}`, color: "text-[#14B8A6]" },
-          { label: "Remaining", value: `€${budget.remaining.toLocaleString()}`, color: isOverBudget ? "text-[#DC2626]" : "text-[#16A34A]" },
-          { label: "Avg per day", value: `€${budget.averagePerDay.toLocaleString()}`, color: "text-[#0F172A]" },
+          { label: "Total budget", value: `₹${budget.totalBudget.toLocaleString()}`, color: "text-[#0F172A]" },
+          { label: "Estimated spend", value: `₹${budget.estimatedSpend.toLocaleString()}`, color: "text-primary" },
+          { label: "Actual spend", value: `₹${budget.actualSpend.toLocaleString()}`, color: "text-[#14B8A6]" },
+          { label: "Remaining", value: `₹${budget.remaining.toLocaleString()}`, color: isOverBudget ? "text-[#DC2626]" : "text-[#16A34A]" },
+          { label: "Avg per day", value: `₹${budget.averagePerDay.toLocaleString()}`, color: "text-[#0F172A]" },
         ].map((s) => (
           <div key={s.label} className="rounded-2xl border border-[#E2E8F0]/60 p-5">
             <p className="text-sm text-[#64748B]">{s.label}</p>
@@ -97,7 +97,7 @@ export default function BudgetPage() {
                   ))}
                 </Pie>
                 <Tooltip
-                  formatter={(value: number) => [`€${value}`, ""]}
+                  formatter={(value: number) => [`₹${value}`, ""]}
                   contentStyle={{ borderRadius: 12, border: "1px solid #E2E8F0", background: "#fff" }}
                 />
                 <Legend />
@@ -115,7 +115,7 @@ export default function BudgetPage() {
                 <XAxis dataKey="label" tickLine={false} axisLine={false} fontSize={12} stroke="#64748B" />
                 <YAxis tickLine={false} axisLine={false} fontSize={12} stroke="#64748B" />
                 <Tooltip
-                  formatter={(value: number) => [`€${value}`, ""]}
+                  formatter={(value: number) => [`₹${value}`, ""]}
                   cursor={{ fill: "#F1F5F9" }}
                   contentStyle={{ borderRadius: 12, border: "1px solid #E2E8F0", background: "#fff" }}
                 />
@@ -156,17 +156,18 @@ export default function BudgetPage() {
               </thead>
               <tbody className="divide-y divide-[#E2E8F0]">
                 {expenses.map((exp) => {
-                  const perPersonAmount = exp.splitCount > 1 ? (Number(exp.amount) / exp.splitCount).toFixed(2) : exp.amount;
+                  const splitCount = Math.max(1, exp.splitCount ?? 1);
+                  const perPersonAmount = splitCount > 1 ? (Number(exp.amount) / splitCount).toFixed(2) : exp.amount;
                   return (
                     <tr key={exp.id} className="hover:bg-[#F8FAFC]">
                       <td className="px-4 py-3 text-[#0F172A]">{exp.date}</td>
                       <td className="px-4 py-3"><span className="rounded-full bg-[#F1F5F9] px-2.5 py-0.5 text-xs font-semibold text-[#334155]">{exp.category}</span></td>
                       <td className="px-4 py-3 text-[#0F172A]">{exp.description}</td>
-                      <td className="px-4 py-3 text-right font-semibold text-[#0F172A]">€{exp.amount}</td>
+                      <td className="px-4 py-3 text-right font-semibold text-[#0F172A]">₹{exp.amount}</td>
                       <td className="px-4 py-3 text-right">
-                        {exp.splitCount > 1 ? (
+                        {splitCount > 1 ? (
                           <span className="inline-block rounded-full bg-[#E0F2FE] px-2.5 py-0.5 text-xs font-semibold text-[#0369A1]">
-                            {exp.splitCount} × €{perPersonAmount}
+                            {splitCount} × ₹{perPersonAmount}
                           </span>
                         ) : (
                           <span className="text-[#94A3B8] text-xs">—</span>
@@ -238,7 +239,7 @@ function ExpenseForm({ tripId, onClose }: { tripId: string; onClose: () => void 
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
-          <label className="mb-1 block text-sm font-medium">Amount (€)</label>
+          <label className="mb-1 block text-sm font-medium">Amount (₹)</label>
           <input type="number" value={form.amount} onChange={(e) => setForm({ ...form, amount: e.target.value })} placeholder="0" className="h-10 w-full rounded-lg border border-[#E2E8F0] px-3 text-sm" />
         </div>
         <div>
@@ -249,7 +250,7 @@ function ExpenseForm({ tripId, onClose }: { tripId: string; onClose: () => void 
       {form.splitCount > 1 && form.amount && (
         <div className="rounded-lg bg-[#E0F2FE] p-3">
           <p className="text-sm text-[#0369A1]">
-            <span className="font-semibold">Per person:</span> €{perPersonAmount} ({form.splitCount} × €{perPersonAmount})
+            <span className="font-semibold">Per person:</span> ₹{perPersonAmount} ({form.splitCount} × ₹{perPersonAmount})
           </p>
         </div>
       )}

@@ -29,7 +29,7 @@ export const sharingService = {
       cities: data.cities || (data.stops || []).map((s: any) => s.locationName),
       daysCount: data.daysCount || (data.days || []).length || 1,
       budgetSummary: data.estimatedBudget ? {
-        totalBudget: parseFloat(data.estimatedBudget), estimatedSpend: 0, currency: data.currency || "EUR",
+        totalBudget: parseFloat(data.estimatedBudget), estimatedSpend: 0, currency: data.currency || "INR",
       } : undefined,
       days: (data.days || []).map((d: any, index: number) => ({
         id: d.id,
@@ -46,7 +46,7 @@ export const sharingService = {
           startTime: i.plannedStartAt ? new Date(i.plannedStartAt).toISOString().slice(11, 16) : i.startTime || "09:00",
           endTime: i.plannedEndAt ? new Date(i.plannedEndAt).toISOString().slice(11, 16) : i.endTime || "11:00",
           estimatedCost: i.estimatedCost ? parseFloat(i.estimatedCost) : 0,
-          currency: i.currency || "EUR",
+          currency: i.currency || "INR",
           durationMinutes: i.durationMinutes || 60,
           rating: i.rating || 4.8,
           image: cityImageUrl(primaryCity, i.image),

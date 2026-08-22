@@ -20,7 +20,7 @@ export const recommendationsService = {
         city: r.location?.name || r.city || "Rome",
         score: r.score ?? 95,
         estimatedCost: r.estimatedCost ? parseFloat(r.estimatedCost) : 48,
-        currency: r.currency || "EUR",
+        currency: r.currency || "INR",
         durationMinutes: r.durationMinutes || 180,
         rating: r.rating || 4.9,
         image: cityImageUrl(r.city || r.location?.name, r.thumbnailUri || r.catalogItem?.thumbnailUri || r.image),

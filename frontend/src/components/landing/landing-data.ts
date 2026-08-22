@@ -133,12 +133,12 @@ export const tripPreview = {
   day: "DAY 2",
   dayCity: "Rome",
   timeline: [
-    { time: "09:00", title: "Colosseum Guided Tour", meta: "2 hrs · €50" },
-    { time: "12:30", title: "Lunch in Trastevere", meta: "1.5 hrs · €30" },
-    { time: "15:00", title: "Roman Forum", meta: "2 hrs · €25" },
+    { time: "09:00", title: "Colosseum Guided Tour", meta: "2 hrs · ₹50" },
+    { time: "12:30", title: "Lunch in Trastevere", meta: "1.5 hrs · ₹30" },
+    { time: "15:00", title: "Roman Forum", meta: "2 hrs · ₹25" },
   ],
-  budgetSpent: "€1,350",
-  budgetTotal: "€2,400",
+  budgetSpent: "₹1,350",
+  budgetTotal: "₹2,400",
   budgetPercent: 56,
 };
 
@@ -147,7 +147,7 @@ export const recommendationPreview = {
   match: "92% match",
   title: "Italian Cooking Class",
   meta: "Food · Rome · 2.5 hours",
-  price: "€70",
+  price: "₹70",
   image: "/images/cooking.jpg",
   reason:
     "Matches your food interests and keeps today's estimated spending within your target.",
