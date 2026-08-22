@@ -77,4 +77,7 @@ docker-compose.override.yml
 *.generated.*
 generated/
 
-.dist/
+.dist/# AI / Editor local configuration
+**/.agents/
+**/.claude/
+**/.windsurf/
