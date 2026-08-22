@@ -1,10 +1,19 @@
+<p align="center">
+  <img
+    src="./docs/image/banner.png"
+    alt="GlobeTrotter — Empowering Personalized Travel Planning"
+    width="100%"
+    height="260"
+    style="object-fit: cover;"
+  >
+</p>
+
+
 # GlobeTrotter
 
 > **Empowering Personalized Travel Planning** — a database-first, AI-assisted platform for discovering destinations, building multi-city itineraries, controlling budgets, sharing trips, and automatically splitting trip costs across travelers.
 
-<p align="center">
-  <img src="./docs/image/banner.jpg" alt="GlobeTrotter — Empowering Personalized Travel Planning" width="100%">
-</p>
+
 
 <p align="center">
   <a href="#-why-globetrotter">Why GlobeTrotter</a> ·
@@ -438,6 +447,29 @@ GlobeTrotter focuses on the core hackathon journey: **travel planning, destinati
 ## Repository
 
 **GitHub:** `https://github.com/Krish91113/GlobeTrotter`
+
+---
+---
+
+## 👥 Contributors
+
+<p align="center">
+  <a href="https://github.com/Aditya07771">
+    <img src="https://github.com/Aditya07771.png?s=140" width="70" height="70" alt="Aditya07771">
+  </a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/Krish91113">
+    <img src="https://github.com/Krish91113.png?s=140" width="70" height="70" alt="Krish91113">
+  </a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/dubenikhil461">
+    <img src="https://github.com/dubenikhil461.png?s=140" width="70" height="70" alt="dubenikhil461">
+  </a>
+  &nbsp;&nbsp;&nbsp;
+  <a href="https://github.com/yravnit">
+    <img src="https://github.com/yravnit.png?s=140" width="70" height="70" alt="yravnit">
+  </a>
+</p>
 
 ---
 
